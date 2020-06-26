@@ -27,7 +27,7 @@ namespace BlaiseDataDelivery.Services.Files
             return files.Select(f => f.FullName);
         }
 
-        public void MoveFiles(IEnumerable<string> files, string destinationFilePath)
+        public void MoveFiles(IList<string> files, string destinationFilePath)
         {
             if (!files.Any())
             {

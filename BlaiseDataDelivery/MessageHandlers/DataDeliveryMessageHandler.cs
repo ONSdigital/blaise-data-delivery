@@ -35,7 +35,8 @@ namespace BlaiseDataDelivery.MessageHandlers
                 var messageModel = _mapper.MapToMessageModel(message);
 
                 //get a list of available files for data delivery
-                var filesToProcess = _fileService.GetFiles(messageModel.SourceFilePath, _configuration.FilePattern);
+                var filesToProcess = _fileService.GetFiles(messageModel.SourceFilePath, _configuration.FilePattern).ToList();
+
 
                 //no files available - an error must have occured
                 if(!filesToProcess.Any())
@@ -44,20 +45,24 @@ namespace BlaiseDataDelivery.MessageHandlers
                     return true;
                 }
 
-                //create encrypted zip file 
+                //create encrypted zip file
+                _logger.Info($"Attempting to create zip file for files '{string.Join(",", filesToProcess.ToArray())}'");
                 var encryptedZipFile = _fileService.CreateEncryptedZipFile(filesToProcess, messageModel);
+                _logger.Info($"Created encrypted zip file {encryptedZipFile}");
 
                 //upload the zip to bucket
+                _logger.Info($"Attempting to upload zip file '{encryptedZipFile}' to bucket '{_configuration.BucketName}'");
                 _fileService.UploadFileToBucket(encryptedZipFile, _configuration.BucketName);
+                _logger.Info($"Uploaded zip file '{encryptedZipFile}' to bucket '{_configuration.BucketName}'");
 
                 //clean up files
-               _fileService.DeleteFile(encryptedZipFile);
+                _fileService.DeleteFile(encryptedZipFile);
                _fileService.DeleteFiles(filesToProcess);
 
             }
             catch(Exception ex)
             {
-                _logger.Error($"An exception occured in processing messge {message} - {ex.Message}");
+                _logger.Error($"An exception occured in processing message '{message}' with exception {ex.Message} and inner exception '{ex.InnerException}'");
             }
 
             return true;

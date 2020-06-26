@@ -6,7 +6,7 @@ namespace BlaiseDataDelivery.Services.Files
 {
     public class FileCloudStorageService : IFileCloudStorageService
     {
-        private IStorageClientProvider _storageClient;
+        private readonly IStorageClientProvider _storageClient;
 
         public FileCloudStorageService(IStorageClientProvider storageClient)
         {

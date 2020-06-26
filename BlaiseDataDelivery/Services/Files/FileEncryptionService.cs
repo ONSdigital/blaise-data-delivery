@@ -42,9 +42,9 @@ namespace BlaiseDataDelivery.Services.Files
             }
         }
 
-        private void EncryptFile(Stream outputStream, string filePath, PgpPublicKey publicKey)
+        private static void EncryptFile(Stream outputStream, string filePath, PgpPublicKey publicKey)
         {
-            using (MemoryStream outputMemoryStream = new MemoryStream())
+            using (var outputMemoryStream = new MemoryStream())
             {
                 PgpCompressedDataGenerator compressedData = new PgpCompressedDataGenerator(CompressionAlgorithmTag.Zip);
                 PgpUtilities.WriteFileToLiteralData(compressedData.Open(outputMemoryStream), PgpLiteralData.Binary, new FileInfo(filePath));
