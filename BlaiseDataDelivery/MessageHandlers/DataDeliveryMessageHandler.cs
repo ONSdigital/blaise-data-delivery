@@ -55,8 +55,7 @@ namespace BlaiseDataDelivery.MessageHandlers
 
                 //clean up files
                 _fileService.DeleteFile(encryptedZipFile);
-
-               _logger.Info($"Cleaned up the source and temporary files");
+                _logger.Info("Cleaned up the temporary files");
 
                 return true;
             }
