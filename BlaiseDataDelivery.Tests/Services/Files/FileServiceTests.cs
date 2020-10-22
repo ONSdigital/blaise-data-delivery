@@ -5,6 +5,8 @@ using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using Blaise.Nuget.Api.Contracts.Interfaces;
+using Blaise.Nuget.Api.Contracts.Models;
 
 namespace BlaiseDataDelivery.Tests.Services.Files
 {
@@ -14,6 +16,7 @@ namespace BlaiseDataDelivery.Tests.Services.Files
         private Mock<IFileEncryptionService> _encryptionServiceMock;
         private Mock<IFileZipService> _zipServiceMock;
         private Mock<IFileCloudStorageService> _storageServiceMock;
+        private Mock<IBlaiseApi> _blaiseApiMock;
 
         private FileService _sut;
 
@@ -27,39 +30,45 @@ namespace BlaiseDataDelivery.Tests.Services.Files
             _zipServiceMock = new Mock<IFileZipService>();
             _storageServiceMock = new Mock<IFileCloudStorageService>();
 
+            _blaiseApiMock = new Mock<IBlaiseApi>();
+
             _sut = new FileService(
-                _fileDirectoryMock.Object, _encryptionServiceMock.Object, _zipServiceMock.Object, _storageServiceMock.Object);
+                _fileDirectoryMock.Object, _encryptionServiceMock.Object, _zipServiceMock.Object, _storageServiceMock.Object, _blaiseApiMock.Object);
         }
 
         [Test]
-        public void Given_Valid_Arguments_When_I_Call_GetFiles_Then_The_Correct_Method_Is_Called()
+        public void Given_Valid_Arguments_When_I_Call_CreateDeliveryFiles_Then_The_Correct_Method_Is_Called()
         {
             //arrange
-            var path = "temp";
             var instrumentName = "OPN2004";
-            var filePattern = "*.*";
+            var serverParkName = "tel";
+            var filePath = @"c:\\temp";
+
+            _blaiseApiMock.Setup(b =>
+                b.CreateDataDeliveryFile(It.IsAny<ConnectionModel>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
             //act
-            _sut.GetFiles(path, instrumentName, filePattern);
+            _sut.CreateDeliveryFiles(serverParkName, instrumentName, filePath);
 
             //assert
-            _fileDirectoryMock.Verify(v => v.GetFiles(path, $"{instrumentName}{filePattern}"), Times.Once);
+            _blaiseApiMock.Verify(v => v.CreateDataDeliveryFile(It.IsAny<ConnectionModel>(), serverParkName, instrumentName, filePath), Times.Once);
         }
 
         [Test]
         public void Given_Valid_Arguments_When_I_Call_GetFiles_Then_A_List_Of_Files_Are_Returned()
         {
             //arrange
-            var path = "temp";
             var instrumentName = "OPN2004";
-            var filePattern = "*.*";
-            var files = new List<string> { "File1", "File2" };
+            var serverParkName = "tel";
+            var filePath = @"c:\\temp";
+            var dataDeliveryFile = "File1";
+            var files = new List<string> { dataDeliveryFile };
 
-
-            _fileDirectoryMock.Setup(f => f.GetFiles(It.IsAny<string>(), It.IsAny<string>())).Returns(files);
+            _blaiseApiMock.Setup(b =>
+                    b.CreateDataDeliveryFile(It.IsAny<ConnectionModel>(), serverParkName, instrumentName, filePath)).Returns(dataDeliveryFile);
 
             //act
-            var result = _sut.GetFiles(path, instrumentName, filePattern);
+            var result = _sut.CreateDeliveryFiles(serverParkName, instrumentName, filePath);
 
             //assert
             Assert.NotNull(result);
@@ -73,7 +82,7 @@ namespace BlaiseDataDelivery.Tests.Services.Files
             var files = new List<string> { "File1", "File2" };
             var messageModel = new MessageModel
             {
-                SourceFilePath = "SourcePath",
+                ServerParkName = "SourcePath",
                 InstrumentName = "InstrumentName"
             };
 
@@ -97,7 +106,7 @@ namespace BlaiseDataDelivery.Tests.Services.Files
             //arrange
             var files = new List<string> { "File1", "File2" };
             var messageModel = new MessageModel { 
-                SourceFilePath = "SourcePath",
+                ServerParkName = "SourcePath",
                 InstrumentName = "InstrumentName"
             };
 

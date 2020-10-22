@@ -4,17 +4,17 @@ using BlaiseDataDelivery.Interfaces.Mappers;
 using BlaiseDataDelivery.Interfaces.Providers;
 using BlaiseDataDelivery.Interfaces.Services;
 using BlaiseDataDelivery.Interfaces.Services.Files;
-using BlaiseDataDelivery.Interfaces.Services.Json;
 using BlaiseDataDelivery.Interfaces.Services.Queue;
 using BlaiseDataDelivery.Mappers;
 using BlaiseDataDelivery.MessageHandlers;
 using BlaiseDataDelivery.Providers;
 using BlaiseDataDelivery.Services;
 using BlaiseDataDelivery.Services.Files;
-using BlaiseDataDelivery.Services.Json;
 using BlaiseDataDelivery.Services.Queue;
 using log4net;
 using System.ServiceProcess;
+using Blaise.Nuget.Api;
+using Blaise.Nuget.Api.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using Unity;
@@ -42,7 +42,6 @@ namespace BlaiseDataDelivery
 
             unityContainer.RegisterType<IQueueService, QueueService>();
 
-            unityContainer.RegisterType<ISerializerService, SerializerService>();
             unityContainer.RegisterType<IMessageModelMapper, MessageModelMapper>();
 
             unityContainer.RegisterType<IFileService, FileService>();
@@ -53,16 +52,15 @@ namespace BlaiseDataDelivery
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
-            unityContainer.RegisterType<IStorageClientProvider, LocalStorageClientProvider>();
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
 
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
-#else
-            // When running in Release, the service will be running as compute account which will have access to all buckets.
-            unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
 #endif
-
+            unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
             unityContainer.RegisterType<IFileCloudStorageService, FileCloudStorageService>();
+
+            //blaise services
+            unityContainer.RegisterType<IBlaiseApi, BlaiseApi>();
 
             //main service classes
             unityContainer.RegisterType<IInitialiseService, InitialiseService>();

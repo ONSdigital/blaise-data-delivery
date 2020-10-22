@@ -35,19 +35,18 @@ namespace BlaiseDataDelivery.MessageHandlers
                 var messageModel = _mapper.MapToMessageModel(message);
 
                 //get a list of available files for data delivery
-                var filesToProcess = _fileService.GetFiles(messageModel.SourceFilePath, messageModel.InstrumentName, _configuration.FilePattern).ToList();
+                var dataDeliveryFiles = _fileService.CreateDeliveryFiles(messageModel.ServerParkName, messageModel.InstrumentName, _configuration.LocalProcessFolder).ToList();
 
-                //no files available - an error must have occured
-                if(!filesToProcess.Any())
+                if(!dataDeliveryFiles.Any())
                 {
-                    _logger.Info($"No files are available to process in the path '{messageModel.SourceFilePath}' for the file pattern '{_configuration.FilePattern}'");
+                    _logger.Info($"No files are available to deliver on server park {messageModel.ServerParkName}'");
                     return true;
                 }
 
-                _logger.Info($"Found '{filesToProcess.Count}' files that are available to process in the path '{messageModel.SourceFilePath}' for the file pattern '{_configuration.FilePattern}'");
+                _logger.Info($"There are '{dataDeliveryFiles.Count}' available to deliver on server park {messageModel.ServerParkName}'");
 
                 //create encrypted zip file 
-                var encryptedZipFile = _fileService.CreateEncryptedZipFile(filesToProcess, messageModel);
+                var encryptedZipFile = _fileService.CreateEncryptedZipFile(dataDeliveryFiles, messageModel);
                 _logger.Info($"Encrypted files into the zip file '{encryptedZipFile}'");
 
                 //upload the zip to bucket
@@ -63,7 +62,7 @@ namespace BlaiseDataDelivery.MessageHandlers
             }
             catch(Exception ex)
             {
-                _logger.Error($"An exception occured in processing message {message} - {ex.Message}");
+                _logger.Error($"An exception occurred in processing message {message} - {ex.Message}");
 
                 return false;
             }

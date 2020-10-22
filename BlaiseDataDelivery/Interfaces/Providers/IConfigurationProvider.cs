@@ -11,14 +11,12 @@ namespace BlaiseDataDelivery.Interfaces.Providers
 
         string VmName { get; }
 
-        string FilePattern { get; }
-
         string BucketName { get; }
-
-        string CloudStorageKey { get; }
 
         string EncryptionKey { get; }
 
         string DeadletterTopicId { get; }
+
+        string LocalProcessFolder { get; }
     }
 }

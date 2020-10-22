@@ -62,19 +62,6 @@ namespace BlaiseDataDelivery.Tests.Providers
         }
 
         [Test]
-        public void Given_I_Call_FilePattern_I_Get_The_Correct_Value_Back()
-        {
-            //arrange
-            var configurationProvider = new ConfigurationProvider();
-
-            //act
-            var result = configurationProvider.FilePattern;
-
-            //assert
-            Assert.AreEqual("FilePatternTest", result);
-        }
-
-        [Test]
         public void Given_I_Call_BucketName_I_Get_The_Correct_Value_Back()
         {
             //arrange
@@ -98,6 +85,19 @@ namespace BlaiseDataDelivery.Tests.Providers
 
             //assert
             Assert.AreEqual("EncryptionKeyTest", result);
+        }
+
+        [Test]
+        public void Given_I_Call_LocalProcessFolder_I_Get_The_Correct_Value_Back()
+        {
+            //arrange
+            var configurationProvider = new ConfigurationProvider();
+
+            //act
+            var result = configurationProvider.LocalProcessFolder;
+
+            //assert
+            Assert.AreEqual("LocalProcessFolderTest", result);
         }
     }
 }

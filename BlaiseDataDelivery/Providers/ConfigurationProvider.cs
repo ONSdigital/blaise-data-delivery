@@ -15,14 +15,11 @@ namespace BlaiseDataDelivery.Providers
 
         public string VmName => Environment.MachineName;
 
-        public string FilePattern => ConfigurationManager.AppSettings["FilePattern"];
-
         public string BucketName => ConfigurationManager.AppSettings["BucketName"];
-
-        public string CloudStorageKey => ConfigurationManager.AppSettings["CloudStorageKey"];
 
         public string EncryptionKey => ConfigurationManager.AppSettings["EncryptionKey"];
 
         public string DeadletterTopicId => ConfigurationManager.AppSettings["DeadletterTopicId"];
+        public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
     }
 }

@@ -2,6 +2,7 @@
 using BlaiseDataDelivery.Models;
 using System;
 using System.Collections.Generic;
+using Blaise.Nuget.Api.Contracts.Interfaces;
 
 namespace BlaiseDataDelivery.Services.Files
 {
@@ -11,27 +12,38 @@ namespace BlaiseDataDelivery.Services.Files
         private readonly IFileEncryptionService _encryptionService;
         private readonly IFileZipService _zipService;
         private readonly IFileCloudStorageService _cloudStorageService;
+        private readonly IBlaiseApi _blaiseApi;
 
         public FileService(
             IFileDirectoryService directoryService,
             IFileEncryptionService encryptionService,
             IFileZipService zipService,
-            IFileCloudStorageService cloudStorageService)
+            IFileCloudStorageService cloudStorageService,
+            IBlaiseApi blaiseApi)
         {
             _directoryService = directoryService;
             _encryptionService = encryptionService;
             _zipService = zipService;
             _cloudStorageService = cloudStorageService;
+            _blaiseApi = blaiseApi;
+        }
+
+        public IEnumerable<string> CreateDeliveryFiles(string serverParkName, string instrumentName,  string outputPath)
+        {
+            var files = new List<string>();
+            files.Add(_blaiseApi.CreateDataDeliveryFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName, instrumentName, outputPath));
+
+            return files;
         }
 
         public string CreateEncryptedZipFile(IList<string> files, MessageModel messageModel)
         {
             var uniqueFileName = GenerateUniqueFileName(messageModel.InstrumentName, DateTime.Now);
             
-            var tempZipFilePath = $"{messageModel.SourceFilePath}\\Processed\\{uniqueFileName}.unencrypted.zip";
+            var tempZipFilePath = $"{messageModel.ServerParkName}\\Processed\\{uniqueFileName}.unencrypted.zip";
             _zipService.CreateZipFile(files, tempZipFilePath);
             
-            var encryptedZipFilePath = $"{messageModel.SourceFilePath}\\Processed\\{uniqueFileName}.zip";
+            var encryptedZipFilePath = $"{messageModel.ServerParkName}\\Processed\\{uniqueFileName}.zip";
             _encryptionService.EncryptFile(tempZipFilePath, encryptedZipFilePath);
 
             DeleteFile(tempZipFilePath);
@@ -50,11 +62,6 @@ namespace BlaiseDataDelivery.Services.Files
             {
                 _directoryService.DeleteFile(file);
             }
-        }
-
-        public IEnumerable<string> GetFiles(string path, string instrumentName, string filePattern)
-        {
-            return _directoryService.GetFiles(path, $"{instrumentName}{filePattern}");
         }
 
         public void UploadFileToBucket(string zipFilePath, string bucketName)
