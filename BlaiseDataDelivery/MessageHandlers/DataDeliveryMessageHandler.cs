@@ -43,7 +43,7 @@ namespace BlaiseDataDelivery.MessageHandlers
                     return true;
                 }
 
-                _logger.Info($"There are '{dataDeliveryFiles.Count}' available to deliver on server park {messageModel.ServerParkName}'");
+                _logger.Info($"There are '{dataDeliveryFiles.Count}' available files to deliver on server park {messageModel.ServerParkName}'");
 
                 //create encrypted zip file 
                 var encryptedZipFile = _fileService.CreateEncryptedZipFile(dataDeliveryFiles, messageModel);

@@ -30,10 +30,11 @@ namespace BlaiseDataDelivery.Services.Files
 
         public IEnumerable<string> CreateDeliveryFiles(string serverParkName, string instrumentName,  string outputPath)
         {
-            var files = new List<string>();
-            files.Add(_blaiseApi.CreateDataDeliveryFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName, instrumentName, outputPath));
-
-            return files;
+            return new List<string>
+            {
+                _blaiseApi.CreateDataDeliveryFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName,
+                    instrumentName, outputPath)
+            };
         }
 
         public string CreateEncryptedZipFile(IList<string> files, MessageModel messageModel)
