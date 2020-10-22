@@ -49,13 +49,13 @@
       <HintPath>..\packages\Blaise.Nuget.Api.2020.10.22.2\lib\net472\Blaise.Nuget.Api.Core.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Api, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.PubSub.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.PubSub.2020.7.29.1\lib\net472\Blaise.Nuget.PubSub.Api.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.7.29.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Core, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.PubSub.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Core.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.PubSub.2020.7.29.1\lib\net472\Blaise.Nuget.PubSub.Core.dll</HintPath>
     </Reference>
     <Reference Include="BouncyCastle.OpenPgp, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
       <HintPath>..\packages\BouncyCastle.OpenPgp.1.8.1.1\lib\net20\BouncyCastle.OpenPgp.dll</HintPath>

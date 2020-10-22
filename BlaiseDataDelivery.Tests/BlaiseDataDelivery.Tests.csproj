@@ -40,7 +40,7 @@
       <HintPath>..\packages\Blaise.Nuget.Api.Contracts.2020.10.22.2\lib\net472\Blaise.Nuget.Api.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Blaise.Nuget.PubSub.Contracts, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.10.9.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
+      <HintPath>..\packages\Blaise.Nuget.PubSub.Contracts.2020.7.29.1\lib\net472\Blaise.Nuget.PubSub.Contracts.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\packages\Castle.Core.4.4.0\lib\net45\Castle.Core.dll</HintPath>
