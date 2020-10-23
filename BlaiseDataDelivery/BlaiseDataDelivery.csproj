@@ -193,6 +193,9 @@
     <Reference Include="System.Interactive.Async, Version=3.2.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.Async.3.2.0\lib\net46\System.Interactive.Async.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Abstractions, Version=12.0.0.0, Culture=neutral, PublicKeyToken=96bf224d23c43e59, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Abstractions.12.0.5\lib\net461\System.IO.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="System.Management" />
     <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Memory.4.5.3\lib\netstandard2.0\System.Memory.dll</HintPath>
@@ -251,15 +254,15 @@
     <Compile Include="Interfaces\Mappers\IMessageModelMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
     <Compile Include="Interfaces\Providers\IStorageClientProvider.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileCloudStorageService.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileService.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileDirectoryService.cs" />
+    <Compile Include="Interfaces\Services\IBucketService.cs" />
+    <Compile Include="Interfaces\Services\IDeliveryService.cs" />
     <Compile Include="Interfaces\Services\IInitialiseService.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileEncryptionService.cs" />
-    <Compile Include="Interfaces\Services\Files\IFileZipService.cs" />
-    <Compile Include="Interfaces\Services\Queue\IQueueService.cs" />
+    <Compile Include="Interfaces\Services\IEncryptionService.cs" />
+    <Compile Include="Interfaces\Services\ICompressionService.cs" />
+    <Compile Include="Interfaces\Services\IQueueService.cs" />
+    <Compile Include="Interfaces\Services\IBlaiseService.cs" />
     <Compile Include="Mappers\MessageModelMapper.cs" />
-    <Compile Include="MessageHandlers\DataDeliveryMessageHandler.cs" />
+    <Compile Include="MessageHandlers\MessageHandler.cs" />
     <Compile Include="Models\MessageModel.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
@@ -270,15 +273,15 @@
     <Compile Include="Providers\ConfigurationProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
     <Compile Include="Providers\UnityProvider.cs" />
-    <Compile Include="Services\Files\FileService.cs" />
-    <Compile Include="Services\Files\FileDirectoryService.cs" />
+    <Compile Include="Services\DeliveryService.cs" />
     <Compile Include="Services\InitialiseService.cs" />
-    <Compile Include="Services\Files\FileEncryptionService.cs" />
-    <Compile Include="Services\Queue\QueueService.cs" />
+    <Compile Include="Services\EncryptionService.cs" />
+    <Compile Include="Services\QueueService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\Files\FileZipService.cs" />
-    <Compile Include="Services\Files\FileCloudStorageService.cs" />
+    <Compile Include="Services\CompressionService.cs" />
+    <Compile Include="Services\FileCloudStorageService.cs" />
+    <Compile Include="Services\BlaiseService.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -299,6 +302,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

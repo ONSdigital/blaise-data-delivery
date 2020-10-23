@@ -2,19 +2,16 @@
 
 using System;
 using System.Configuration;
+using System.IO.Abstractions;
 using Blaise.Nuget.Api;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using Blaise.Nuget.PubSub.Api;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Mappers;
 using BlaiseDataDelivery.Interfaces.Services;
-using BlaiseDataDelivery.Interfaces.Services.Files;
-using BlaiseDataDelivery.Interfaces.Services.Queue;
 using BlaiseDataDelivery.Mappers;
 using BlaiseDataDelivery.MessageHandlers;
 using BlaiseDataDelivery.Services;
-using BlaiseDataDelivery.Services.Files;
-using BlaiseDataDelivery.Services.Queue;
 using BlaiseDataDelivery.Interfaces.Providers;
 using log4net;
 using Unity;
@@ -43,10 +40,11 @@ namespace BlaiseDataDelivery.Providers
             _unityContainer.RegisterType<IMessageModelMapper, MessageModelMapper>();
 
             //services
-            _unityContainer.RegisterType<IFileService, FileService>();
-            _unityContainer.RegisterType<IFileDirectoryService, FileDirectoryService>();
-            _unityContainer.RegisterType<IFileEncryptionService, FileEncryptionService>();
-            _unityContainer.RegisterType<IFileZipService, FileZipService>();
+            _unityContainer.RegisterType<IBlaiseService, BlaiseService>();
+            _unityContainer.RegisterType<IFileSystem, FileSystem>();
+            _unityContainer.RegisterType<IDeliveryService, DeliveryService>();
+            _unityContainer.RegisterType<IEncryptionService, EncryptionService>();
+            _unityContainer.RegisterType<ICompressionService, CompressionService>();
 
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
@@ -58,11 +56,11 @@ namespace BlaiseDataDelivery.Providers
 
             //providers
             _unityContainer.RegisterType<IStorageClientProvider, StorageClientProvider>();
-            _unityContainer.RegisterType<IFileCloudStorageService, FileCloudStorageService>();
+            _unityContainer.RegisterType<IBucketService, BucketService>();
 
             //main service classes
             _unityContainer.RegisterType<IInitialiseService, InitialiseService>();
-            _unityContainer.RegisterType<IMessageHandler, DataDeliveryMessageHandler>();
+            _unityContainer.RegisterType<IMessageHandler, MessageHandler>();
         }
 
         public T Resolve<T>()

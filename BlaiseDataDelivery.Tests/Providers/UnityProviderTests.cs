@@ -1,6 +1,5 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Services;
-using BlaiseDataDelivery.Interfaces.Services.Files;
 using BlaiseDataDelivery.Providers;
 using NUnit.Framework;
 
@@ -57,11 +56,11 @@ namespace BlaiseDataDelivery.Tests.Providers
             var sut = new UnityProvider();
 
             //act
-            var result = sut.Resolve<IFileService>();
+            var result = sut.Resolve<IDeliveryService>();
 
             //assert
             Assert.NotNull(result);
-            Assert.IsInstanceOf<IFileService>(result);
+            Assert.IsInstanceOf<IDeliveryService>(result);
         }
     }
 }

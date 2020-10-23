@@ -1,10 +1,10 @@
 ﻿using System;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Providers;
-using BlaiseDataDelivery.Interfaces.Services.Queue;
+using BlaiseDataDelivery.Interfaces.Services;
 using log4net;
 
-namespace BlaiseDataDelivery.Services.Queue
+namespace BlaiseDataDelivery.Services
 {
     public class QueueService : IQueueService
     {

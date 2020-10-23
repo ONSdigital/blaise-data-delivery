@@ -2,7 +2,7 @@
 
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 
-namespace BlaiseDataDelivery.Interfaces.Services.Queue
+namespace BlaiseDataDelivery.Interfaces.Services
 {
     public interface IQueueService
     {

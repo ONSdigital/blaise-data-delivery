@@ -1,14 +1,14 @@
-﻿using BlaiseDataDelivery.Interfaces.Providers;
-using BlaiseDataDelivery.Interfaces.Services.Files;
-using System.IO;
+﻿using System.IO;
+using BlaiseDataDelivery.Interfaces.Providers;
+using BlaiseDataDelivery.Interfaces.Services;
 
-namespace BlaiseDataDelivery.Services.Files
+namespace BlaiseDataDelivery.Services
 {
-    public class FileCloudStorageService : IFileCloudStorageService
+    public class BucketService : IBucketService
     {
         private readonly IStorageClientProvider _storageClient;
 
-        public FileCloudStorageService(IStorageClientProvider storageClient)
+        public BucketService(IStorageClientProvider storageClient)
         {
             _storageClient = storageClient;
         }

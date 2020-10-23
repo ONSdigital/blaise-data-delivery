@@ -1,11 +1,11 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Providers;
-using BlaiseDataDelivery.Services.Queue;
+using BlaiseDataDelivery.Services;
 using log4net;
 using Moq;
 using NUnit.Framework;
 
-namespace BlaiseDataDelivery.Tests.Services.Queue
+namespace BlaiseDataDelivery.Tests.Services
 {
     public class QueueServiceTests
     {

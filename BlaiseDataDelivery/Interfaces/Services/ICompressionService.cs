@@ -1,9 +1,9 @@
 ﻿
 using System.Collections.Generic;
 
-namespace BlaiseDataDelivery.Interfaces.Services.Files
+namespace BlaiseDataDelivery.Interfaces.Services
 {
-    public interface IFileZipService
+    public interface ICompressionService
     {
         void CreateZipFile(IList<string> files, string filePath);
     }

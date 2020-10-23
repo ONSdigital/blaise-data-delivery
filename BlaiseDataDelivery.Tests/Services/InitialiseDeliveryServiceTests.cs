@@ -1,5 +1,5 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
-using BlaiseDataDelivery.Interfaces.Services.Queue;
+using BlaiseDataDelivery.Interfaces.Services;
 using BlaiseDataDelivery.Services;
 using log4net;
 using Moq;

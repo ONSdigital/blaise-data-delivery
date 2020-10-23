@@ -1,10 +1,9 @@
-﻿
+﻿using System;
 using BlaiseDataDelivery.Mappers;
 using BlaiseDataDelivery.Models;
 using NUnit.Framework;
-using System;
 
-namespace BlaiseDataDelivery.Tests.Services.Mappers
+namespace BlaiseDataDelivery.Tests.Mappers
 {
     public class MessageModelMapperTests
     {
@@ -20,7 +19,7 @@ namespace BlaiseDataDelivery.Tests.Services.Mappers
         public void Given_Valid_Arguments_When_I_Call_MapToMessageModel_Then_A_MessageModel_Is_Returned()
         {
             //arrange
-            const string message = @"{ ""source_instrument"":""OPN2004A"", ""source_serverpark"":""tel""}";
+            const string message = @"{ ""instrument"":""OPN2004A"", ""serverpark"":""tel""}";
 
             //act
             var result = _sut.MapToMessageModel(message);
@@ -34,7 +33,7 @@ namespace BlaiseDataDelivery.Tests.Services.Mappers
         public void Given_Valid_Arguments_When_I_Call_MapToMessageModel_Then_A_MessageModel_With_The_Correct_Data_Is_Returned()
         {
             //arrange
-            const string message = @"{ ""source_instrument"":""OPN2004A"", ""source_serverpark"":""tel""}";
+            const string message = @"{ ""instrument"":""OPN2004A"", ""serverpark"":""tel""}";
 
             //act
             var result = _sut.MapToMessageModel(message);

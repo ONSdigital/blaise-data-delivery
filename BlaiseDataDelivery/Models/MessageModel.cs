@@ -5,10 +5,10 @@ namespace BlaiseDataDelivery.Models
 {
     public class MessageModel
     {
-        [JsonProperty("source_instrument")]
+        [JsonProperty("instrument")]
         public string InstrumentName { get; set; }
 
-        [JsonProperty("source_serverpark")]
+        [JsonProperty("serverpark")]
         public string ServerParkName { get; set; }
     }
 }

@@ -1,20 +1,19 @@
-﻿
+﻿using System;
+using System.IO;
 using BlaiseDataDelivery.Helpers;
 using BlaiseDataDelivery.Interfaces.Providers;
-using BlaiseDataDelivery.Interfaces.Services.Files;
+using BlaiseDataDelivery.Interfaces.Services;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Security;
-using System;
-using System.IO;
 
-namespace BlaiseDataDelivery.Services.Files
+namespace BlaiseDataDelivery.Services
 {
-    public class FileEncryptionService : IFileEncryptionService
+    public class EncryptionService : IEncryptionService
     {
         private readonly IConfigurationProvider _configuration;
 
-        public FileEncryptionService(IConfigurationProvider configuration)
+        public EncryptionService(IConfigurationProvider configuration)
         {
             _configuration = configuration;
         }
