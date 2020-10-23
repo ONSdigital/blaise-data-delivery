@@ -30,6 +30,7 @@ namespace BlaiseDataDelivery.Tests.Services
             _logMock = new Mock<ILog>();
 
             _fileSystemMock = new Mock<IFileSystem>();
+            _fileSystemMock.Setup(f => f.File.Delete(It.IsAny<string>()));
 
             _sut = new DeliveryService(_encryptionServiceMock.Object, _compressionServiceMock.Object, _bucketServiceMock.Object, _logMock.Object, _fileSystemMock.Object);
         }
@@ -47,7 +48,6 @@ namespace BlaiseDataDelivery.Tests.Services
             _compressionServiceMock.Setup(f => f.CreateZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()));
             _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipFile = output);
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
-            _fileSystemMock.Setup(f => f.File.Delete(It.IsAny<string>()));
 
             //act
             _sut.UploadInstrumentFileToBucket(file, instrumentName, bucketName);

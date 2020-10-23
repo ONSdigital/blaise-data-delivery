@@ -17,13 +17,5 @@ namespace BlaiseDataDelivery.Helpers
                 throw new ArgumentException($"A value for the argument '{parameterName}' must be supplied");
             }
         }
-
-        public static void ThrowExceptionIfNull<T>(this T parameter, string parameterName)
-        {
-            if (parameter == null)
-            {
-                throw new ArgumentNullException($"The argument '{parameterName}' must be supplied");
-            }
-        }
     }
 }

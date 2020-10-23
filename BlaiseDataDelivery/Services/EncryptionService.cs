@@ -29,8 +29,11 @@ namespace BlaiseDataDelivery.Services
             EncryptFile(inputFilePath, outputFilePath, publicKey);
         }
 
-        private void EncryptFile(string inputFilePath, string outputFilePath, PgpPublicKey publicKey)
+        private static void EncryptFile(string inputFilePath, string outputFilePath, PgpPublicKey publicKey)
         {
+            outputFilePath.ThrowExceptionIfNullOrEmpty("outputFilePath");
+
+            // ReSharper disable once AssignNullToNotNullAttribute
             //create any folders that may not exist
             Directory.CreateDirectory(Path.GetDirectoryName(outputFilePath));
 
@@ -41,11 +44,11 @@ namespace BlaiseDataDelivery.Services
             }
         }
 
-        private void EncryptFile(Stream outputStream, string filePath, PgpPublicKey publicKey)
+        private static void EncryptFile(Stream outputStream, string filePath, PgpPublicKey publicKey)
         {
-            using (MemoryStream outputMemoryStream = new MemoryStream())
+            using (var outputMemoryStream = new MemoryStream())
             {
-                PgpCompressedDataGenerator compressedData = new PgpCompressedDataGenerator(CompressionAlgorithmTag.Zip);
+                var compressedData = new PgpCompressedDataGenerator(CompressionAlgorithmTag.Zip);
                 PgpUtilities.WriteFileToLiteralData(compressedData.Open(outputMemoryStream), PgpLiteralData.Binary, new FileInfo(filePath));
                 compressedData.Close();
 
@@ -60,12 +63,12 @@ namespace BlaiseDataDelivery.Services
             }
         }
 
-        private PgpPublicKey ReadPublicKey(string publicKeyFilePath)
+        private static PgpPublicKey ReadPublicKey(string publicKeyFilePath)
         {
             Stream keyFileStream = File.OpenRead(publicKeyFilePath);
             keyFileStream = PgpUtilities.GetDecoderStream(keyFileStream);
 
-            PgpPublicKeyRingBundle pgpPub = new PgpPublicKeyRingBundle(keyFileStream);
+            var pgpPub = new PgpPublicKeyRingBundle(keyFileStream);
 
             foreach (PgpPublicKeyRing keyRing in pgpPub.GetKeyRings())
                 foreach (PgpPublicKey key in keyRing.GetPublicKeys())

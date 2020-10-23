@@ -1,7 +1,6 @@
 ﻿
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Services;
-using log4net;
 
 namespace BlaiseDataDelivery.Services
 {

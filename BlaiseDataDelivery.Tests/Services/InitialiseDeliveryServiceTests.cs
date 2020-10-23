@@ -23,7 +23,6 @@ namespace BlaiseDataDelivery.Tests.Services
             _messageHandlerMock = new Mock<IMessageHandler>();
 
             _sut = new InitialiseService(
-                _loggerMock.Object, 
                 _subscriptionMock.Object, 
                 _messageHandlerMock.Object);
         }
