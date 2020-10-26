@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BlaiseDataDelivery.Interfaces.Mappers;
 using BlaiseDataDelivery.Interfaces.Providers;
 using BlaiseDataDelivery.Models;
@@ -37,8 +38,8 @@ namespace BlaiseDataDelivery.Tests.MessageHandler
         {
             _messageModel = new MessageModel
             {
-                ServerParkName = "SourcePath",
-                InstrumentName = "InstrumentName",
+                ServerParkName = "ServerPark1",
+                InstrumentName = "InstrumentName1",
             };
 
             _loggerMock = new Mock<ILog>();
@@ -51,7 +52,6 @@ namespace BlaiseDataDelivery.Tests.MessageHandler
             _mapperMock.Setup(m => m.MapToMessageModel(_message)).Returns(_messageModel);
 
             _deliveryServiceMock = new Mock<IDeliveryService>();
-            _deliveryServiceMock.Setup(f => f.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
             _blaiseServiceMock = new Mock<IBlaiseService>();
             _blaiseServiceMock.Setup(b => b.ServerParkExists(It.IsAny<string>())).Returns(true);
@@ -117,116 +117,70 @@ namespace BlaiseDataDelivery.Tests.MessageHandler
             _deliveryServiceMock.VerifyNoOtherCalls();
         }
 
-
         [Test]
-        public void Given_An_Instrument_Is_Provided_But_Does_Not_Exist_When_The_Message_Is_Handled_Then_False_Is_returned()
+        public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_The_Correct_Service_Is_Called()
         {
             //arrange
-            _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
-
-            //act
-            var result = _sut.HandleMessage(_message);
-
-            //assert
-            Assert.IsFalse(result);
-        }
-
-        [Test]
-        public void Given_An_Instrument_Is_Provided_But_Does_Not_Exist_When_The_Message_Is_Handled_Then_An_Error_Is_Logged_And_Nothing_Is_processed()
-        {
-            //arrange
-            _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
+            _deliveryServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>()));
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
-            _loggerMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
-            _blaiseServiceMock.Verify(b => b.ServerParkExists(_messageModel.ServerParkName), Times.Once);
-            _blaiseServiceMock.Verify(b => b.InstrumentExists(_messageModel.ServerParkName, _messageModel.InstrumentName), Times.Once);
-            _blaiseServiceMock.VerifyNoOtherCalls();
+            _deliveryServiceMock.Verify(v => v.DeliverSingleInstrument(_messageModel.ServerParkName,
+                _messageModel.InstrumentName, _localProcessFolder, _bucketName), Times.Once);
+
             _deliveryServiceMock.VerifyNoOtherCalls();
         }
 
-        [Test]
-        public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_True_Is_returned()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_The_Correct_Value_is_Returned(bool deliveryResult)
         {
             //arrange
-            var deliveryFile = "OPN2004A.bdbx";
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryFile);
-            _deliveryServiceMock.Setup(f => f.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            _deliveryServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryResult);
 
             //act
             var result = _sut.HandleMessage(_message);
 
             //assert
-            Assert.IsTrue(result);
+            Assert.AreEqual(deliveryResult, result);
         }
 
         [Test]
-        public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_The_Instrument_Is_Delivered()
+        public void Given_An_Instrument_Is__Not_Provided_When_The_Message_Is_Handled_Then_The_Correct_Service_Is_Called()
         {
             //arrange
-            var deliveryFile = "OPN2004A.bdbx";
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryFile);
-            _deliveryServiceMock.Setup(f => f.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            _messageModel.InstrumentName = null;
+            _deliveryServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>()));
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
-            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(_messageModel.ServerParkName, _messageModel.InstrumentName, _localProcessFolder), Times.Once);
-            _deliveryServiceMock.Verify(v => v.UploadInstrumentFileToBucket(deliveryFile, _messageModel.InstrumentName, _bucketName), Times.Once);
+            _deliveryServiceMock.Verify(v => v.DeliverAllInstruments(_messageModel.ServerParkName,
+                 _localProcessFolder, _bucketName), Times.Once);
+
+            _deliveryServiceMock.VerifyNoOtherCalls();
         }
 
-        [Test]
-        public void Given_An_Instrument_Is_Not_Provided_When_The_Message_Is_Handled_Then_True_Is_returned()
+        [TestCase(true)]
+        [TestCase(false)]
+        public void Given_An_Instrument_Is_Not_Provided_When_The_Message_Is_Handled_Then_The_Correct_Value_is_Returned(bool deliveryResult)
         {
             //arrange
             _messageModel.InstrumentName = null;
-            var instrumentName1 = "OPN2004A";
-            var deliveryFile1 = "OPN2004A.bdbx";
-
-            var instrumentName2 = "OPN2007";
-            var deliveryFile2 = "OPN2007.bdbx";
-
-            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string> { instrumentName1, instrumentName2 });
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName1, It.IsAny<string>())).Returns(deliveryFile1);
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName2, It.IsAny<string>())).Returns(deliveryFile2);
-            _deliveryServiceMock.Setup(f => f.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            _deliveryServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
+                It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryResult);
 
             //act
             var result = _sut.HandleMessage(_message);
 
             //assert
-            Assert.IsTrue(result);
-        }
-
-        [Test]
-        public void Given_An_Instrument_Is_Not_Provided_When_The_Message_Is_Handled_Then_All_Instruments_Are_Delivered_For_That_ServerPark()
-        {
-            //arrange
-            _messageModel.InstrumentName = null;
-            var instrumentName1 = "OPN2004A";
-            var deliveryFile1 = "OPN2004A.bdbx";
-
-            var instrumentName2 = "OPN2007";
-            var deliveryFile2 = "OPN2007.bdbx";
-
-            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string> { instrumentName1, instrumentName2 });
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName1, It.IsAny<string>())).Returns(deliveryFile1);
-            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName2, It.IsAny<string>())).Returns(deliveryFile2);
-            _deliveryServiceMock.Setup(f => f.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
-
-            //act
-            _sut.HandleMessage(_message);
-
-            //assert
-            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(_messageModel.ServerParkName, instrumentName1, _localProcessFolder), Times.Once);
-            _deliveryServiceMock.Verify(v => v.UploadInstrumentFileToBucket(deliveryFile1, instrumentName1, _bucketName), Times.Once);
-
-            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(_messageModel.ServerParkName, instrumentName2, _localProcessFolder), Times.Once);
-            _deliveryServiceMock.Verify(v => v.UploadInstrumentFileToBucket(deliveryFile2, instrumentName2, _bucketName), Times.Once);
+            Assert.AreEqual(deliveryResult, result);
         }
 
         [Test]
@@ -245,20 +199,32 @@ namespace BlaiseDataDelivery.Tests.MessageHandler
         }
 
         [Test]
-        public void Given_No_Instruments_Are_Installed_On_The_ServerPark_When_The_Message_Is_Handled_Then_An_Error_Is_Logged_And_No_Files_Are_Delivered()
+        public void Given_An_Exception_Is_Thrown_When_The_Message_Is_Handled_Then_False_is_Returned()
         {
             //arrange
-            _messageModel.InstrumentName = null;
+            _blaiseServiceMock.Setup(b => b.ServerParkExists(It.IsAny<string>())).Throws(new Exception());
 
-            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string>());
+            //act
+            var result =_sut.HandleMessage(_message);
+
+            //assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void Given_An_Exception_Is_Thrown_When_The_Message_Is_Handled_Then_An_Error_Is_Logged_And_Nothing_Is_processed()
+        {
+            //arrange
+            _blaiseServiceMock.Setup(b => b.ServerParkExists(It.IsAny<string>())).Throws(new Exception());
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
             _loggerMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
-            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-            _deliveryServiceMock.Verify(v => v.UploadInstrumentFileToBucket(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _blaiseServiceMock.Verify(b => b.ServerParkExists(_messageModel.ServerParkName), Times.Once);
+            _blaiseServiceMock.VerifyNoOtherCalls();
+            _deliveryServiceMock.VerifyNoOtherCalls();
         }
     }
 }

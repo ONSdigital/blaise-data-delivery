@@ -20,6 +20,7 @@ namespace BlaiseDataDelivery.Providers
         public string EncryptionKey => ConfigurationManager.AppSettings["EncryptionKey"];
 
         public string DeadletterTopicId => ConfigurationManager.AppSettings["DeadletterTopicId"];
+
         public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
     }
 }

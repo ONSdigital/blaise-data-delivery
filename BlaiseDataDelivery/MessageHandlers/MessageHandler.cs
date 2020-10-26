@@ -20,7 +20,7 @@ namespace BlaiseDataDelivery.MessageHandlers
             ILog logger,
             IConfigurationProvider configuration,
             IMessageModelMapper mapper,
-            IDeliveryService deliveryService, 
+            IDeliveryService deliveryService,
             IBlaiseService blaiseService)
         {
             _logger = logger;
@@ -51,56 +51,22 @@ namespace BlaiseDataDelivery.MessageHandlers
 
                 if (!string.IsNullOrWhiteSpace(messageModel.InstrumentName))
                 {
-                    return DeliverSingleInstrument(messageModel.ServerParkName, messageModel.InstrumentName);
+                    _logger.Info($"Instrument name '{messageModel.InstrumentName}' on server park '{messageModel.ServerParkName}' will be delivered");
+
+                    return _deliveryService.DeliverSingleInstrument(messageModel.ServerParkName, messageModel.InstrumentName,
+                        _configuration.LocalProcessFolder, _configuration.BucketName);
                 }
-                
+
                 _logger.Info($"No instrument name has been provided, all instruments on server park '{messageModel.ServerParkName}' will be delivered");
 
-                return DeliverAllInstruments(messageModel.ServerParkName);
+                return _deliveryService.DeliverAllInstruments(messageModel.ServerParkName,
+                    _configuration.LocalProcessFolder, _configuration.BucketName);
             }
             catch (Exception ex)
             {
                 _logger.Error($"An exception occurred in processing message {message} - {ex.Message}");
-
                 return false;
             }
-        }
-
-        private bool DeliverSingleInstrument(string serverParkName, string instrumentName)
-        {
-            if (!_blaiseService.InstrumentExists(serverParkName, instrumentName))
-            {
-                _logger.Error($"The instrument '{instrumentName}' does not exist on server park '{serverParkName}'");
-                return false;
-            }
-
-            DeliverInstrument(serverParkName, instrumentName);
-
-            return true;
-        }
-
-        private bool DeliverAllInstruments(string serverParkName)
-        {
-            var instrumentsInstalled = _blaiseService.GetInstrumentsInstalled(serverParkName).ToList();
-
-            if (!instrumentsInstalled.Any())
-            {
-                _logger.Error($"The server park '{serverParkName}' does not have any instruments installed");
-                return false;
-            }
-
-            foreach (var instrument in instrumentsInstalled)
-            {
-                DeliverInstrument(serverParkName, instrument);
-            }
-
-            return true;
-        }
-
-        private void DeliverInstrument(string serverParkName, string instrumentName)
-        {
-            var deliveryFile = _blaiseService.CreateDeliveryFile(serverParkName, instrumentName, _configuration.LocalProcessFolder);
-            _deliveryService.UploadInstrumentFileToBucket(deliveryFile, instrumentName, _configuration.BucketName);
         }
     }
 }

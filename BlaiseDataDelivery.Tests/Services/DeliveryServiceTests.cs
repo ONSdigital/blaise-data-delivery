@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Abstractions;
+﻿using System.Collections.Generic;
 using BlaiseDataDelivery.Interfaces.Services;
 using BlaiseDataDelivery.Services;
 using log4net;
@@ -11,28 +9,216 @@ namespace BlaiseDataDelivery.Tests.Services
 {
     public class DeliveryServiceTests
     {
-        private Mock<IEncryptionService> _encryptionServiceMock;
-        private Mock<ICompressionService> _compressionServiceMock;
-        private Mock<IBucketService> _bucketServiceMock;
         private Mock<ILog> _logMock;
-        private Mock<IFileSystem> _fileSystemMock;
+        private Mock<IBucketService> _bucketServiceMock;
+        private Mock<IFileService> _fileServiceMock;
+        private Mock<IBlaiseService> _blaiseServiceMock;
 
         private DeliveryService _sut;
 
         [SetUp]
         public void SetUpTests()
         {
-
-            _encryptionServiceMock = new Mock<IEncryptionService>();
-            _compressionServiceMock = new Mock<ICompressionService>();
-            _bucketServiceMock = new Mock<IBucketService>();
-
             _logMock = new Mock<ILog>();
+            _bucketServiceMock = new Mock<IBucketService>();
+            _fileServiceMock = new Mock<IFileService>();
 
-            _fileSystemMock = new Mock<IFileSystem>();
-            _fileSystemMock.Setup(f => f.File.Delete(It.IsAny<string>()));
+            _blaiseServiceMock = new Mock<IBlaiseService>();
+            _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(true);
 
-            _sut = new DeliveryService(_encryptionServiceMock.Object, _compressionServiceMock.Object, _bucketServiceMock.Object, _logMock.Object, _fileSystemMock.Object);
+            _sut = new DeliveryService(_logMock.Object, _bucketServiceMock.Object, _fileServiceMock.Object, _blaiseServiceMock.Object);
+        }
+
+        [Test]
+        public void Given_An_Instrument_Exists_When_DeliverSingleInstrument_Is_Called_Then_True_Is_returned()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var instrumentName = "InstrumentName1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>())).Returns(It.IsAny<string>());
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+                .Returns(It.IsAny<string>());
+            _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
+
+            //act
+            var result = _sut.DeliverSingleInstrument(serverParkName, instrumentName, tempPath, bucketName);
+
+            //assert
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void Given_An_Instrument_Exists_When_DeliverSingleInstrument_Is_Called_Then_The_Instrument_Is_Delivered()
+        {
+            var serverParkName = "ServerPark1";
+            var instrumentName = "InstrumentName1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+            var encryptedZipFile = "encryptedFile.zip";
+
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<string>())).Returns(It.IsAny<string>());
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+                .Returns(encryptedZipFile);
+            _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
+
+            //act
+            _sut.DeliverSingleInstrument(serverParkName, instrumentName, tempPath, bucketName);
+
+            //assert
+            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(serverParkName, instrumentName, tempPath), Times.Once);
+            _bucketServiceMock.Verify(v => v.UploadFileToBucket(encryptedZipFile, bucketName), Times.Once);
+        }
+
+        [Test]
+        public void Given_An_Instrument_Does_Not_Exist_When_DeliverSingleInstrument_Is_Called_Then_False_Is_Returned()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var instrumentName = "InstrumentName1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(false);
+
+            //act
+            var result = _sut.DeliverSingleInstrument(serverParkName, instrumentName, tempPath, bucketName);
+
+            //assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void Given_An_Instrument_Does_Not_Exist_When_DeliverSingleInstrument_Is_Called_Then_An_Error_is_Logged_And_No_Files_Are_Delivered()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var instrumentName = "InstrumentName1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>()))
+                .Returns(false);
+
+            //act
+            _sut.DeliverSingleInstrument(serverParkName, instrumentName, tempPath, bucketName);
+
+            //assert
+            _logMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
+            _blaiseServiceMock.Verify(v => v.InstrumentExists(serverParkName, instrumentName), Times.Once);
+            _blaiseServiceMock.VerifyNoOtherCalls();
+            _fileServiceMock.VerifyNoOtherCalls();
+            _bucketServiceMock.VerifyNoOtherCalls();
+        }
+
+        [Test]
+        public void Given_Instruments_Are_Installed_When_DeliverAllInstruments_Is_Called_Then_True_Is_returned()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            var instrumentName1 = "OPN2004A";
+            var deliveryFile1 = "OPN2004A.bdbx";
+
+            var instrumentName2 = "OPN2007";
+            var deliveryFile2 = "OPN2007.bdbx";
+
+            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string> { instrumentName1, instrumentName2 });
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName1, It.IsAny<string>())).Returns(deliveryFile1);
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName2, It.IsAny<string>())).Returns(deliveryFile2);
+
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+                .Returns(It.IsAny<string>());
+            _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
+
+            //act
+            var result = _sut.DeliverAllInstruments(serverParkName, tempPath, bucketName);
+
+            //assert
+            Assert.IsTrue(result);
+        }
+
+        [Test]
+        public void Given_Instruments_Are_Installed_When_DeliverAllInstruments_Is_Called_Then_All_Instruments_Are_Delivered_For_That_ServerPark()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            var instrumentName1 = "OPN2004A";
+            var deliveryFile1 = "OPN2004A.bdbx";
+
+            var instrumentName2 = "OPN2007";
+            var deliveryFile2 = "OPN2007.bdbx";
+
+            var encryptedZipFile1 = "encryptedFile1.zip";
+            var encryptedZipFile2 = "encryptedFile2.zip";
+
+            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string> { instrumentName1, instrumentName2 });
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName1, It.IsAny<string>())).Returns(deliveryFile1);
+            _blaiseServiceMock.Setup(b => b.CreateDeliveryFile(It.IsAny<string>(), instrumentName2, It.IsAny<string>())).Returns(deliveryFile2);
+
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), instrumentName1))
+                .Returns(encryptedZipFile1);
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), instrumentName2))
+                .Returns(encryptedZipFile2);
+
+            _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
+
+            //act
+            _sut.DeliverAllInstruments(serverParkName, tempPath, bucketName);
+
+            //assert
+            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(serverParkName, instrumentName1, tempPath), Times.Once);
+            _bucketServiceMock.Verify(v => v.UploadFileToBucket(encryptedZipFile1, bucketName), Times.Once);
+
+            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(serverParkName, instrumentName2, tempPath), Times.Once);
+            _bucketServiceMock.Verify(v => v.UploadFileToBucket(encryptedZipFile2, bucketName), Times.Once);
+        }
+
+        [Test]
+        public void Given_Instruments_Are_Not_Installed_When_DeliverAllInstruments_Is_Called_Then_False_Is_Returned()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string>());
+
+            //act
+            var result = _sut.DeliverAllInstruments(serverParkName, tempPath, bucketName);
+
+            //assert
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public void Given_Instruments_Are_Not_Installed_When_DeliverAllInstruments_Is_Called_Then_An_Error_Is_Logged_And_No_Files_Are_Delivered()
+        {
+            //arrange
+            var serverParkName = "ServerPark1";
+            var tempPath = "TempPath";
+            var bucketName = "BucketName";
+
+            _blaiseServiceMock.Setup(b => b.GetInstrumentsInstalled(It.IsAny<string>())).Returns(new List<string>());
+
+            //act
+            _sut.DeliverAllInstruments(serverParkName, tempPath, bucketName);
+
+            //assert
+            _logMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
+            _blaiseServiceMock.Verify(v => v.CreateDeliveryFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            _bucketServiceMock.Verify(v => v.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
         }
 
         [Test]
@@ -43,62 +229,40 @@ namespace BlaiseDataDelivery.Tests.Services
             var instrumentName = "InstrumentName";
             var bucketName = "BucketName";
 
-            var encryptedZipFile = string.Empty;
+            var encryptedZipFile = "encryptedFile.zip";
 
-            _compressionServiceMock.Setup(f => f.CreateZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()));
-            _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipFile = output);
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+                .Returns(encryptedZipFile);
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
             //act
             _sut.UploadInstrumentFileToBucket(file, instrumentName, bucketName);
 
             //assert
-            _compressionServiceMock.Verify(v => v.CreateZipFile(It.IsAny<List<string>>(), It.IsAny<string>()), Times.Once);
-            _encryptionServiceMock.Verify(v => v.EncryptFile(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _fileServiceMock.Verify(v => v.CreateEncryptedZipFile(It.IsAny<List<string>>(), It.IsAny<string>()), Times.Once);
             _bucketServiceMock.Verify(v => v.UploadFileToBucket(encryptedZipFile, bucketName));
-            _fileSystemMock.Verify(v => v.File.Delete(encryptedZipFile));
         }
 
         [Test]
-        public void Given_Valid_Arguments_When_I_Call_CreateEncryptedZipFiles_Then_I_Get_The_Path_Of_The_Encrypted_Zip_Back()
+        public void Given_Valid_Arguments_When_I_Call_UploadInstrumentFileToBucket_Then_The_Temp_Files_Are_Deleted()
         {
             //arrange
-            var files = new List<string> { "File1", "File2" };
+            var file = "File1";
             var instrumentName = "InstrumentName";
+            var bucketName = "BucketName";
 
-            var encryptedZipPath = string.Empty;
+            var encryptedZipFile = "encryptedFile.zip";
 
-            _compressionServiceMock.Setup(f => f.CreateZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()));
-            _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipPath = output);
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+                .Returns(encryptedZipFile);
+            _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
             //act
-            var result = _sut.CreateEncryptedZipFile(files, instrumentName);
+            _sut.UploadInstrumentFileToBucket(file, instrumentName, bucketName);
 
             //assert
-            Assert.NotNull(result);
-            Assert.IsInstanceOf<string>(result);
-            Assert.AreEqual(encryptedZipPath, result);
-        }
-
-        [Test]
-        public void Given_Valid_Arguments_When_I_Call_CreateEncryptedZipFiles_Then_The_Correct_Methods_Are_Called()
-        {
-            //arrange
-            var files = new List<string> { "File1", "File2" };
-            var instrumentName = "InstrumentName";
-
-            var tempZipPath = string.Empty;
-            var encryptedZipPath = string.Empty;
-
-            _compressionServiceMock.Setup(f => f.CreateZipFile(It.IsAny<IList<string>>(), It.IsAny<string>())).Callback<IEnumerable<string>, string>((input, output) => tempZipPath = output);
-            _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipPath = output);
-
-            //act
-            _sut.CreateEncryptedZipFile(files, instrumentName);
-
-            //assert
-            _compressionServiceMock.Verify(v => v.CreateZipFile(files, tempZipPath), Times.Once);
-            _encryptionServiceMock.Verify(v => v.EncryptFile(tempZipPath, encryptedZipPath), Times.Once);
+            _fileServiceMock.Verify(v => v.DeleteFile(encryptedZipFile), Times.Once);
+            _fileServiceMock.Verify(v => v.DeleteFile(file), Times.Once);
         }
 
         [Test]
@@ -116,54 +280,6 @@ namespace BlaiseDataDelivery.Tests.Services
 
             //assert
             _bucketServiceMock.Verify(v => v.UploadFileToBucket(file, bucketName), Times.Once);
-        }
-
-        [Test]
-        public void Given_Valid_Arguments_When_I_Call_GenerateUniqueFileName_Then_I_Get_The_Expected_Format_Back()
-        {
-            //arrange
-            var expectedFileName = "dd_OPN2004A_08402020_034000";
-
-            var instrumentName = "OPN2004A";
-            var dateTime = DateTime.ParseExact("2020-04-08 15:40:00,000", "yyyy-MM-dd HH:mm:ss,fff",
-                                       System.Globalization.CultureInfo.InvariantCulture);
-
-            //act
-            var result = _sut.GenerateUniqueFileName(instrumentName, dateTime);
-
-            //assert
-            Assert.NotNull(result);
-            Assert.IsInstanceOf<string>(result);
-            Assert.AreEqual(expectedFileName, result);
-        }
-
-        [Test]
-        public void Given_Valid_Arguments_When_I_Call_DeleteFiles_Then_The_Correct_Method_Is_Called()
-        {
-            //arrange
-            var files = new List<string> { "File1", "File2" };
-
-            //act
-            _sut.DeleteFiles(files);
-
-            //assert
-            foreach (var file in files)
-            {
-                _fileSystemMock.Verify(v => v.File.Delete(file), Times.Once);
-            }
-        }
-
-        [Test]
-        public void Given_Valid_Arguments_When_I_Call_DeleteFile_Then_The_Correct_Method_Is_Called()
-        {
-            //arrange
-            var file = "File1";
-
-            //act
-            _sut.DeleteFile(file);
-
-            //assert
-            _fileSystemMock.Verify(v => v.File.Delete(file), Times.Once);
         }
     }
 }

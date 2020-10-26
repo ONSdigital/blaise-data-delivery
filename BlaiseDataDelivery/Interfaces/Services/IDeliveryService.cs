@@ -2,6 +2,9 @@
 {
     public interface IDeliveryService
     {
-        void UploadInstrumentFileToBucket(string filePath, string instrumentName, string bucketName);
+        bool DeliverSingleInstrument(string serverParkName, string instrumentName, string tempFilePath,
+            string bucketName);
+
+        bool DeliverAllInstruments(string serverParkName, string tempFilePath, string bucketName);
     }
 }

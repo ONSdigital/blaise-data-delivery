@@ -41,10 +41,11 @@ namespace BlaiseDataDelivery.Providers
 
             //services
             _unityContainer.RegisterType<IBlaiseService, BlaiseService>();
-            _unityContainer.RegisterType<IFileSystem, FileSystem>();
             _unityContainer.RegisterType<IDeliveryService, DeliveryService>();
+            _unityContainer.RegisterType<IFileSystem, FileSystem>();
             _unityContainer.RegisterType<IEncryptionService, EncryptionService>();
             _unityContainer.RegisterType<ICompressionService, CompressionService>();
+            _unityContainer.RegisterType<IFileService,FileService>();
 
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
