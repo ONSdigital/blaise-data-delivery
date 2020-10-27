@@ -1,4 +1,5 @@
-﻿using BlaiseDataDelivery.Providers;
+﻿using System.Configuration;
+using BlaiseDataDelivery.Providers;
 using NUnit.Framework;
 
 namespace BlaiseDataDelivery.Tests.Providers
@@ -10,94 +11,102 @@ namespace BlaiseDataDelivery.Tests.Providers
         /// </summary>
 
         [Test]
-        public void Given_I_Call_ProjectId_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_ProjectId_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.ProjectId;
-
-            //assert
-            Assert.AreEqual("ProjectIdTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.ProjectId;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_PROJECT_ID'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_SubscriptionTopicId_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_SubscriptionId_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.SubscriptionTopicId;
-
-            //assert
-            Assert.AreEqual("SubscriptionTopicIdTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.SubscriptionId;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_BDD_SUB_SUBS'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_SubscriptionId_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_BucketName_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.SubscriptionId;
-
-            //assert
-            Assert.AreEqual("SubscriptionIdTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.BucketName;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_NCP_BUCKET_NAME'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_DeadletterTopicId_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_EncryptionKey_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.DeadletterTopicId;
-
-            //assert
-            Assert.AreEqual("DeadletterTopicIdTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.EncryptionKey;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_BDD_PUBLIC_KEY'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_BucketName_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_LocalProcessFolder_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.BucketName;
-
-            //assert
-            Assert.AreEqual("BucketNameTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.LocalProcessFolder;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_BDD_LOCAL_PROCESS_DIR'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_EncryptionKey_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_DeadletterTopicId_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.EncryptionKey;
-
-            //assert
-            Assert.AreEqual("EncryptionKeyTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.DeadletterTopicId;
+            });
+            Assert.AreEqual($"No value found for environment variable 'ENV_DEADLETTER_TOPIC'", exception.Message);
         }
 
         [Test]
-        public void Given_I_Call_LocalProcessFolder_I_Get_The_Correct_Value_Back()
+        public void Given_I_Call_VmName_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
         {
             //arrange
             var configurationProvider = new ConfigurationProvider();
 
-            //act
-            var result = configurationProvider.LocalProcessFolder;
-
-            //assert
-            Assert.AreEqual("LocalProcessFolderTest", result);
+            //act && assert
+            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
+            {
+                var result = configurationProvider.VmName;
+            });
+            Assert.AreEqual($"No value found for environment variable 'VmName'", exception.Message);
         }
     }
 }
+

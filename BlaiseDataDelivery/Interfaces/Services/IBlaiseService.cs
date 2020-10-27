@@ -9,10 +9,7 @@ namespace BlaiseDataDelivery.Interfaces.Services
         bool InstrumentExists(string serverParkName, string instrumentName);
 
         IEnumerable<string> GetInstrumentsInstalled(string serverParkName);
-
-
-        string CreateDeliveryFile(string serverParkName, string instrumentName, string outputPath);
-
-        IEnumerable<string> CreateDeliveryFiles(string serverParkName, string outputPath);
+        
+        void CreateDeliveryFiles(string serverParkName, string instrumentName, string outputPath);
     }
 }

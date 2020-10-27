@@ -1,7 +1,6 @@
 ﻿using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using BlaiseDataDelivery.Interfaces.Services;
 using BlaiseDataDelivery.Services;
-using log4net;
 using Moq;
 using NUnit.Framework;
 
@@ -9,7 +8,6 @@ namespace BlaiseDataDelivery.Tests.Services
 {
     public class InitialiseDeliveryServiceTests
     {
-        private Mock<ILog> _loggerMock;
         private Mock<IQueueService> _subscriptionMock;
         private Mock<IMessageHandler> _messageHandlerMock;
 
@@ -18,7 +16,6 @@ namespace BlaiseDataDelivery.Tests.Services
         [SetUp]
         public void SetUpTests()
         {
-            _loggerMock = new Mock<ILog>();
             _subscriptionMock = new Mock<IQueueService>();
             _messageHandlerMock = new Mock<IMessageHandler>();
 

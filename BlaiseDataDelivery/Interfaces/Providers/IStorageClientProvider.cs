@@ -6,5 +6,7 @@ namespace BlaiseDataDelivery.Interfaces.Providers
     public interface IStorageClientProvider
     {
         StorageClient GetStorageClient();
+
+        void Dispose();
     }
 }

@@ -29,7 +29,6 @@ namespace BlaiseDataDelivery.Providers
             //register dependencies
             _unityContainer.RegisterSingleton<IFluentQueueApi, FluentQueueApi>();
             _unityContainer.RegisterFactory<ILog>(f => LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType));
-            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
 
             _unityContainer.RegisterType<IQueueService, QueueService>();
 
@@ -50,9 +49,13 @@ namespace BlaiseDataDelivery.Providers
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.
 #if (DEBUG)
+            // When running in Release, the service will be running as compute account which will have access to all buckets. In test we need to get credentials
             var credentialKey = ConfigurationManager.AppSettings["GOOGLE_APPLICATION_CREDENTIALS"];
-
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", credentialKey);
+
+            _unityContainer.RegisterType<IConfigurationProvider, LocalConfigurationProvider>();
+#else
+            _unityContainer.RegisterType<IConfigurationProvider, ConfigurationProvider>();
 #endif
 
             //providers

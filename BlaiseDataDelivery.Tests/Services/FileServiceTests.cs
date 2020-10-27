@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
+using System.Linq;
 using BlaiseDataDelivery.Interfaces.Services;
 using BlaiseDataDelivery.Services;
-using log4net;
 using Moq;
 using NUnit.Framework;
 
@@ -114,6 +114,51 @@ namespace BlaiseDataDelivery.Tests.Services
 
             //assert
             _fileSystemMock.Verify(v => v.File.Delete(file), Times.Once);
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_GetFiles_Then_The_Correct_Method_Is_Called()
+        {
+            //arrange
+            var filePath = "File1";
+
+            var files = new List<string>
+            {
+                "File1",
+                "File2"
+            };
+
+            _fileSystemMock.Setup(f => f.Directory.GetFiles(filePath)).Returns(files.ToArray());
+
+            //act
+            _sut.GetFiles(filePath);
+
+            //assert
+            _fileSystemMock.Verify(v => v.Directory.GetFiles(filePath), Times.Once);
+        }
+
+        [Test]
+        public void Given_Valid_Arguments_When_I_Call_GetFiles_Then_The_Correct_File_Are_Returned()
+        {
+            //arrange
+            var filePath = "File1";
+
+            var files = new List<string>
+            {
+                "File1",
+                "File2"
+            };
+
+            _fileSystemMock.Setup(f => f.Directory.GetFiles(filePath)).Returns(files.ToArray());
+
+            //act
+            var result =_sut.GetFiles(filePath).ToList();
+
+            //assert
+           Assert.IsNotNull(result);
+           Assert.IsNotEmpty(result);
+           Assert.AreEqual(2, result.Count);
+           Assert.AreEqual(files, result);
         }
     }
 }

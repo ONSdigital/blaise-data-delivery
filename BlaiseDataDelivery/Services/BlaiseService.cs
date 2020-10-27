@@ -33,32 +33,14 @@ namespace BlaiseDataDelivery.Services
 
         public bool InstrumentExists(string serverParkName, string instrumentName)
         {
-            return true;
+            return _blaiseApi.SurveyExists(_blaiseApi.GetDefaultConnectionModel(), instrumentName, serverParkName);
         }
 
-        public string CreateDeliveryFile(string serverParkName, string instrumentName, string outputPath)
+        public void CreateDeliveryFiles(string serverParkName, string instrumentName, string outputPath)
         {
             _logger.Info($"Created delivery file for instrument '{instrumentName}'");
-            return _blaiseApi.CreateDataDeliveryFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName, instrumentName, outputPath);
-        }
 
-        public IEnumerable<string> CreateDeliveryFiles(string serverParkName, string outputPath)
-        {
-            var deliveryFiles = new List<string>();
-            var instruments = _blaiseApi.GetSurveys(_blaiseApi.GetDefaultConnectionModel(), serverParkName).ToList();
-
-            if (!instruments.Any())
-            {
-                _logger.Warn($"There are no surveys installed on server park '{serverParkName}'");
-                return deliveryFiles;
-            }
-
-            foreach (var instrument in instruments)
-            {
-                deliveryFiles.Add(CreateDeliveryFile(serverParkName, instrument.Name, outputPath));
-            }
-            
-            return deliveryFiles;
+            _blaiseApi.BackupSurveyToFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName, instrumentName, outputPath);
         }
     }
 }

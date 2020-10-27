@@ -1,26 +1,31 @@
 ﻿using System;
 using BlaiseDataDelivery.Interfaces.Providers;
-using System.Configuration;
+using BlaiseNisraCaseProcessor.Extensions;
 
 namespace BlaiseDataDelivery.Providers
 {
     public class ConfigurationProvider : IConfigurationProvider
     {
-        public string ProjectId => Environment.GetEnvironmentVariable("ENV_PROJECT_ID", EnvironmentVariableTarget.Machine)
-                                   ?? ConfigurationManager.AppSettings["ProjectId"];
+        public string ProjectId => GetVariable("ENV_PROJECT_ID");
+        
+        public string SubscriptionId => GetVariable("ENV_BDD_SUB_SUBS");
 
-        public string SubscriptionTopicId => ConfigurationManager.AppSettings["SubscriptionTopicId"];
+        public string EncryptionKey => GetVariable("ENV_BDD_PUBLIC_KEY");
 
-        public string SubscriptionId => ConfigurationManager.AppSettings["SubscriptionId"];
+        public string DeadletterTopicId => GetVariable("ENV_DEADLETTER_TOPIC");
 
-        public string VmName => Environment.MachineName;
+        public string LocalProcessFolder => GetVariable("ENV_BDD_LOCAL_PROCESS_DIR");
 
-        public string BucketName => ConfigurationManager.AppSettings["BucketName"];
+        public string BucketName => GetVariable("ENV_NCP_BUCKET_NAME");
+        public string VmName => GetVariable("VmName");
 
-        public string EncryptionKey => ConfigurationManager.AppSettings["EncryptionKey"];
+        private static string GetVariable(string variableName)
+        {
+            var value = Environment.GetEnvironmentVariable(variableName, EnvironmentVariableTarget.Machine);
 
-        public string DeadletterTopicId => ConfigurationManager.AppSettings["DeadletterTopicId"];
+            value.ThrowExceptionIfNull(variableName);
 
-        public string LocalProcessFolder => ConfigurationManager.AppSettings["LocalProcessFolder"];
+            return value;
+        }
     }
 }

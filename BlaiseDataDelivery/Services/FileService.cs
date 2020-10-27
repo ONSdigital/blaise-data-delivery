@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using BlaiseDataDelivery.Interfaces.Services;
-using log4net;
 
 namespace BlaiseDataDelivery.Services
 {
@@ -48,6 +47,11 @@ namespace BlaiseDataDelivery.Services
             {
                 _fileSystem.File.Delete(file);
             }
+        }
+
+        public IEnumerable<string> GetFiles(string filePath)
+        {
+            return _fileSystem.Directory.GetFiles(filePath);
         }
 
         public string GenerateUniqueFileName(string instrumentName, DateTime dateTime)

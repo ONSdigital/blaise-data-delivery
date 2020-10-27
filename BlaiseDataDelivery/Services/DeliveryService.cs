@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using BlaiseDataDelivery.Interfaces.Services;
 using log4net;
 
@@ -54,9 +53,10 @@ namespace BlaiseDataDelivery.Services
             return true;
         }
 
-        public void UploadInstrumentFileToBucket(string filePath, string instrumentName, string bucketName)
+        public void UploadInstrumentFilesToBucket(string filePath, string instrumentName, string bucketName)
         {
-            var encryptedZipFile = _fileService.CreateEncryptedZipFile(new List<string>{ filePath }, instrumentName);
+            var instrumentFiles = _fileService.GetFiles(filePath).ToList();
+            var encryptedZipFile = _fileService.CreateEncryptedZipFile(instrumentFiles, instrumentName);
             _logger.Info($"Encrypted files into the zip file '{encryptedZipFile}'");
 
             //upload the zip to bucket
@@ -65,19 +65,21 @@ namespace BlaiseDataDelivery.Services
 
             //clean up files
             _fileService.DeleteFile(encryptedZipFile);
-            _fileService.DeleteFile(filePath);
+            _fileService.DeleteFiles(instrumentFiles);
             _logger.Info("Cleaned up the temporary files");
         }
 
-        public void UploadFileToBucket(string zipFilePath, string bucketName)
+        private void UploadFileToBucket(string zipFilePath, string bucketName)
         {
             _bucketService.UploadFileToBucket(zipFilePath, bucketName);
         }
 
         private void DeliverInstrument(string serverParkName, string instrumentName, string tempFilePath, string bucketName)
         {
-            var deliveryFile = _blaiseService.CreateDeliveryFile(serverParkName, instrumentName, tempFilePath);
-            UploadInstrumentFileToBucket(deliveryFile, instrumentName, bucketName);
+            var outputPath = $"{tempFilePath}\\{instrumentName}";
+
+            _blaiseService.CreateDeliveryFiles(serverParkName, instrumentName, outputPath);
+            UploadInstrumentFilesToBucket(outputPath, instrumentName, bucketName);
         }
     }
 }

@@ -9,5 +9,7 @@ namespace BlaiseDataDelivery.Interfaces.Services
         void DeleteFile(string filePath);
 
         void DeleteFiles(IEnumerable<string> files);
+
+        IEnumerable<string> GetFiles(string filePath);
     }
 }

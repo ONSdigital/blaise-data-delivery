@@ -80,7 +80,7 @@ namespace BlaiseDataDelivery.Services
                     }
                 }
 
-            throw new ArgumentException("Can't find encryption key in key ring of the public key held at '{publicKeyFilePath}'");
+            throw new ArgumentException($"Can't find encryption key in key ring of the public key held at '{publicKeyFilePath}'");
         }
     }
 }

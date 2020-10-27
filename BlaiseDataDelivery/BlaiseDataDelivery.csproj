@@ -250,6 +250,7 @@
     <Compile Include="BlaiseDataDelivery.Designer.cs">
       <DependentUpon>BlaiseDataDelivery.cs</DependentUpon>
     </Compile>
+    <Compile Include="Extensions\ConfigurationExtensionMethods.cs" />
     <Compile Include="Helpers\ParameterValidationHelper.cs" />
     <Compile Include="Interfaces\Mappers\IMessageModelMapper.cs" />
     <Compile Include="Interfaces\Providers\IConfigurationProvider.cs" />
@@ -271,6 +272,7 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Providers\ConfigurationProvider.cs" />
+    <Compile Include="Providers\LocalConfigurationProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
     <Compile Include="Providers\UnityProvider.cs" />
     <Compile Include="Services\DeliveryService.cs" />

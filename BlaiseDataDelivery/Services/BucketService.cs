@@ -23,6 +23,8 @@ namespace BlaiseDataDelivery.Services
             {
                 bucket.UploadObject(bucketName, fileName, null, streamWriter.BaseStream);
             }
+
+            _storageClient.Dispose();
         }
     }
 }
