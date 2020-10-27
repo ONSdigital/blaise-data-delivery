@@ -11,23 +11,25 @@ Populate the key values in the app.config file accordingly. **Never commit app.c
 
 Build the solution to obtain the necessary references.
 
-# Example Message - Server Source
+# Example Message 
 
 ```
 {
-  "source_instrument":"OPN1911a"
-  ,"source_file":"C:\\Blaise_Final_Data\\"
+  "instrument":"OPN1911A"
+  ,"serverpark":"TEL"
 }                  
+```
+If you don't provide an instrument, all instruments will be deplpoyed that are installed on the serverpark 
+
+```
+{
+	"serverpark":"TEL"
+}  
 ```
 
 #Topics & Subscriptions
 
-This service needs to listen to messages put on the 'data-delivery-topic'. It does this by creating a subscription to this topic. There is an existing subscription called 'data-delivery-subscription', and even though
-this service is only installed on TEL at present it could be installed on multiple VMs and therefore will need to create a subscription on initialisation in order for it to receive every message published to the 'data-delivery-subscription'. 
-If all the services listened to the same subscription 'data-delivery-subscription' the the messages would be shared between the services, and as each service will have access to different server parks on the different VMs 
-this would result in data loss. Each subscription created will consist of the subscription name 'data-delivery-subscription' suffixed with the VM name i.e. 'data-delivery-subscription-TEL-C0C0C0'.
-
-This service does not publish messages.
+This service needs to listen to messages put on the 'data-delivery-topic'. It does this by subscribing to a subscription called 'data-delivery-subscription'.
 
 #debugging
 Due to the nature of the GCP pubsub implementation, it will be listening on a worker thread. If you wish to debug the service locally you will
