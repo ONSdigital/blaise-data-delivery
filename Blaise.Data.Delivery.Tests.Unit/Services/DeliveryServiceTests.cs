@@ -41,7 +41,8 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
 
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>()));
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(It.IsAny<string>());
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
@@ -63,7 +64,8 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
 
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>()));
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(encryptedZipFile);
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
@@ -132,7 +134,8 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), instrumentName1, It.IsAny<string>()));
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), instrumentName2, It.IsAny<string>()));
 
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(It.IsAny<string>());
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
@@ -161,9 +164,11 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), instrumentName1, It.IsAny<string>()));
             _blaiseServiceMock.Setup(b => b.CreateDeliveryFiles(It.IsAny<string>(), instrumentName2, It.IsAny<string>()));
 
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), instrumentName1))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(),
+                    instrumentName1, It.IsAny<string>()))
                 .Returns(encryptedZipFile1);
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), instrumentName2))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    instrumentName2, It.IsAny<string>()))
                 .Returns(encryptedZipFile2);
 
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
@@ -233,7 +238,8 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             var encryptedZipFile = "encryptedFile.zip";
 
             _fileServiceMock.Setup(f => f.GetFiles(filePath)).Returns(files);
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    It.IsAny<string>(), filePath))
                 .Returns(encryptedZipFile);
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 
@@ -241,7 +247,7 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             _sut.UploadInstrumentFilesToBucket(filePath, instrumentName, bucketName);
 
             //assert
-            _fileServiceMock.Verify(v => v.CreateEncryptedZipFile(files, instrumentName), Times.Once);
+            _fileServiceMock.Verify(v => v.CreateEncryptedZipFile(files, instrumentName, filePath), Times.Once);
             _bucketServiceMock.Verify(v => v.UploadFileToBucket(encryptedZipFile, bucketName));
         }
 
@@ -263,7 +269,8 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             var encryptedZipFile = "encryptedFile.zip";
 
             _fileServiceMock.Setup(f => f.GetFiles(filePath)).Returns(files);
-            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), It.IsAny<string>()))
+            _fileServiceMock.Setup(f => f.CreateEncryptedZipFile(It.IsAny<IList<string>>(), 
+                    It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(encryptedZipFile);
             _bucketServiceMock.Setup(b => b.UploadFileToBucket(It.IsAny<string>(), It.IsAny<string>()));
 

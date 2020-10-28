@@ -21,14 +21,14 @@ namespace Blaise.Data.Delivery.Services
             _fileSystem = fileSystem;
         }
 
-        public string CreateEncryptedZipFile(IList<string> files, string instrumentName)
+        public string CreateEncryptedZipFile(IList<string> files, string instrumentName, string filePath)
         {
             var uniqueFileName = GenerateUniqueFileName(instrumentName, DateTime.Now);
 
-            var tempZipFilePath = $"{uniqueFileName}.unencrypted.zip";
+            var tempZipFilePath = $"{filePath}\\{uniqueFileName}.unencrypted.zip";
             _compressionService.CreateZipFile(files, tempZipFilePath);
 
-            var encryptedZipFilePath = $"{uniqueFileName}.zip";
+            var encryptedZipFilePath = $"{ filePath}\\{uniqueFileName}.zip";
             _encryptionService.EncryptFile(tempZipFilePath, encryptedZipFilePath);
 
             DeleteFile(tempZipFilePath);

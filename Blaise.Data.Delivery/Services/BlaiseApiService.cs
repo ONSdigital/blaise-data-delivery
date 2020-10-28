@@ -2,21 +2,16 @@
 using System.Linq;
 using Blaise.Data.Delivery.Interfaces.Services;
 using Blaise.Nuget.Api.Contracts.Interfaces;
-using log4net;
 
 namespace Blaise.Data.Delivery.Services
 {
    public class BlaiseApiService : IBlaiseApiService
     {
         private readonly IBlaiseApi _blaiseApi;
-        private readonly ILog _logger;
 
-        public BlaiseApiService(
-            IBlaiseApi blaiseApi, 
-            ILog logger)
+        public BlaiseApiService(IBlaiseApi blaiseApi)
         {
             _blaiseApi = blaiseApi;
-            _logger = logger;
         }
 
         public bool ServerParkExists(string serverParkName)
@@ -38,8 +33,6 @@ namespace Blaise.Data.Delivery.Services
 
         public void CreateDeliveryFiles(string serverParkName, string instrumentName, string outputPath)
         {
-            _logger.Info($"Created delivery file for instrument '{instrumentName}'");
-
             _blaiseApi.BackupSurveyToFile(_blaiseApi.GetDefaultConnectionModel(), serverParkName, instrumentName, outputPath);
         }
     }

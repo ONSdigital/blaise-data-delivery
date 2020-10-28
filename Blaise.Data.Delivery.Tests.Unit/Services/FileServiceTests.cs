@@ -33,6 +33,7 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
         public void Given_Valid_Arguments_When_I_Call_CreateEncryptedZipFiles_Then_I_Get_The_Path_Of_The_Encrypted_Zip_Back()
         {
             //arrange
+            var filePath = "TempPath";
             var files = new List<string> { "File1", "File2" };
             var instrumentName = "InstrumentName";
             var encryptedZipPath = string.Empty;
@@ -41,7 +42,7 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipPath = output);
 
             //act
-            var result = _sut.CreateEncryptedZipFile(files, instrumentName);
+            var result = _sut.CreateEncryptedZipFile(files, instrumentName, filePath);
 
             //assert
             Assert.NotNull(result);
@@ -53,6 +54,7 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
         public void Given_Valid_Arguments_When_I_Call_CreateEncryptedZipFiles_Then_The_Correct_Methods_Are_Called()
         {
             //arrange
+            var filePath = "TempPath";
             var files = new List<string> { "File1", "File2" };
             var instrumentName = "InstrumentName";
             var tempZipPath = string.Empty;
@@ -62,7 +64,7 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
             _encryptionServiceMock.Setup(e => e.EncryptFile(It.IsAny<string>(), It.IsAny<string>())).Callback<string, string>((input, output) => encryptedZipPath = output);
 
             //act
-            _sut.CreateEncryptedZipFile(files, instrumentName);
+            _sut.CreateEncryptedZipFile(files, instrumentName, filePath);
 
             //assert
             _compressionServiceMock.Verify(v => v.CreateZipFile(files, tempZipPath), Times.Once);

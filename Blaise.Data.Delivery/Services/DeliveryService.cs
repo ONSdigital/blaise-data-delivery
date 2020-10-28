@@ -55,8 +55,13 @@ namespace Blaise.Data.Delivery.Services
 
         public void UploadInstrumentFilesToBucket(string filePath, string instrumentName, string bucketName)
         {
+            _logger.Info($"Getting files from the path '{filePath}'");
             var instrumentFiles = _fileService.GetFiles(filePath).ToList();
-            var encryptedZipFile = _fileService.CreateEncryptedZipFile(instrumentFiles, instrumentName);
+
+            _logger.Info($"Retrieved {instrumentFiles.Count} files from the path '{filePath}'");
+
+            var encryptedZipFile = _fileService.CreateEncryptedZipFile(instrumentFiles, instrumentName,
+                filePath);
             _logger.Info($"Encrypted files into the zip file '{encryptedZipFile}'");
 
             //upload the zip to bucket

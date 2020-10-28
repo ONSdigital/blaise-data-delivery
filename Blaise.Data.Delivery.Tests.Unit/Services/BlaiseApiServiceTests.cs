@@ -3,7 +3,6 @@ using System.Linq;
 using Blaise.Data.Delivery.Services;
 using Blaise.Nuget.Api.Contracts.Interfaces;
 using Blaise.Nuget.Api.Contracts.Models;
-using log4net;
 using Moq;
 using NUnit.Framework;
 using StatNeth.Blaise.API.ServerManager;
@@ -13,21 +12,16 @@ namespace Blaise.Data.Delivery.Tests.Unit.Services
     public class BlaiseApiServiceTests
     {
         private Mock<IBlaiseApi> _blaiseApiMock;
-        private Mock<ILog> _loggerMock;
         
         private BlaiseApiService _sut;
 
         [SetUp]
         public void SetUpTests()
         {
-            _loggerMock = new Mock<ILog>();
-
             _blaiseApiMock = new Mock<IBlaiseApi>();
             _blaiseApiMock.Setup(b => b.ServerParkExists(It.IsAny<ConnectionModel>(), It.IsAny<string>()));
 
-            _sut = new BlaiseApiService(
-                _blaiseApiMock.Object,
-                _loggerMock.Object);
+            _sut = new BlaiseApiService(_blaiseApiMock.Object);
         }
 
         [Test]
