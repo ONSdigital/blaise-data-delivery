@@ -1,4 +1,6 @@
 ﻿using System;
+using Blaise.Case.Data.Delivery.Mappers;
+using Blaise.Case.Data.Delivery.Models;
 using NUnit.Framework;
 
 namespace Blaise.Case.Data.Delivery.Tests.Unit.Mappers

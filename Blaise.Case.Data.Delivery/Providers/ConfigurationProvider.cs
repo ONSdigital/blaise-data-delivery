@@ -17,7 +17,8 @@ namespace Blaise.Case.Data.Delivery.Providers
         public string LocalProcessFolder => GetVariable("ENV_BDD_LOCAL_PROCESS_DIR");
 
         public string BucketName => GetVariable("ENV_NCP_BUCKET_NAME");
-        public string VmName => GetVariable("VmName");
+
+        public string VmName => Environment.MachineName;
 
         private static string GetVariable(string variableName)
         {

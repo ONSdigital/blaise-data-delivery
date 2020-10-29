@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using Blaise.Case.Data.Delivery.Providers;
 using NUnit.Framework;
 
 namespace Blaise.Case.Data.Delivery.Tests.Unit.Providers
@@ -91,20 +92,6 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.Providers
                 var result = configurationProvider.DeadletterTopicId;
             });
             Assert.AreEqual($"No value found for environment variable 'ENV_DEADLETTER_TOPIC'", exception.Message);
-        }
-
-        [Test]
-        public void Given_I_Call_VmName_And_The_Env_Variable_Is_Not_Set_Then_A_ConfigurationErrorsException_Is_Thrown()
-        {
-            //arrange
-            var configurationProvider = new ConfigurationProvider();
-
-            //act && assert
-            var exception = Assert.Throws<ConfigurationErrorsException>(() =>
-            {
-                var result = configurationProvider.VmName;
-            });
-            Assert.AreEqual($"No value found for environment variable 'VmName'", exception.Message);
         }
     }
 }

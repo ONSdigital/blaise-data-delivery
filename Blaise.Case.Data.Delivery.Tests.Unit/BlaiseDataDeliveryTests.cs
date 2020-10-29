@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Blaise.Case.Data.Delivery.Interfaces.Services;
+using NUnit.Framework;
 
 namespace Blaise.Case.Data.Delivery.Tests.Unit
 {
