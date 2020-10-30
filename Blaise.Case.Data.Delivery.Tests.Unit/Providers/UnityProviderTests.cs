@@ -47,20 +47,5 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.Providers
             Assert.NotNull(result);
             Assert.IsInstanceOf<IMessageHandler>(result);
         }
-
-        [Test]
-        public void
-            Given_I_Create_A_New_Instance_Of_FileService_Then_All_Dependencies_Are_Registered_And_Resolved()
-        {
-            //arrange
-            var sut = new UnityProvider();
-
-            //act
-            var result = sut.Resolve<IDeliveryService>();
-
-            //assert
-            Assert.NotNull(result);
-            Assert.IsInstanceOf<IDeliveryService>(result);
-        }
     }
 }
