@@ -170,7 +170,7 @@ namespace BlaiseDataDelivery.Tests.Services.Files
         public void Given_Valid_Arguments_When_I_Call_GenerateUniqueFileName_Then_I_Get_The_Expected_Format_Back()
         {
             //arrange
-            var expectedFileName = "dd_OPN2004A_08042020_034000";
+            var expectedFileName = "dd_OPN2004A_08042020_154000";
 
             var instrumentName = "OPN2004A";
             var dateTime = DateTime.ParseExact("2020-04-08 15:40:00,000", "yyyy-MM-dd HH:mm:ss,fff",
