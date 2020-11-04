@@ -57,7 +57,7 @@ namespace Blaise.Case.Data.Delivery.Services
         public string GenerateUniqueFileName(string instrumentName, DateTime dateTime)
         {
             //generate a file name in the agreed format
-            return $"dd_{instrumentName}_{dateTime:ddmmyyyy}_{dateTime:hhmmss}";
+            return $"dd_{instrumentName}_{dateTime:ddMMyyyy}_{dateTime:hhmmss}";
         }
 
 
