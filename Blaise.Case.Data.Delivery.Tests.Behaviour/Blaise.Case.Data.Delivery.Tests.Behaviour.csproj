@@ -59,8 +59,14 @@
     <Reference Include="BoDi, Version=1.4.1.0, Culture=neutral, PublicKeyToken=ff7cd5ea2744b496, processorArchitecture=MSIL">
       <HintPath>..\packages\BoDi.1.4.1\lib\net45\BoDi.dll</HintPath>
     </Reference>
+    <Reference Include="BouncyCastle.OpenPgp, Version=1.8.1.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>..\packages\BouncyCastle.OpenPgp.1.8.1.1\lib\net20\BouncyCastle.OpenPgp.dll</HintPath>
+    </Reference>
     <Reference Include="Cucumber.Messages, Version=6.0.1.0, Culture=neutral, PublicKeyToken=b10c5988214f940c, processorArchitecture=MSIL">
       <HintPath>..\packages\Cucumber.Messages.6.0.1\lib\net45\Cucumber.Messages.dll</HintPath>
+    </Reference>
+    <Reference Include="DotNetZip, Version=1.13.7.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.13.7\lib\net40\DotNetZip.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.dll</HintPath>
@@ -278,7 +284,9 @@
   <ItemGroup>
     <Compile Include="Helpers\BucketHelper.cs" />
     <Compile Include="Helpers\CaseHelper.cs" />
+    <Compile Include="Helpers\CompressionHelper.cs" />
     <Compile Include="Helpers\ConfigurationHelper.cs" />
+    <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Helpers\PubSubHelper.cs" />
     <Compile Include="Model\MessageModelHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
