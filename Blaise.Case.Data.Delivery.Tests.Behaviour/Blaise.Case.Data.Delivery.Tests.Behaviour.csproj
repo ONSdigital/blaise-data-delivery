@@ -288,7 +288,6 @@
     <Compile Include="Helpers\ConfigurationHelper.cs" />
     <Compile Include="Helpers\CryptoHelper.cs" />
     <Compile Include="Helpers\PubSubHelper.cs" />
-    <Compile Include="Model\MessageModelHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Steps\DataDeliverySteps.cs" />
   </ItemGroup>

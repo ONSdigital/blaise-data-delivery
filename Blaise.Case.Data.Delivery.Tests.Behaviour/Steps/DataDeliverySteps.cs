@@ -1,5 +1,8 @@
-﻿using Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers;
+﻿using Blaise.Case.Data.Delivery.Models;
+using Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers;
+using Newtonsoft.Json;
 using NUnit.Framework;
+using StatNeth.Blaise.Data.DataValues;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -33,7 +36,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
         public void GivenThereAreCasesInTheQuestionnaire(int numberOfCases, string questionnaire)
         {
             _caseHelper.DeleteCasesInDatabase(questionnaire);
-            _caseHelper.CreateCasesForAnInstrument(numberOfCases, true);
+            _caseHelper.CreateCasesForAnInstrument(questionnaire, numberOfCases, true);
         }
 
         [Given(@"there are no cases in the questionnaire '(.*)'")]
@@ -49,7 +52,11 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
         [When(@"the data delivery service processes the questionnaire '(.*)'")]
         public void WhenTheDataDeliveryServiceProcessesTheQuestionnaire(string questionnaire)
         {
-            _pubSubHelper.PublishMessage($@"{{""instrument"":""{ questionnaire }"", ""serverpark"":""{_configurationHelper.ServerParkName}""}}");
+            var messageModel = new MessageModel {InstrumentName = questionnaire, ServerParkName = _configurationHelper.ServerParkName };
+            var message = ConvertToJsonMessage(messageModel);
+            _pubSubHelper.PublishMessage(message);
+
+            //_pubSubHelper.PublishMessage($@"{{""instrument"":""{ questionnaire }"", ""serverpark"":""{_configurationHelper.ServerParkName}""}}");
 
             var counter = 0;
             while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
@@ -64,7 +71,10 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
         [When(@"the data delivery service processes all questionnaires")]
         public void WhenTheDataDeliveryServiceProcessesAllQuestionnaires()
         {
-            _pubSubHelper.PublishMessage($@"{{""serverpark"":""{_configurationHelper.ServerParkName}""}}");
+            var messageModel = new MessageModel { ServerParkName = _configurationHelper.ServerParkName };
+            var message = ConvertToJsonMessage(messageModel);
+            _pubSubHelper.PublishMessage(message);
+            //_pubSubHelper.PublishMessage($@"{{""serverpark"":""{_configurationHelper.ServerParkName}""}}");
 
             var counter = 0;
             while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
@@ -107,13 +117,17 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             Assert.IsTrue(filesInBucket.Count() == 0);
         }
 
-
-
         [BeforeScenario]
         public void RemoveCases()
         {
             var bucketHelper = new BucketHelper();
             bucketHelper.DeleteFilesInBucket(_configurationHelper.BucketName);
+        }
+
+        private string ConvertToJsonMessage(MessageModel messageModel)
+        {
+            return JsonConvert.SerializeObject(messageModel,
+                   new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.Ignore });
         }
     }
 }

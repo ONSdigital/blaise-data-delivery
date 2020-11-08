@@ -11,7 +11,6 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers
    {
         public string ProjectId => GetVariable("ProjectId");
 
-        public string InstrumentName => GetVariable("InstrumentName");
         public string BlaiseServerPassword => GetVariable("BlaiseServerPassword");
         public string BlaiseServerHostName => GetVariable("BlaiseServerHostName");
         public string TopicId => GetVariable("TopicId");
