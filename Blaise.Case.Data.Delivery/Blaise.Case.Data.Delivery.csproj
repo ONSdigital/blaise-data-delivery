@@ -290,15 +290,13 @@
     <None Include="PublicKeys\dev-key.gpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="PublicKeys\local-key.gpg">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="PublicKeys\preprod-key.gpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="PublicKeys\prod-key.gpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="PublicKeys\sandbox-key.gpg" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
