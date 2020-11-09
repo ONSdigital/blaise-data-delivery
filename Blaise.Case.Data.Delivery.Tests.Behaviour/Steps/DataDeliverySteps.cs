@@ -1,11 +1,11 @@
-﻿using Blaise.Case.Data.Delivery.Models;
-using Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers;
+﻿using Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using StatNeth.Blaise.Data.DataValues;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Blaise.Case.Data.Delivery.MessageBroker.Models;
 using TechTalk.SpecFlow;
 
 namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.WindowsService", "Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.WindowsService.csproj", "{40E71D3D-BB81-4164-A763-9BB9FB52C745}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.WindowsService", "Blaise.Case.Data.Delivery.WindowsService\Blaise.Case.Data.Delivery.WindowsService.csproj", "{40E71D3D-BB81-4164-A763-9BB9FB52C745}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Tests.Unit", "Blaise.Case.Data.Delivery.Tests.Unit\Blaise.Case.Data.Delivery.Tests.Unit.csproj", "{098BEDC6-16CB-40B0-AF27-CEBBAFA1100C}"
 EndProject

@@ -1,17 +1,17 @@
-﻿using Blaise.Case.Data.Delivery.Interfaces.Providers;
-using Blaise.Case.Data.Delivery.Interfaces.Services;
+﻿using Blaise.Case.Data.Delivery.Core.Interfaces;
+using Blaise.Case.Data.Delivery.MessageBroker.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using log4net;
 
-namespace Blaise.Case.Data.Delivery.Services
+namespace Blaise.Case.Data.Delivery.MessageBroker
 {
-    public class MessageBrokerService : IQueueService
+    public class MessageBrokerService : IMessageBrokerService
     {
         private readonly ILog _logger;
         private readonly IConfigurationProvider _configurationProvider;
         private readonly IFluentQueueApi _queueApi;
 
-        public QueueService(
+        public MessageBrokerService(
             ILog logger,
             IConfigurationProvider configurationProvider,
             IFluentQueueApi queueApi)

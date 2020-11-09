@@ -1,11 +1,11 @@
 ﻿using System;
-using Blaise.Case.Data.Delivery.Interfaces.Mappers;
-using Blaise.Case.Data.Delivery.Interfaces.Providers;
-using Blaise.Case.Data.Delivery.Interfaces.Services;
+using Blaise.Case.Data.Delivery.Core.Interfaces;
+using Blaise.Case.Data.Delivery.Data.Interfaces;
+using Blaise.Case.Data.Delivery.MessageBroker.Interfaces;
 using Blaise.Nuget.PubSub.Contracts.Interfaces;
 using log4net;
 
-namespace Blaise.Case.Data.Delivery.MessageHandlers
+namespace Blaise.Case.Data.Delivery.MessageBroker
 {
     public class MessageHandler : IMessageHandler
     {

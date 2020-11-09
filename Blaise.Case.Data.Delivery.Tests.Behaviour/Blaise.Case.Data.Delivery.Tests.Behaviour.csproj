@@ -297,7 +297,11 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.WindowsService.csproj">
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.MessageBroker\Blaise.Case.Data.Delivery.MessageBroker.csproj">
+      <Project>{178d22a2-b541-4dd3-a3aa-e3caa31e092b}</Project>
+      <Name>Blaise.Case.Data.Delivery.MessageBroker</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.WindowsService\Blaise.Case.Data.Delivery.WindowsService.csproj">
       <Project>{40e71d3d-bb81-4164-a763-9bb9fb52c745}</Project>
       <Name>Blaise.Case.Data.Delivery.WindowsService</Name>
     </ProjectReference>

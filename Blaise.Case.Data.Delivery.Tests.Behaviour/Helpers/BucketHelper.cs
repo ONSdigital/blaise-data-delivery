@@ -1,12 +1,9 @@
 ﻿using Google.Cloud.Storage.V1;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers
 {
@@ -27,7 +24,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers
             var storageClient = StorageClient.Create();
             var availableObjectsInBucket = storageClient.ListObjects(bucketName);
 
-            return (availableObjectsInBucket.Count() > 0);
+            return (availableObjectsInBucket.Any());
         }
 
         public IEnumerable<string> GetFilesInBucket(string bucketName)
