@@ -18,6 +18,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
         private readonly CaseHelper _caseHelper;
         private readonly PubSubHelper _pubSubHelper;
         private readonly BucketHelper _bucketHelper;
+        private readonly CompressionHelper _compressionHelper;
         private List<string> _questionnaires;
         private string keyName = "questionnaire";
 
@@ -28,6 +29,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             _caseHelper = new CaseHelper();
             _pubSubHelper = new PubSubHelper();
             _bucketHelper = new BucketHelper();
+            _compressionHelper = new CompressionHelper();
             _questionnaires = new List<string>();
             _scenarioContext.Set(_questionnaires, keyName);
         }
@@ -56,8 +58,6 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             var message = ConvertToJsonMessage(messageModel);
             _pubSubHelper.PublishMessage(message);
 
-            //_pubSubHelper.PublishMessage($@"{{""instrument"":""{ questionnaire }"", ""serverpark"":""{_configurationHelper.ServerParkName}""}}");
-
             var counter = 0;
             while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
             {
@@ -74,7 +74,6 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             var messageModel = new MessageModel { ServerParkName = _configurationHelper.ServerParkName };
             var message = ConvertToJsonMessage(messageModel);
             _pubSubHelper.PublishMessage(message);
-            //_pubSubHelper.PublishMessage($@"{{""serverpark"":""{_configurationHelper.ServerParkName}""}}");
 
             var counter = 0;
             while (!_bucketHelper.FilesHaveBeenProcessed(_configurationHelper.BucketName))
@@ -92,6 +91,13 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             var filesInBucket = _bucketHelper.GetFilesInBucket(_configurationHelper.BucketName);
             var questionnaires = _scenarioContext.Get<List<string>>(keyName);
             Assert.IsTrue(filesInBucket.Count() == questionnaires.Count());
+
+            foreach (var questionnaire in questionnaires)
+            {
+                _bucketHelper.DownloadFromBucket(questionnaire);
+                //ToDo: need to decrypt the zip folder before extracting.
+                //_compressionHelper.ExtractFileToDirectory(questionnaire);
+            }
         }
 
         [Then(@"all the cases are delivered for '(.*)'")]
@@ -106,7 +112,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
             Assert.IsNotNull(fileName, $"Expected fileName to contain dd_{questionnaire.ToLower()} but found {string.Join(",", filesInBucket)}");
 
             var questionnaires = _scenarioContext.Get<List<string>>(keyName);
-            questionnaires.Add(questionnaire);
+            questionnaires.Add(fileName);
             _scenarioContext.Set(questionnaires, keyName);
         }
 

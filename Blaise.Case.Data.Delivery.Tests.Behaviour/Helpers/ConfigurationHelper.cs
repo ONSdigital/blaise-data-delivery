@@ -18,6 +18,8 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers
         public string ServerParkName => GetVariable("ServerParkName");
         public string GoogleCredentials => GetVariable("GoogleCredentials");
 
+        public string LocalOutputPath => GetVariable("LocalOutputPath");
+
         private static string GetVariable(string variableName)
         {
             var value = ConfigurationManager.AppSettings[variableName];
