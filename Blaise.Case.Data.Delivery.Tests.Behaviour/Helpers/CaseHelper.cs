@@ -28,21 +28,21 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Helpers
             _primaryKey = 90000;
         }
 
-        public void CreateCasesForAnInstrument(int numberOfCases, bool completed = true)
+        public void CreateCasesForAnInstrument(string questionnaire, int numberOfCases, bool completed = true)
         {
             for (var i = 0; i < numberOfCases; i++)
             {
                 _primaryKey++;
-                CreateCaseInAnInstrument(_primaryKey, completed);
+                CreateCaseInAnInstrument(questionnaire, _primaryKey, completed);
             }
         }
 
-        public void CreateCaseInAnInstrument(int primaryKey, bool completed)
+        public void CreateCaseInAnInstrument(string questionnaire, int primaryKey, bool completed)
         {
             var dic = new Dictionary<string, string>();
             dic.Add("serial_number", primaryKey.ToString());
             dic.Add("completed", completed.ToString());
-            _blaiseApi.CreateNewDataRecord(_connectionModel, $"{primaryKey}", dic, _configurationHelper.InstrumentName, _configurationHelper.ServerParkName);
+            _blaiseApi.CreateNewDataRecord(_connectionModel, $"{primaryKey}", dic, questionnaire, _configurationHelper.ServerParkName);
         }
 
         public int GetCasesInAnInstrument(string questionnaire)
