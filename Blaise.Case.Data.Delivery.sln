@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C4F3EEE4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Tests.Behaviour", "Blaise.Case.Data.Delivery.Tests.Behaviour\Blaise.Case.Data.Delivery.Tests.Behaviour.csproj", "{6F482241-4935-4315-9D1D-DDEAE4EF6174}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Core", "Blaise.Case.Data.Delivery.Core\Blaise.Case.Data.Delivery.Core.csproj", "{1460E485-D541-4036-8256-5385BF047A41}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +31,10 @@ Global
 		{6F482241-4935-4315-9D1D-DDEAE4EF6174}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F482241-4935-4315-9D1D-DDEAE4EF6174}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F482241-4935-4315-9D1D-DDEAE4EF6174}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1460E485-D541-4036-8256-5385BF047A41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1460E485-D541-4036-8256-5385BF047A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1460E485-D541-4036-8256-5385BF047A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1460E485-D541-4036-8256-5385BF047A41}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
