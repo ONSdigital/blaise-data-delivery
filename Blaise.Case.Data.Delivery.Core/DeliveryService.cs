@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using Blaise.Case.Data.Delivery.CloudStorage.Interfaces;
 using Blaise.Case.Data.Delivery.Core.Interfaces;
 using Blaise.Case.Data.Delivery.Data.Interfaces;
 using log4net;

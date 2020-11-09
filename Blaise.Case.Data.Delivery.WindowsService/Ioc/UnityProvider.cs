@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Configuration;
 using System.IO.Abstractions;
+using Blaise.Case.Data.Delivery.CloudStorage;
+using Blaise.Case.Data.Delivery.CloudStorage.Interfaces;
 using Blaise.Case.Data.Delivery.Core;
 using Blaise.Case.Data.Delivery.Core.Configuration;
 using Blaise.Case.Data.Delivery.Core.Files;
 using Blaise.Case.Data.Delivery.Core.Files.Compression;
 using Blaise.Case.Data.Delivery.Core.Files.Encryption;
 using Blaise.Case.Data.Delivery.Core.Interfaces;
-using Blaise.Case.Data.Delivery.Core.Storage;
 using Blaise.Case.Data.Delivery.Data;
 using Blaise.Case.Data.Delivery.Data.Interfaces;
 using Blaise.Case.Data.Delivery.MessageBroker;

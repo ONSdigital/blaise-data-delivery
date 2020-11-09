@@ -1,5 +1,5 @@
 ﻿
-namespace Blaise.Case.Data.Delivery.Core.Interfaces
+namespace Blaise.Case.Data.Delivery.CloudStorage.Interfaces
 {
     public interface IStorageService
     {

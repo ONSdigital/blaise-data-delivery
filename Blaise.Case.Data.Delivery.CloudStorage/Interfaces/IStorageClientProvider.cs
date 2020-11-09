@@ -1,7 +1,7 @@
 ﻿
 using Google.Cloud.Storage.V1;
 
-namespace Blaise.Case.Data.Delivery.Core.Interfaces
+namespace Blaise.Case.Data.Delivery.CloudStorage.Interfaces
 {
     public interface IStorageClientProvider
     {

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Blaise.Case.Data.Delivery.CloudStorage.Interfaces;
 using Blaise.Case.Data.Delivery.Core;
 using Blaise.Case.Data.Delivery.Core.Interfaces;
 using Blaise.Case.Data.Delivery.Data.Interfaces;

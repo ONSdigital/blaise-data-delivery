@@ -1,7 +1,7 @@
 ﻿using System.IO;
-using Blaise.Case.Data.Delivery.Core.Interfaces;
+using Blaise.Case.Data.Delivery.CloudStorage.Interfaces;
 
-namespace Blaise.Case.Data.Delivery.Core.Storage
+namespace Blaise.Case.Data.Delivery.CloudStorage
 {
     public class StorageService : IStorageService
     {

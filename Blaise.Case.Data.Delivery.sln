@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.MessageBroker", "Blaise.Case.Data.Delivery.MessageBroker\Blaise.Case.Data.Delivery.MessageBroker.csproj", "{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.CloudStorage", "Blaise.Case.Data.Delivery.CloudStorage\Blaise.Case.Data.Delivery.CloudStorage.csproj", "{DE46514F-4CD1-46FD-8BE5-34843E0D7EB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE46514F-4CD1-46FD-8BE5-34843E0D7EB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE46514F-4CD1-46FD-8BE5-34843E0D7EB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE46514F-4CD1-46FD-8BE5-34843E0D7EB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE46514F-4CD1-46FD-8BE5-34843E0D7EB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -264,6 +264,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.CloudStorage\Blaise.Case.Data.Delivery.CloudStorage.csproj">
+      <Project>{de46514f-4cd1-46fd-8be5-34843e0d7eb2}</Project>
+      <Name>Blaise.Case.Data.Delivery.CloudStorage</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Blaise.Case.Data.Delivery.Core\Blaise.Case.Data.Delivery.Core.csproj">
       <Project>{1460e485-d541-4036-8256-5385bf047a41}</Project>
       <Name>Blaise.Case.Data.Delivery.Core</Name>
