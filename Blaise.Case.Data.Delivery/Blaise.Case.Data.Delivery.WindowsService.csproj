@@ -263,8 +263,6 @@
     <Compile Include="Interfaces\Services\IQueueService.cs" />
     <Compile Include="Interfaces\Services\IBlaiseApiService.cs" />
     <Compile Include="Mappers\MessageModelMapper.cs" />
-    <Compile Include="MessageHandlers\MessageHandler.cs" />
-    <Compile Include="Models\MessageModel.cs" />
     <Compile Include="Providers\ConfigurationProvider.cs" />
     <Compile Include="Providers\LocalConfigurationProvider.cs" />
     <Compile Include="Providers\StorageClientProvider.cs" />
@@ -274,7 +272,6 @@
     <Compile Include="Interfaces\Services\IFileService.cs" />
     <Compile Include="Services\InitialiseService.cs" />
     <Compile Include="Services\EncryptionService.cs" />
-    <Compile Include="Services\QueueService.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\CompressionService.cs" />
@@ -298,7 +295,20 @@
     </None>
     <None Include="PublicKeys\sandbox-key.gpg" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.Core\Blaise.Case.Data.Delivery.Core.csproj">
+      <Project>{1460e485-d541-4036-8256-5385bf047a41}</Project>
+      <Name>Blaise.Case.Data.Delivery.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.Data\Blaise.Case.Data.Delivery.Data.csproj">
+      <Project>{5c69628c-57e3-4337-9172-5172a0e6aac5}</Project>
+      <Name>Blaise.Case.Data.Delivery.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery.MessageBroker\Blaise.Case.Data.Delivery.MessageBroker.csproj">
+      <Project>{178d22a2-b541-4dd3-a3aa-e3caa31e092b}</Project>
+      <Name>Blaise.Case.Data.Delivery.MessageBroker</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

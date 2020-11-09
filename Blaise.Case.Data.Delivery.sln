@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29920.165
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery", "Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.csproj", "{40E71D3D-BB81-4164-A763-9BB9FB52C745}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.WindowsService", "Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.WindowsService.csproj", "{40E71D3D-BB81-4164-A763-9BB9FB52C745}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Tests.Unit", "Blaise.Case.Data.Delivery.Tests.Unit\Blaise.Case.Data.Delivery.Tests.Unit.csproj", "{098BEDC6-16CB-40B0-AF27-CEBBAFA1100C}"
 EndProject
@@ -13,11 +13,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Core", "Blaise.Case.Data.Delivery.Core\Blaise.Case.Data.Delivery.Core.csproj", "{1460E485-D541-4036-8256-5385BF047A41}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Contracts", "Blaise.Case.Data.Delivery.Contracts\Blaise.Case.Data.Delivery.Contracts.csproj", "{0D35E428-9207-4F09-AEE9-38B4D2BCF273}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Models", "Blaise.Case.Data.Delivery.Models\Blaise.Case.Data.Delivery.Models.csproj", "{84C87375-A21E-47CF-84B0-0607065E8AE2}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.Data", "Blaise.Case.Data.Delivery.Data\Blaise.Case.Data.Delivery.Data.csproj", "{5C69628C-57E3-4337-9172-5172A0E6AAC5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blaise.Case.Data.Delivery.MessageBroker", "Blaise.Case.Data.Delivery.MessageBroker\Blaise.Case.Data.Delivery.MessageBroker.csproj", "{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,18 +39,14 @@ Global
 		{1460E485-D541-4036-8256-5385BF047A41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1460E485-D541-4036-8256-5385BF047A41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1460E485-D541-4036-8256-5385BF047A41}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0D35E428-9207-4F09-AEE9-38B4D2BCF273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0D35E428-9207-4F09-AEE9-38B4D2BCF273}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0D35E428-9207-4F09-AEE9-38B4D2BCF273}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0D35E428-9207-4F09-AEE9-38B4D2BCF273}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84C87375-A21E-47CF-84B0-0607065E8AE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84C87375-A21E-47CF-84B0-0607065E8AE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84C87375-A21E-47CF-84B0-0607065E8AE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84C87375-A21E-47CF-84B0-0607065E8AE2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C69628C-57E3-4337-9172-5172A0E6AAC5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5C69628C-57E3-4337-9172-5172A0E6AAC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C69628C-57E3-4337-9172-5172A0E6AAC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C69628C-57E3-4337-9172-5172A0E6AAC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{178D22A2-B541-4DD3-A3AA-E3CAA31E092B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

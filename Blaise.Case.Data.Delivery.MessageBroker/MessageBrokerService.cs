@@ -5,7 +5,7 @@ using log4net;
 
 namespace Blaise.Case.Data.Delivery.Services
 {
-    public class QueueService : IQueueService
+    public class MessageBrokerService : IQueueService
     {
         private readonly ILog _logger;
         private readonly IConfigurationProvider _configurationProvider;

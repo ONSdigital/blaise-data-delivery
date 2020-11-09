@@ -297,9 +297,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.csproj">
+    <ProjectReference Include="..\Blaise.Case.Data.Delivery\Blaise.Case.Data.Delivery.WindowsService.csproj">
       <Project>{40e71d3d-bb81-4164-a763-9bb9fb52c745}</Project>
-      <Name>Blaise.Case.Data.Delivery</Name>
+      <Name>Blaise.Case.Data.Delivery.WindowsService</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
