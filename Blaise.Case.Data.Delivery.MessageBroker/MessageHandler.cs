@@ -12,20 +12,20 @@ namespace Blaise.Case.Data.Delivery.MessageBroker
         private readonly ILog _logger;
         private readonly IConfigurationProvider _configuration;
         private readonly IMessageModelMapper _mapper;
-        private readonly IDeliveryService _deliveryService;
+        private readonly IDeliverInstrumentService _deliverInstrumentService;
         private readonly IBlaiseApiService _blaiseService;
 
         public MessageHandler(
             ILog logger,
             IConfigurationProvider configuration,
             IMessageModelMapper mapper,
-            IDeliveryService deliveryService,
+            IDeliverInstrumentService deliverInstrumentService,
             IBlaiseApiService blaiseService)
         {
             _logger = logger;
             _configuration = configuration;
             _mapper = mapper;
-            _deliveryService = deliveryService;
+            _deliverInstrumentService = deliverInstrumentService;
             _blaiseService = blaiseService;
         }
 
@@ -52,13 +52,13 @@ namespace Blaise.Case.Data.Delivery.MessageBroker
                 {
                     _logger.Info($"Instrument name '{messageModel.InstrumentName}' on server park '{messageModel.ServerParkName}' will be delivered");
 
-                    return _deliveryService.DeliverSingleInstrument(messageModel.ServerParkName, messageModel.InstrumentName,
+                    return _deliverInstrumentService.DeliverSingleInstrument(messageModel.ServerParkName, messageModel.InstrumentName,
                         _configuration.LocalProcessFolder, _configuration.BucketName);
                 }
 
                 _logger.Info($"No instrument name has been provided, all instruments on server park '{messageModel.ServerParkName}' will be delivered");
 
-                return _deliveryService.DeliverAllInstruments(messageModel.ServerParkName,
+                return _deliverInstrumentService.DeliverAllInstruments(messageModel.ServerParkName,
                     _configuration.LocalProcessFolder, _configuration.BucketName);
             }
             catch (Exception ex)

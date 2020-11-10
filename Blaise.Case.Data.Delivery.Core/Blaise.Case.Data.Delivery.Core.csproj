@@ -58,14 +58,14 @@
     <Compile Include="Configuration\ConfigurationProvider.cs" />
     <Compile Include="Extensions\ValidationExtensionMethods.cs" />
     <Compile Include="Configuration\LocalConfigurationProvider.cs" />
-    <Compile Include="DeliveryService.cs" />
+    <Compile Include="DeliverInstrumentService.cs" />
     <Compile Include="Files\Encryption\EncryptionService.cs" />
-    <Compile Include="Files\CreateDeliveryFileService.cs" />
+    <Compile Include="Files\InstrumentFileService.cs" />
     <Compile Include="Interfaces\ICompressionService.cs" />
     <Compile Include="Interfaces\IConfigurationProvider.cs" />
-    <Compile Include="Interfaces\IDeliveryService.cs" />
+    <Compile Include="Interfaces\IDeliverInstrumentService.cs" />
     <Compile Include="Interfaces\IEncryptionService.cs" />
-    <Compile Include="Interfaces\ICreateDeliveryFileService.cs" />
+    <Compile Include="Interfaces\IInstrumentFileService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

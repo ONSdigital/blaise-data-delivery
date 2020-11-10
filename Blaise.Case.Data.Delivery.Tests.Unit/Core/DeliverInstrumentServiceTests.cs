@@ -9,27 +9,27 @@ using NUnit.Framework;
 
 namespace Blaise.Case.Data.Delivery.Tests.Unit.Core
 {
-    public class DeliveryServiceTests
+    public class DeliverInstrumentServiceTests
     {
         private Mock<ILog> _logMock;
         private Mock<IStorageService> _storageServiceMock;
-        private Mock<ICreateDeliveryFileService> _fileServiceMock;
+        private Mock<IInstrumentFileService> _fileServiceMock;
         private Mock<IBlaiseApiService> _blaiseServiceMock;
 
-        private DeliveryService _sut;
+        private DeliverInstrumentService _sut;
 
         [SetUp]
         public void SetUpTests()
         {
             _logMock = new Mock<ILog>();
             _storageServiceMock = new Mock<IStorageService>();
-            _fileServiceMock = new Mock<ICreateDeliveryFileService>();
+            _fileServiceMock = new Mock<IInstrumentFileService>();
 
             _blaiseServiceMock = new Mock<IBlaiseApiService>();
             _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns(true);
 
-            _sut = new DeliveryService(_logMock.Object, _storageServiceMock.Object, _fileServiceMock.Object, _blaiseServiceMock.Object);
+            _sut = new DeliverInstrumentService(_logMock.Object, _storageServiceMock.Object, _fileServiceMock.Object, _blaiseServiceMock.Object);
         }
 
         [Test]

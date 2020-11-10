@@ -16,7 +16,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
         private Mock<ILog> _loggerMock;
         private Mock<IConfigurationProvider> _configurationMock;
         private Mock<IMessageModelMapper> _mapperMock;
-        private Mock<IDeliveryService> _deliveryServiceMock;
+        private Mock<IDeliverInstrumentService> _deliverInstrumentServiceMock;
         private Mock<IBlaiseApiService> _blaiseServiceMock;
 
         private readonly string _message;
@@ -52,13 +52,13 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
             _mapperMock = new Mock<IMessageModelMapper>();
             _mapperMock.Setup(m => m.MapToMessageModel(_message)).Returns(_messageModel);
 
-            _deliveryServiceMock = new Mock<IDeliveryService>();
+            _deliverInstrumentServiceMock = new Mock<IDeliverInstrumentService>();
 
             _blaiseServiceMock = new Mock<IBlaiseApiService>();
             _blaiseServiceMock.Setup(b => b.ServerParkExists(It.IsAny<string>())).Returns(true);
             _blaiseServiceMock.Setup(b => b.InstrumentExists(It.IsAny<string>(), It.IsAny<string>())).Returns(true);
 
-            _sut = new MessageHandler(_loggerMock.Object, _configurationMock.Object, _mapperMock.Object, _deliveryServiceMock.Object, _blaiseServiceMock.Object);
+            _sut = new MessageHandler(_loggerMock.Object, _configurationMock.Object, _mapperMock.Object, _deliverInstrumentServiceMock.Object, _blaiseServiceMock.Object);
         }
 
         [Test]
@@ -86,7 +86,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
             //assert
             _loggerMock.Verify(v => v.Warn(It.IsAny<string>()), Times.Once);
             _blaiseServiceMock.VerifyNoOtherCalls();
-            _deliveryServiceMock.VerifyNoOtherCalls();
+            _deliverInstrumentServiceMock.VerifyNoOtherCalls();
         }
 
         [Test]
@@ -115,24 +115,24 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
             _loggerMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
             _blaiseServiceMock.Verify(b => b.ServerParkExists(_messageModel.ServerParkName), Times.Once);
             _blaiseServiceMock.VerifyNoOtherCalls();
-            _deliveryServiceMock.VerifyNoOtherCalls();
+            _deliverInstrumentServiceMock.VerifyNoOtherCalls();
         }
 
         [Test]
         public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_The_Correct_Service_Is_Called()
         {
             //arrange
-            _deliveryServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
+            _deliverInstrumentServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<string>()));
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
-            _deliveryServiceMock.Verify(v => v.DeliverSingleInstrument(_messageModel.ServerParkName,
+            _deliverInstrumentServiceMock.Verify(v => v.DeliverSingleInstrument(_messageModel.ServerParkName,
                 _messageModel.InstrumentName, _localProcessFolder, _bucketName), Times.Once);
 
-            _deliveryServiceMock.VerifyNoOtherCalls();
+            _deliverInstrumentServiceMock.VerifyNoOtherCalls();
         }
 
         [TestCase(true)]
@@ -140,7 +140,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
         public void Given_An_Instrument_Is_Provided_When_The_Message_Is_Handled_Then_The_Correct_Value_is_Returned(bool deliveryResult)
         {
             //arrange
-            _deliveryServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
+            _deliverInstrumentServiceMock.Setup(f => f.DeliverSingleInstrument(It.IsAny<string>(), It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryResult);
 
             //act
@@ -155,17 +155,17 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
         {
             //arrange
             _messageModel.InstrumentName = null;
-            _deliveryServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
+            _deliverInstrumentServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<string>()));
 
             //act
             _sut.HandleMessage(_message);
 
             //assert
-            _deliveryServiceMock.Verify(v => v.DeliverAllInstruments(_messageModel.ServerParkName,
+            _deliverInstrumentServiceMock.Verify(v => v.DeliverAllInstruments(_messageModel.ServerParkName,
                  _localProcessFolder, _bucketName), Times.Once);
 
-            _deliveryServiceMock.VerifyNoOtherCalls();
+            _deliverInstrumentServiceMock.VerifyNoOtherCalls();
         }
 
         [TestCase(true)]
@@ -174,7 +174,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
         {
             //arrange
             _messageModel.InstrumentName = null;
-            _deliveryServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
+            _deliverInstrumentServiceMock.Setup(f => f.DeliverAllInstruments(It.IsAny<string>(),
                 It.IsAny<string>(), It.IsAny<string>())).Returns(deliveryResult);
 
             //act
@@ -225,7 +225,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.MessageBroker
             _loggerMock.Verify(v => v.Error(It.IsAny<string>()), Times.Once);
             _blaiseServiceMock.Verify(b => b.ServerParkExists(_messageModel.ServerParkName), Times.Once);
             _blaiseServiceMock.VerifyNoOtherCalls();
-            _deliveryServiceMock.VerifyNoOtherCalls();
+            _deliverInstrumentServiceMock.VerifyNoOtherCalls();
         }
     }
 }

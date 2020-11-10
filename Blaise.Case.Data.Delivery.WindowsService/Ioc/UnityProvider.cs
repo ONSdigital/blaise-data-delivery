@@ -46,11 +46,11 @@ namespace Blaise.Case.Data.Delivery.WindowsService.Ioc
 
             //services
             _unityContainer.RegisterType<IBlaiseApiService, BlaiseApiService>();
-            _unityContainer.RegisterType<IDeliveryService, DeliveryService>();
+            _unityContainer.RegisterType<IDeliverInstrumentService, DeliverInstrumentService>();
             _unityContainer.RegisterType<IFileSystem, FileSystem>();
             _unityContainer.RegisterType<IEncryptionService, EncryptionService>();
             _unityContainer.RegisterType<ICompressionService, CompressionService>();
-            _unityContainer.RegisterType<ICreateDeliveryFileService,CreateDeliveryFileService>();
+            _unityContainer.RegisterType<IInstrumentFileService,InstrumentFileService>();
 
             // If running in Debug, get the credentials file that has access to bucket and place it in a directory of your choice. 
             // Update the credFilePath variable with the full path to the file.

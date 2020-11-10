@@ -86,8 +86,8 @@
     <Compile Include="Core\Configuration\LocalConfigurationProviderTests.cs" />
     <Compile Include="WindowsService\Ioc\UnityProviderTests.cs" />
     <Compile Include="Data\BlaiseApiServiceTests.cs" />
-    <Compile Include="Core\Files\CreateDeliveryFileServiceTests.cs" />
-    <Compile Include="Core\DeliveryServiceTests.cs" />
+    <Compile Include="Core\Files\InstrumentFileServiceTests.cs" />
+    <Compile Include="Core\DeliverInstrumentServiceTests.cs" />
     <Compile Include="MessageBroker\MessageModelMapperTests.cs" />
     <Compile Include="WindowsService\InitialiseWindowsServiceTests.cs" />
     <Compile Include="MessageBroker\MessageBrokerServiceTests.cs" />

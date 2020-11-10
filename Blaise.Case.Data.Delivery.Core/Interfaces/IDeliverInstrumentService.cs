@@ -1,6 +1,6 @@
 ﻿namespace Blaise.Case.Data.Delivery.Core.Interfaces
 {
-    public interface IDeliveryService
+    public interface IDeliverInstrumentService       
     {
         bool DeliverSingleInstrument(string serverParkName, string instrumentName, string tempFilePath,
             string bucketName);

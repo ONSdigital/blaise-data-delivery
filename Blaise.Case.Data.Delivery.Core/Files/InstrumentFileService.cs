@@ -5,13 +5,13 @@ using Blaise.Case.Data.Delivery.Core.Interfaces;
 
 namespace Blaise.Case.Data.Delivery.Core.Files
 {
-    public class CreateDeliveryFileService : ICreateDeliveryFileService
+    public class InstrumentFileService : IInstrumentFileService
     {
         private readonly IEncryptionService _encryptionService;
         private readonly ICompressionService _compressionService;
         private readonly IFileSystem _fileSystem;
 
-        public CreateDeliveryFileService(
+        public InstrumentFileService(
             IEncryptionService encryptionService, 
             ICompressionService compressionService, 
             IFileSystem fileSystem)
@@ -21,14 +21,14 @@ namespace Blaise.Case.Data.Delivery.Core.Files
             _fileSystem = fileSystem;
         }
 
-        public string CreateEncryptedZipFile(IList<string> files, string instrumentName, string filePath)
+        public string CreateEncryptedZipFile(IList<string> files, string instrumentName, string outputPath)
         {
             var uniqueFileName = GenerateUniqueFileName(instrumentName, DateTime.Now);
 
-            var tempZipFilePath = $"{filePath}\\{uniqueFileName}.unencrypted.zip";
+            var tempZipFilePath = $"{outputPath}\\{uniqueFileName}.unencrypted.zip";
             _compressionService.CreateZipFile(files, tempZipFilePath);
 
-            var encryptedZipFilePath = $"{ filePath}\\{uniqueFileName}.zip";
+            var encryptedZipFilePath = $"{outputPath}\\{uniqueFileName}.zip";
             _encryptionService.EncryptFile(tempZipFilePath, encryptedZipFilePath);
 
             DeleteFile(tempZipFilePath);

@@ -9,13 +9,13 @@ using NUnit.Framework;
 
 namespace Blaise.Case.Data.Delivery.Tests.Unit.Core.Files
 {
-    public class CreateDeliveryFileServiceTests
+    public class InstrumentFileServiceTests
     {
         private Mock<IEncryptionService> _encryptionServiceMock;
         private Mock<ICompressionService> _compressionServiceMock;
         private Mock<IFileSystem> _fileSystemMock;
 
-        private CreateDeliveryFileService _sut;
+        private InstrumentFileService _sut;
 
         [SetUp]
         public void SetUpTests()
@@ -26,7 +26,7 @@ namespace Blaise.Case.Data.Delivery.Tests.Unit.Core.Files
             _fileSystemMock = new Mock<IFileSystem>();
             _fileSystemMock.Setup(f => f.File.Delete(It.IsAny<string>()));
 
-            _sut = new CreateDeliveryFileService(_encryptionServiceMock.Object, _compressionServiceMock.Object, _fileSystemMock.Object);
+            _sut = new InstrumentFileService(_encryptionServiceMock.Object, _compressionServiceMock.Object, _fileSystemMock.Object);
         }
 
         [Test]

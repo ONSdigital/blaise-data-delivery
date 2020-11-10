@@ -6,17 +6,17 @@ using log4net;
 
 namespace Blaise.Case.Data.Delivery.Core
 {
-    public class DeliveryService : IDeliveryService
+    public class DeliverInstrumentService : IDeliverInstrumentService
     {
         private readonly ILog _logger;
         private readonly IStorageService _storageService;
-        private readonly ICreateDeliveryFileService _fileService;
+        private readonly IInstrumentFileService _fileService;
         private readonly IBlaiseApiService _blaiseService;
 
-        public DeliveryService(
+        public DeliverInstrumentService(
             ILog logger,
             IStorageService bucketService,
-            ICreateDeliveryFileService fileService, 
+            IInstrumentFileService fileService, 
             IBlaiseApiService blaiseService)
         {
             _logger = logger;

@@ -2,9 +2,9 @@
 
 namespace Blaise.Case.Data.Delivery.Core.Interfaces
 {
-    public interface ICreateDeliveryFileService
+    public interface IInstrumentFileService
     {
-        string CreateEncryptedZipFile(IList<string> files, string instrumentName, string filePath);
+        string CreateEncryptedZipFile(IList<string> files, string instrumentName, string outputPath);
 
         void DeleteFile(string filePath);
 
