@@ -19,8 +19,8 @@ namespace Blaise.Case.Data.Delivery.Tests.Behaviour.Steps
         private readonly PubSubHelper _pubSubHelper;
         private readonly BucketHelper _bucketHelper;
         private readonly CompressionHelper _compressionHelper;
-        private List<string> _questionnaires;
-        private string keyName = "questionnaire";
+        private readonly List<string> _questionnaires;
+        private readonly string keyName = "questionnaire";
 
         public DataDeliverySteps(ScenarioContext scenarioContext)
         {
