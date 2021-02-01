@@ -21,7 +21,8 @@ foreach ($instrument in $instruments)
     $InstrumentDataUri = "$($env:ENV_RESTAPI_URL)/serverparks/$($instrument.serverParkName)/instruments/$($instrument.name)/data"
     
     # Build data delivery filename for the instrument
-    $fileName = "dd_$($instrument.name)_$((Get-Date).ToString("ddMMyyyy"))_$((Get-Date).ToString("HHmmss")).$env:PackageExtension)";
+    $currentDateTime = (Get-Date)
+    $fileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
 
     # Download instrument package
     wget $InstrumentDataUri -outfile $fileName 
