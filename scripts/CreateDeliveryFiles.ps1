@@ -7,7 +7,7 @@ $catiInstrumentsUri = if([string]::IsNullOrEmpty($env:ServerParkName)) {"$env:EN
                       else {"$env:ENV_RESTAPI_URL/cati/serverparks/$($env:ServerParkName)/instruments"}
 
 # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
-$instruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | where { $_.active -eq $true -and $_.name.StartsWith($env:SURVEY_TYPE) }
+$instruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | where { $_.active -eq $true -and $_.name.StartsWith($env:SurveyType) }
 
 # No active instruments found in CATI
 If ($instruments.Count -eq 0) {
@@ -24,7 +24,7 @@ foreach ($instrument in $instruments)
     $currentDateTime = (Get-Date)
     $fileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
 
-    # Download instrument package
+    # Download instrument packagegit pu
     wget $InstrumentDataUri -outfile $fileName 
     
     # Upload instrument package to NIFI

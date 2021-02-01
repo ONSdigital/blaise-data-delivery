@@ -11,7 +11,7 @@ variables:
  - group: ${{ parameters.VarGroup }}
  - name: ServerParkName
    value: gusty
- - name: SURVEY_TYPE
+ - name: SurveyType
    value: OPN
  - name: PackageExtension
    value: zip
