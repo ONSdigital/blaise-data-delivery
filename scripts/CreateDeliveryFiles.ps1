@@ -1,4 +1,8 @@
-﻿# If a serverpark is specified then limit the call to that server park
+﻿###############################
+# Data delivery pipeline script
+###############################
+
+# If a serverpark is specified then limit the call to that server park
 $catiInstrumentsUri = if([string]::IsNullOrEmpty($env:ENV_SERVER_PARK)) {"$env:ENV_RESTAPI_URL/cati/instruments"} 
                       else {"$env:ENV_RESTAPI_URL/cati/serverparks/$($env:ENV_SERVER_PARK)/instruments"}
 
