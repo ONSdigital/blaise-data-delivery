@@ -1,0 +1,39 @@
+parameters:
+  - name : VarGroup
+    displayName: Variable Group
+  - name: Environment
+    displayName: Environment to use
+
+trigger:
+- none
+
+variables:
+ - group: ${{ parameters.VarGroup }}
+ - name: ServerParkName
+   value: gusty
+ - name: SURVEY_TYPE
+   value: OPN
+ - name: PackageExtension
+   value: zip
+
+stages:
+ - stage: DataDelivery
+   displayName: DataDelivery
+   jobs:
+     - deployment: DeliveryData
+       environment: ${{ parameters.Environment }}.RESTAPI
+       strategy:
+        runOnce:
+          deploy: 
+           steps:
+             - checkout: self
+
+             - task: PowerShell@2
+               displayName: Create Delivery Files
+               inputs:
+                 filePath: '$(Agent.BuildDirectory)/s/scripts/CreateDeliveryFiles.ps1'
+            
+             - task: PowerShell@2
+               displayName: Deliver Instruments
+               inputs:
+                 filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverInstruments.ps1'
