@@ -19,6 +19,8 @@ variables:
 stages:
  - stage: DataDelivery
    displayName: DataDelivery
+   variables:
+      ENV_RESTAPI_URL : http://localhost:90
    jobs:
      - deployment: DeliveryData
        environment: ${{ parameters.Environment }}.RESTAPI
