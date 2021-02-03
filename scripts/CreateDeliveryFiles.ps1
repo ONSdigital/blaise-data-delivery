@@ -11,7 +11,7 @@ $instruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | where { 
 
 # No active instruments found in CATI
 If ($instruments.Count -eq 0) {
-    throw [System.Exception] "$No active instruments found for delivery"
+    Write-Host "No active instruments found for delivery"
 }
 
 # Deliver the instrument package with data for each active instrument
@@ -26,9 +26,11 @@ foreach ($instrument in $instruments)
 
     # Download instrument packagegit pu
     wget $InstrumentDataUri -outfile $fileName 
-    
+    Write-Host "Downloaded instrument '$($fileName)'"
+
     # Upload instrument package to NIFI
     gsutil cp $fileName gs://$env:ENV_BLAISE_NIFI_BUCKET
+    Write-Host "Pushed instrument '$($fileName)' to the NIFI bucket"
     
     # remove local instrument package
     Remove-Item $fileName
