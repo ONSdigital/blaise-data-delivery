@@ -7,11 +7,11 @@ $catiInstrumentsUri = if([string]::IsNullOrEmpty($env:ServerParkName)) {"$env:EN
                       else {"$env:ENV_RESTAPI_URL/cati/serverparks/$($env:ServerParkName)/instruments"}
 
 # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
-$instruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | where { $_.active -eq $false -and $_.name.StartsWith($env:SURVEY_TYPE) }
+$instruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | where { $_.DeliverData -eq $true -and $_.name.StartsWith($env:SurveyType) }
 
 # No active instruments found in CATI
 If ($instruments.Count -eq 0) {
-    throw [System.Exception] "$No active instruments found for delivery"
+    Write-Host "No active instruments found for delivery"
 }
 
 # Deliver the instrument package with data for each active instrument
@@ -24,11 +24,13 @@ foreach ($instrument in $instruments)
     $currentDateTime = (Get-Date)
     $fileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
 
-    # Download instrument package
+    # Download instrument packagegit pu
     wget $InstrumentDataUri -outfile $fileName 
-    
+    Write-Host "Downloaded instrument '$($fileName)'"
+
     # Upload instrument package to NIFI
     gsutil cp $fileName gs://$env:ENV_BLAISE_NIFI_BUCKET
+    Write-Host "Pushed instrument '$($fileName)' to the NIFI bucket"
     
     # remove local instrument package
     Remove-Item $fileName

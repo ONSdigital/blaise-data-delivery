@@ -27,12 +27,7 @@ stages:
           deploy: 
            steps:
              - checkout: self
-
-             - task: PowerShell@2
-               displayName: Create Delivery Files
-               inputs:
-                 filePath: '$(Agent.BuildDirectory)/s/scripts/CreateDeliveryFiles.ps1'
-            
+           
              - task: PowerShell@2
                displayName: Deliver Instruments
                inputs:
