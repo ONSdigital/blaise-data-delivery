@@ -5,9 +5,9 @@ steps:
   - deploy
   - [data-delivery]
   - --source=./CloudFunction/AzureDevopsTrigger.py
-  - --region=europe-west2 
+  - --region=$_REGION 
   - --runtime=python37
   - --trigger-event=google.pubsub.topic.publish
   - --trigger-resource=$_DataDelivery_PUBSUB
-  - --set-env-vars=pat_token=$_PAT_Token,var_group_name=$_Var_Group_Name,env_name=$_ENV_Name
+  - --set-env-vars=pat_token=$_PAT_TOKEN,var_group_name=$_VAR_GROUP_NAME,env_name=$_ENV_NAME
   - --timeout=540s
