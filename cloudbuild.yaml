@@ -1,0 +1,13 @@
+steps:
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - functions
+  - deploy
+  - [data-delivery]
+  - --source=./CloudFunction/AzureDevopsTrigger.py
+  - --region=europe-west2 
+  - --runtime=python37
+  - --trigger-event=google.pubsub.topic.publish
+  - --trigger-resource=$_DataDelivery_PUBSUB
+  - --set-env-vars=BUCKET=$_BACKUP_BUCKET,PROJECT=$_PROJECT_ID
+  - --timeout=540s

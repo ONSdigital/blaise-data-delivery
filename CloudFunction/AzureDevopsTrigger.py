@@ -2,13 +2,9 @@ import requests
 import json
 import os
 
-#pat_token = os.getenv("AZDO_PERSONAL_ACCESS_TOKEN")
-#env_name = os.getenv("AZURE_AGENT_ENVNAME")
-#var_group_name = os.getenv("PROJECT_ID")
-
-pat_token = "h4b5opx7ubj5j7mtifoa4s7hyl44v4qcdydhoy2fksgiq47pn2cq"
-env_name = "dev"
-var_group_name = "ons-blaise-v2-dev"
+pat_token = os.getenv("AZDO_PERSONAL_ACCESS_TOKEN")
+env_name = os.getenv("AZURE_AGENT_ENVNAME")
+var_group_name = os.getenv("PROJECT_ID")
 
 def getStatus():
     request = requests.get(
