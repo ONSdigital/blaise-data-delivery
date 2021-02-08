@@ -9,5 +9,5 @@ steps:
   - --runtime=python37
   - --trigger-event=google.pubsub.topic.publish
   - --trigger-resource=$_DataDelivery_PUBSUB
-  - --set-env-vars=BUCKET=$_BACKUP_BUCKET,PROJECT=$_PROJECT_ID
+  - --set-env-vars=pat_token=$_PAT_Token,var_group_name=$_Var_Group_Name,env_name=$_ENV_Name
   - --timeout=540s
