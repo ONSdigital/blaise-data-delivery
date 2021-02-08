@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import time
 
 pat_token = os.getenv("pat_token")
 env_name = os.getenv("env_name")
@@ -39,7 +40,7 @@ while wait_for_success:
     state, result = getStatus()
     if "completed" in state:
         print(f"Result of pipeline is {result}")
-        print(pyfiglet.print_figlet(f"Result: {result}"))
+        print(f"Result: {result}")
         wait_for_success = False
         if "failed" in result:
             print("------------------------------------------------------------")
