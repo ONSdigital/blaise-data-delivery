@@ -6,7 +6,7 @@ import time
 pat_token = os.getenv("pat_token")
 env_name = os.getenv("env_name")
 var_group_name = os.getenv("var_group_name")
-
+git_branch = os.getenv("git_branch", "main")
 
 def getStatus(pipeline_id):
     request = requests.get(
@@ -23,13 +23,15 @@ def getStatus(pipeline_id):
     return last_run["state"], run_result
 
 def dataDelivery(data, context):
-    variables = {"VarGroup": var_group_name, "Environment": env_name}
-    data = {"templateParameters": variables}
     request = requests.post(
-        "https://dev.azure.com/blaise-gcp/csharp/_apis/pipelines/46/runs?api-version=6.0-preview.1",
+        f"https://dev.azure.com/blaise-gcp/csharp/_apis/pipelines/46/runs?api-version=6.0-preview.1",
         auth=("", pat_token),
-        data=json.dumps(data),
-        headers={"content-type": "application/json"},
+        json={
+            "resources": {
+                "repositories": {"self": {"refName": f"refs/heads/{git_branch}"}}
+            },
+            "templateParameters": {"VarGroup": var_group_name, "Environment": env_name},
+        },
     )
 
     pipeline_runs = json.loads(request.text)
@@ -50,7 +52,7 @@ def dataDelivery(data, context):
                 exit(1)
         else:
             print("Waiting for completed state ...")
-        time.sleep(30)
+            time.sleep(30)
 
     print("Result returned")
     

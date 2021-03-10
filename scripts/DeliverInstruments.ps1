@@ -22,16 +22,25 @@ foreach ($instrument in $instruments)
     
     # Build data delivery filename for the instrument
     $currentDateTime = (Get-Date)
-    $fileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
+    $fileName = "$($instrument.name).$env:PackageExtension"
 
     # Download instrument packagegit pu
     wget $InstrumentDataUri -outfile $fileName 
     Write-Host "Downloaded instrument '$($fileName)'"
 
+    # Generate and add SPSS files
+    # & .\scripts\AddSpssFilesToInstrument.ps1 "$($instrument.name)"
+    # Write-Host "Added SPSS files to instrument"
+
+    # Generate DD filename
+    $dataDeliveryFileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
+    Rename-Item -Path $fileName -NewName $dataDeliveryFileName
+    Write-Host "Renamed instrument to '$($dataDeliveryFileName)'"
+
     # Upload instrument package to NIFI
-    gsutil cp $fileName gs://$env:ENV_BLAISE_NIFI_BUCKET
-    Write-Host "Pushed instrument '$($fileName)' to the NIFI bucket"
+    gsutil cp $dataDeliveryFileName gs://$env:ENV_BLAISE_NIFI_BUCKET
+    Write-Host "Pushed instrument '$($dataDeliveryFileName)' to the NIFI bucket"
     
     # remove local instrument package
-    Remove-Item $fileName
+    Remove-Item $dataDeliveryFileName
 }

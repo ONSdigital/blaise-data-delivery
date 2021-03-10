@@ -9,7 +9,7 @@ steps:
   - --runtime=python37
   - --trigger-event=google.pubsub.topic.publish
   - --trigger-resource=$_DATADELIVERY_PUBSUB
-  - --set-env-vars=pat_token=$_PAT_TOKEN,var_group_name=$_VAR_GROUP_NAME,env_name=$_ENV_NAME
+  - --set-env-vars=pat_token=$_PAT_TOKEN,var_group_name=$_VAR_GROUP_NAME,env_name=$_ENV_NAME,git_branch=$_GIT_BRANCH
   - --timeout=540s
 
 - name: "gcr.io/cloud-builders/gcloud"
