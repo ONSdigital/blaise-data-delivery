@@ -29,8 +29,8 @@ foreach ($instrument in $instruments)
     Write-Host "Downloaded instrument '$($fileName)'"
 
     # Generate and add SPSS files
-    & .\scripts\AddSpssFilesToInstrument.ps1 "$($instrument.name)"
-    Write-Host "Added SPSS files to instrument"
+    # & .\scripts\AddSpssFilesToInstrument.ps1 "$($instrument.name)"
+    # Write-Host "Added SPSS files to instrument"
 
     # Generate DD filename
     $dataDeliveryFileName = "dd_$($instrument.name)_$($currentDateTime.ToString("ddMMyyyy"))_$($currentDateTime.ToString("HHmmss")).$env:PackageExtension";
