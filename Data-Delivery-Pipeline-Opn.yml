@@ -56,4 +56,4 @@ stages:
              - task: PowerShell@2
                displayName: Deliver Instruments
                inputs:
-                 filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverInstruments.ps1'
+                 filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverOpnInstruments.ps1'
