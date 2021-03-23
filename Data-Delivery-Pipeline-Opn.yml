@@ -7,6 +7,9 @@ parameters:
 trigger:
 - none
 
+pr:
+- none
+
 variables:
  - group: ${{ parameters.VarGroup }}
  - name: ServerParkName
@@ -18,11 +21,11 @@ variables:
 
 stages:
  - stage: DataDelivery
-   displayName: DataDelivery
+   displayName: Delivery Data for Opn
    variables:
       ENV_RESTAPI_URL : http://localhost:90
    jobs:
-     - deployment: DeliveryData
+     - deployment: DeliveryDataOpn
        environment:
           name: ${{parameters.Environment}}
           resourceType: virtualMachine
@@ -40,7 +43,7 @@ stages:
                   secureFile: 'ons-blaise-v2-shared-221e50eb36c7.json'
 
              - task: PowerShell@2
-               displayName: Download test instrument
+               displayName: Download SPSS Manipula Package
                inputs:
                   targetType: 'inline'
                   script: |
@@ -54,6 +57,6 @@ stages:
                         gcloud auth login $env:ENV_VM_SERVICEACCOUNT
 
              - task: PowerShell@2
-               displayName: Deliver Instruments
+               displayName: Deliver OPN Instruments
                inputs:
                  filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverOpnInstruments.ps1'
