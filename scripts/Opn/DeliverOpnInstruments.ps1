@@ -3,7 +3,7 @@
 ###############################
 
 try {
-    . "$PSScriptRoot\Logging.ps1"
+    . "$PSScriptRoot\Common\Logging.ps1"
 
     # If a serverpark is specified then limit the call to that server park
     $catiInstrumentsUri = if([string]::IsNullOrEmpty($env:ServerParkName)) {"$env:ENV_RESTAPI_URL/api/v1/cati/instruments"} 
@@ -32,7 +32,7 @@ try {
             LogInfo("Downloaded instrument '$fileName'")
 
             # Generate and add SPSS files
-            & .\scripts\AddSpssFilesToInstrument.ps1 "$($instrument.name)" | Out-Null
+            & .\Common\AddSpssFilesToInstrument.ps1 "$($instrument.name)" | Out-Null
             LogInfo("Added SPSS files to instrument")
 
             # Generate DD filename

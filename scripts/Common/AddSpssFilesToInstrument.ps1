@@ -14,7 +14,7 @@ If (-not (Test-Path $instrumentPackage)) {
     throw [System.IO.FileNotFoundException] "$instrumentPackage file not found"
 }
 
-. "$PSScriptRoot\Logging.ps1"
+. "$PSScriptRoot\Common\Logging.ps1"
 
 # Create temporary folder to extract the package
 $tempPath = Get-Date -format "yyyyMMddHHmmss"
