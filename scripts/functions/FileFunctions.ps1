@@ -1,5 +1,5 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
-function GenerateUniqueFilename {
+function GenerateDeliveryFilename {
     param (
         [string] $prefix,
         [string] $instrumentName,
@@ -54,4 +54,16 @@ function AddFilesToZip {
 
     Compress-Archive -Path $files -Update -DestinationPath $zipFilePath
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
+}
+
+function DeleteFile {
+    param (
+        [string] $filePath
+    )
+
+    If (-not (Test-Path $filePath)) {
+        throw [System.IO.FileNotFoundException] "$filePath not found"
+    }
+
+    Remove-Item $filePath
 }

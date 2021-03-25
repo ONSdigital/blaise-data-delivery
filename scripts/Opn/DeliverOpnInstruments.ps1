@@ -21,7 +21,7 @@ try {
     {
         try {           
             # Generate unique data delivery filename for the instrument
-            $fileName = GenerateUniqueFilename -prefix "dd" -instrumentName $instrument.name
+            $fileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $instrument.name
 
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $fileName
@@ -32,8 +32,8 @@ try {
             # Upload instrument package to NIFI
             UploadFileToBucket -fileName $fileName -bucketName $env:ENV_BLAISE_NIFI_BUCKET
 
-            # remove local instrument package
-            Remove-Item $fileName
+            # Remove local instrument package
+            DeleteFile -filePath $fileName
         }
         catch {
             LogError($_.ScriptStackTrace)
