@@ -12,6 +12,18 @@ function GetListOfActiveInstruments {
     return Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | Where-Object { $_.DeliverData -eq $true -and $_.name.StartsWith($surveyType) }
 }
 
+function GetListOfInstrumentsBySurveyType {
+    param (
+        [string] $restApiBaseUrl = $env:ENV_RESTAPI_URL,
+        [string] $surveyType = $env:SurveyType
+    )
+
+    $catiInstrumentsUri = "$restApiBaseUrl/api/v1/cati/instruments"
+
+    # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
+    return Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | Where-Object { $_.name.StartsWith($surveyType) }
+}
+
 function DownloadInstrumentPackage {
     param (   
         [string] $restApiBaseUrl = $env:ENV_RESTAPI_URL,

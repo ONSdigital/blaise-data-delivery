@@ -19,6 +19,17 @@ function GenerateDeliveryFilename {
     return "$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"            
 }
 
+function GenerateBatchFileName{
+    param (
+        [datetime] $dateTime = (Get-Date),
+        [string] $SurveyType = $env:SurveyType
+    )
+    If ([string]::IsNullOrEmpty($SurveyType)) {
+        throw [System.IO.ArgumentException] "No Survey Type has been provided" }
+
+    return "$($env:SurveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
+}
+
 function ExtractZipFile {
     param (
         [string] $zipFilePath,
