@@ -3,7 +3,7 @@
 
 function AddSpssFilesToInstrumentPackage {
     param(
-        [string] $manipulaPackage = "C:\blaise\SpssPackage.zip",
+        [string] $manipulaPackage = "$env:TempPath\SpssPackage.zip",
         [string] $instrumentPackage,
         [string] $instrumentName
     )

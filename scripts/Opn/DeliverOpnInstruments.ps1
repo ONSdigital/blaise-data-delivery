@@ -39,7 +39,7 @@ try {
             CreateDataDeliveryStatus -fileName $deliveryFileName -state "started" -batchStamp $batchStamp
 
             # Generate full file path for instrument
-            $deliveryFile = "$($env:TempPath)/$deliveryFileName"
+            $deliveryFile = "$env:TempPath\$deliveryFileName"
 
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
