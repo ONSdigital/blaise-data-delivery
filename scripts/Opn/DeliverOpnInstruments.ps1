@@ -21,19 +21,19 @@ try {
     {
         try {           
             # Generate unique data delivery filename for the instrument
-            $fileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $instrument.name
+            $deliveryFile = GenerateDeliveryFilename -prefix "dd" -instrumentName $instrument.name
 
             # Download instrument package
-            DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $fileName
+            DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
             # Generate and add SPSS files
-            AddSpssFilesToInstrumentPackage -instrumentPackage $fileName -instrumentName $instrument.name 
+            AddSpssFilesToInstrumentPackage -instrumentPackage $deliveryFile -instrumentName $instrument.name 
         
             # Upload instrument package to NIFI
-            UploadFileToBucket -fileName $fileName -bucketName $env:ENV_BLAISE_NIFI_BUCKET
+            UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET
 
             # Remove local instrument package
-            DeleteFile -filePath $fileName
+            DeleteFile -filePath $deliveryFile
         }
         catch {
             LogError($_.ScriptStackTrace)

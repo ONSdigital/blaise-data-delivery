@@ -39,5 +39,5 @@ function AddSpssFilesToInstrumentPackage {
     AddFilesToZip -files "$tempPath\*.sps","$tempPath\*.asc","$tempPath\*.fps" -zipFilePath $instrumentPackage
 
     # Remove the temporary files
-    Remove-Item $tempPath -Recurse
+    DeleteFile -filePath $tempPath
 }
