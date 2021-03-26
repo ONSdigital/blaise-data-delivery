@@ -2,12 +2,12 @@
 # Data delivery pipeline script
 ###############################
 
-try {
-    . "$PSScriptRoot\functions\LoggingFunctions.ps1"
-    . "$PSScriptRoot\functions\FileFunctions.ps1"
-    . "$PSScriptRoot\functions\RestApiFunctions.ps1"
-    . "$PSScriptRoot\functions\SpssFunctions.ps1"
+. "$PSScriptRoot\functions\LoggingFunctions.ps1"
+. "$PSScriptRoot\functions\FileFunctions.ps1"
+. "$PSScriptRoot\functions\RestApiFunctions.ps1"
+. "$PSScriptRoot\functions\SpssFunctions.ps1"
 
+try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfActiveInstruments
 
