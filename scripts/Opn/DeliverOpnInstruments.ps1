@@ -2,11 +2,11 @@
 # Data delivery pipeline script
 ###############################
 
-. "$PSScriptRoot\functions\LoggingFunctions.ps1"
-. "$PSScriptRoot\functions\FileFunctions.ps1"
-. "$PSScriptRoot\functions\RestApiFunctions.ps1"
-. "$PSScriptRoot\functions\SpssFunctions.ps1"
-. "$PSScriptRoot\functions\DataDeliveryStatusFunctions.ps1"
+. "..\functions\LoggingFunctions.ps1"
+. "..\functions\FileFunctions.ps1"
+. "..\functions\RestApiFunctions.ps1"
+. "..\functions\SpssFunctions.ps1"
+. "..\functions\DataDeliveryStatusFunctions.ps1"
 
 try {
     # Generating batch stamp for all instruments in the current run to be grouped together
