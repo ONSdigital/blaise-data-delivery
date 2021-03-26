@@ -16,7 +16,7 @@ function GenerateDeliveryFilename {
     If ([string]::IsNullOrEmpty($fileExt)) {
         throw [System.IO.ArgumentException] "No file extension argument provided" }        
 
-    return "$PSScriptRoot\..\opn\$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"            
+    return "$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"            
 }
 
 function GenerateBatchFileName{

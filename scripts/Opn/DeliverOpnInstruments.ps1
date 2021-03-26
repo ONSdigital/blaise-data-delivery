@@ -33,10 +33,13 @@ try {
             }
             
             # Generate unique data delivery filename for the instrument
-            $deliveryFile = GenerateDeliveryFilename -prefix "dd" -instrumentName $instrument.name
+            $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $instrument.name
 
             # Set data delivery status to started
-            CreateDataDeliveryStatus -fileName $deliveryFile -state "started" -batchStamp $batchStamp
+            CreateDataDeliveryStatus -fileName $deliveryFileName -state "started" -batchStamp $batchStamp
+
+            # Generate full file path for instrument
+            $deliveryFile = "$($env:TempPath)/$deliveryFileName"
 
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
@@ -48,14 +51,14 @@ try {
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET
 
             # Set data delivery status to generated
-            UpdateDataDeliveryStatus -fileName $deliveryFile -state "generated"
+            UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
 
             # Remove local instrument package
             DeleteFile -filePath $deliveryFile
         }
         catch {
             LogError($_.ScriptStackTrace)
-            ErrorDataDeliveryStatus -fileName $deliveryFile -state "errored" -error_message "An error has occured in delivering $deliveryFile"
+            ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_message "An error has occured in delivering $deliveryFileName"
         }
     }
 }
