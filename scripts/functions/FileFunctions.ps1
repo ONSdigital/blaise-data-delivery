@@ -36,6 +36,10 @@ function ExtractZipFile {
         [string] $destinationPath
     )
     
+    If (-not (Test-Path $zipFilePath)) {
+        throw [System.IO.FileNotFoundException] "$zipFilePath not found"
+    }
+    
     # Extract the file contents into the path
     Expand-Archive $zipFilePath -DestinationPath $destinationPath
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
@@ -57,16 +61,4 @@ function AddFilesToZip {
 
     Compress-Archive -Path $files -Update -DestinationPath $zipFilePath
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
-}
-
-function DeleteFile {
-    param (
-        [string] $filePath
-    )
-    Write-Host "From DeleteFile: $filePath"
-    If (-not (Test-Path $filePath)) {
-        throw [System.IO.FileNotFoundException] "$filePath not found"
-    }
-
-    Remove-Item -path $filePath -recurse 
 }

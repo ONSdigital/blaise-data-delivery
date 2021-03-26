@@ -52,9 +52,6 @@ try {
 
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
-
-            # Remove local instrument package
-            DeleteFile -filePath $deliveryFile
         }
         catch {
             LogError($_.ScriptStackTrace)

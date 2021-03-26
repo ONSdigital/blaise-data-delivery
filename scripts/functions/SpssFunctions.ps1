@@ -23,7 +23,6 @@ function AddSpssFilesToInstrumentPackage {
     # Create temporary folder to extract the package
     $tempPath = "$env:TempPath\$($instrumentName)-$(Get-Date -format "yyyyMMddHHmmss")"
 
-    Write-Host "Instrument Package for extract file '$instrumentPackage'. DestinationPath = '$tempPath'"
     # Extract the instrument package and manipula files into the temporary folder
     ExtractZipFile -zipFilePath $instrumentPackage -destinationPath $tempPath
     ExtractZipFile -zipFilePath $manipulaPackage -destinationPath $tempPath
@@ -38,8 +37,4 @@ function AddSpssFilesToInstrumentPackage {
 
     # Add the SPS, ASC & FPS files to the instrument package
     AddFilesToZip -files "$tempPath\*.sps","$tempPath\*.asc","$tempPath\*.fps" -zipFilePath $instrumentPackage
-
-    # Remove the temporary files
-    Write-Host "Delete temp path: $tempPath"
-    DeleteFile -filePath $tempPath
 }
