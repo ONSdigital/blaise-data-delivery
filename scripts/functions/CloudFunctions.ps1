@@ -6,8 +6,9 @@ function UploadFileToBucket {
         [string] $bucketName
     )
 
-    If ([string]::IsNullOrEmpty($filePath)) {
-        throw [System.IO.ArgumentException] "No file name provided" }
+    If (-not (Test-Path $filePath)) {
+        throw [System.IO.FileNotFoundException] "$filePath not found"
+    }
 
     If ([string]::IsNullOrEmpty($bucketName)) {
         throw [System.IO.ArgumentException] "No bucket name provided" }
