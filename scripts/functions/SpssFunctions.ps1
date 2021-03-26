@@ -1,5 +1,5 @@
-﻿. "$PSScriptRoot\common\functions\LoggingFunctions.ps1"
-. "$PSScriptRoot\common\functions\FileFunctions.ps1"
+﻿. "$PSScriptRoot\LoggingFunctions.ps1"
+. "$PSScriptRoot\FileFunctions.ps1"
 
 function AddSpssFilesToInstrumentPackage {
     param(
