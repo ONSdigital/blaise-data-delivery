@@ -63,7 +63,7 @@ function DeleteFile {
     param (
         [string] $filePath
     )
-
+    Write-Host "From DeleteFile: $filePath"
     If (-not (Test-Path $filePath)) {
         throw [System.IO.FileNotFoundException] "$filePath not found"
     }
