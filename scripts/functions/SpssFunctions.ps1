@@ -23,6 +23,7 @@ function AddSpssFilesToInstrumentPackage {
     # Create temporary folder to extract the package
     $tempPath = "$instrumentName-$(Get-Date -format "yyyyMMddHHmmss")"
 
+    Write-Host "Instrument Package for extract file '$instrumentPackage'. DestinationPath = '$tempPath'"
     # Extract the instrument package and manipula files into the temporary folder
     ExtractZipFile -filePath $instrumentPackage -destinationPath $tempPath
     ExtractZipFile -filePath $manipulaPackage -destinationPath $tempPath

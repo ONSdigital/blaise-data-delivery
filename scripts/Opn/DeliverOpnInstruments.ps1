@@ -58,7 +58,7 @@ try {
         }
         catch {
             LogError($_.ScriptStackTrace)
-            ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_message "An error has occured in delivering $deliveryFileName"
+            ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     }
 }
