@@ -68,5 +68,5 @@ function DeleteFile {
         throw [System.IO.FileNotFoundException] "$filePath not found"
     }
 
-    Remove-Item $filePath
+    Remove-Item -path $filePath -recurse 
 }
