@@ -37,9 +37,7 @@ function ExtractZipFile {
     )
     
     # Extract the file contents into the path
-    Write-Host "Extracting Files from: $zipFilePath to: $destinationPath"
     Expand-Archive $zipFilePath -DestinationPath $destinationPath
-    Write-Host "Files Extracted"
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
 }
 

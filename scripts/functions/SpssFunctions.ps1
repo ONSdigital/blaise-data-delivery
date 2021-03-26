@@ -25,8 +25,8 @@ function AddSpssFilesToInstrumentPackage {
 
     Write-Host "Instrument Package for extract file '$instrumentPackage'. DestinationPath = '$tempPath'"
     # Extract the instrument package and manipula files into the temporary folder
-    ExtractZipFile -filePath $instrumentPackage -destinationPath $tempPath
-    ExtractZipFile -filePath $manipulaPackage -destinationPath $tempPath
+    ExtractZipFile -zipFilePath $instrumentPackage -destinationPath $tempPath
+    ExtractZipFile -zipFilePath $manipulaPackage -destinationPath $tempPath
 
     # Generate SPS file
     & cmd.exe /c .\$tempPath\Manipula.exe "$tempPath\GenerateStatisticalScript.msux" -K:meta="$instrumentName.bmix" -H:"" -L:"" -N:oScript="$instrumentName,iFNames=,iData=$instrumentName.bdix" -P:"SPSS;;;;;;$instrumentName.asc;;;2;;64;;Y" -Q:True | Out-Null
