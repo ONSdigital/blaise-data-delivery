@@ -10,9 +10,6 @@
 . "$PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
 
 try {
-    # Generating batch stamp for all instruments in the current run to be grouped together
-    $batchStamp = GenerateBatchFileName
-
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
@@ -21,6 +18,9 @@ try {
         LogWarning("No instruments found for '$env:SurveyType'")
         exit
     }    
+
+    # Generating batch stamp for all instruments in the current run to be grouped together
+    $batchStamp = GenerateBatchFileName
 
     # Deliver the instrument package with data for each active instrument
     foreach ($instrument in $instruments)
