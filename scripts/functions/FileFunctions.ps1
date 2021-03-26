@@ -35,11 +35,6 @@ function ExtractZipFile {
         [string] $zipFilePath,
         [string] $destinationPath
     )
-
-    If (-not (Test-Path $zipFilePath)) {
-        throw [System.IO.FileNotFoundException] "$zipFilePath not found"
-    }  
-
     # Extract the file contents into the path
     Expand-Archive $zipFilePath -DestinationPath $destinationPath
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
