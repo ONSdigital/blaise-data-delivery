@@ -5,6 +5,7 @@
 . "$PSScriptRoot\..\functions\LoggingFunctions.ps1"
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
+. "$PSScriptRoot\..\functions\CloudFunctions.ps1"
 . "$PSScriptRoot\..\functions\SpssFunctions.ps1"
 . "$PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
 
