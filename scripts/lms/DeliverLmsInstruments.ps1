@@ -44,6 +44,18 @@ try {
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
+            # Create a temporary folder for processing instruments
+            $temporaryFolder = CreateANewFolder -folderPath $tempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
+
+            # Extract package
+            ExtractZipFile -zipFilePath $deliveryFile -destinationPath $temporaryFolder
+
+            # Create a folder within the temporary folder for generating XML
+            $deliveryFolder = CreateANewFolder -folderPath $temporaryFolder -folderName $deliveryFileName
+
+            #Generate XML Files
+            GenerateXMLFileForPackage -tempFolder $temporaryFolder -deliveryFolder $deliveryFolder -deliveryFile $deliveryFile -instrumentName $instrument.name
+
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET
 

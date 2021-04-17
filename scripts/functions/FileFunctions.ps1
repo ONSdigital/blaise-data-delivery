@@ -62,3 +62,22 @@ function AddFilesToZip {
     Compress-Archive -Path $files -Update -DestinationPath $zipFilePath
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
 }
+
+function CreateANewFolder {
+    param (
+        [string] $folderpath,
+        [string] $folderName
+    )
+    If ([string]::IsNullOrEmpty($folderpath)) {
+        throw [System.IO.ArgumentException] "No Path to the new folder provided" 
+    }
+    If ([string]::IsNullOrEmpty($folderName)) {
+        throw [System.IO.ArgumentException] "No folder name provided" 
+    }
+
+    if (-not (Test-Path $folderpath\$folderName))
+    {
+        New-Item -Path $folderpath -Name $folderName -ItemType "directory"
+    }
+    return "$folderpath\$folderName"
+}
