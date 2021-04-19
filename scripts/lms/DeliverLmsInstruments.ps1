@@ -45,16 +45,22 @@ try {
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
             # Create a temporary folder for processing instruments
-            $temporaryFolder = CreateANewFolder -folderPath $tempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
+            $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
+            
+            # Extract Manipula files to the processing folder
+            ExtractZipFile -zipFilePath "$tempPath\manipula.exe" -destinationPath $processingFolder
+
+            # Copy Manipula xml files to the processing folder
+            Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
 
             # Extract package
-            ExtractZipFile -zipFilePath $deliveryFile -destinationPath $temporaryFolder
+            ExtractZipFile -zipFilePath $deliveryFile -destinationPath $processingFolder
 
             # Create a folder within the temporary folder for generating XML
-            $deliveryFolder = CreateANewFolder -folderPath $temporaryFolder -folderName $deliveryFileName
+            $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFileName
 
             #Generate XML Files
-            GenerateXMLFileForPackage -tempFolder $temporaryFolder -deliveryFolder $deliveryFolder -deliveryFile $deliveryFile -instrumentName $instrument.name
+            GenerateXMLFileForPackage -tempFolder $processingFolder -deliveryFolder $deliveryFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
 
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET
