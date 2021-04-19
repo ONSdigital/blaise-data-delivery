@@ -65,19 +65,20 @@ function AddFilesToZip {
 
 function CreateANewFolder {
     param (
-        [string] $folderpath,
+        [string] $folderPath,
         [string] $folderName
     )
-    If ([string]::IsNullOrEmpty($folderpath)) {
+    If ([string]::IsNullOrEmpty($folderPath)) {
         throw [System.IO.ArgumentException] "No Path to the new folder provided" 
     }
     If ([string]::IsNullOrEmpty($folderName)) {
         throw [System.IO.ArgumentException] "No folder name provided" 
     }
 
-    if (-not (Test-Path $folderpath\$folderName))
+    if (-not (Test-Path $folderPath\$folderName))
     {
-        New-Item -Path $folderpath -Name $folderName -ItemType "directory" | Out-Null
+        Write-Host "creating new folder: $folderName in $folderPath"
+        New-Item -Path $folderPath -Name $folderName -ItemType "directory" | Out-Null
     }
     
     return "$folderPath\$folderName"
