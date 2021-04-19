@@ -1,6 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\FileFunctions.ps1"
-function GenerateXML{
+function GenerateXMLFileForDeliveryPackage{
     param(
         [string] $processingFolder,
         [string] $deliveryFolder,
@@ -22,7 +22,7 @@ function GenerateXML{
 
 # Generate XML
 try {
-& cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateXML.msux" -A:True -Q:True -K:OPXMeta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$deliveryFolder/$instrumentName.xml
+    & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateXML.msux" -A:True -Q:True -K:OPXMeta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$deliveryFolder/$instrumentName.xml
 }
 catch {
     LogWarning("Generating XML Failed: $_.Exception.Message")
