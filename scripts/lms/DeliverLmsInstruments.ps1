@@ -46,7 +46,7 @@ try {
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
             # Create a temporary folder for processing instruments
-            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)_$(Get-Date -format "yyyyMMdd_HHmmss")"
+            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
             
             # Extract Manipula files to the processing folder
             ExtractZipFile -zipFilePath "$env:TempPath\Manipula.zip" -destinationPath $processingFolder
