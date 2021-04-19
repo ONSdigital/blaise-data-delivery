@@ -1,4 +1,5 @@
-. "$PSScriptRoot\..\functions\FileFunctions.ps1"
+. "$PSScriptRoot\LoggingFunctions.ps1"
+. "$PSScriptRoot\FileFunctions.ps1"
 function GenerateXML{
     param(
         [string] $processingFolder,
@@ -20,7 +21,11 @@ function GenerateXML{
         throw [System.IO.ArgumentException] "No instrument name provided" }
 
 # Generate XML
+try {
 & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateXML.msux" -A:True -Q:True -K:OPXMeta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$deliveryFolder/$instrumentName.xml
-
+}
+catch {
+    LogWarning("Generating XML Failed: $_.Exception.Message")
+}
 AddFilesToZip -files "$deliveryFolder", -zipFilePath $deliveryZip
 }
