@@ -27,5 +27,5 @@ try {
 catch {
     LogWarning("Generating XML Failed: $_.Exception.Message")
 }
-    AddFolderToZip -files $deliveryFolder, -zipFilePath $deliveryZip
+    AddFolderToZip -folder $deliveryFolder, -zipFilePath $deliveryZip
 }
