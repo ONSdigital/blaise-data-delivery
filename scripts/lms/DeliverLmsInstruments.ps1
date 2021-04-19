@@ -46,7 +46,7 @@ try {
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
             # Create a temporary folder for processing instruments
-            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
+            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)_$(Get-Date -format "yyyyMMdd_HHmmss")"
             
             # Extract Manipula files to the processing folder
             ExtractZipFile -zipFilePath "$env:TempPath\Manipula.zip" -destinationPath $processingFolder
@@ -58,7 +58,7 @@ try {
             ExtractZipFile -zipFilePath $deliveryFile -destinationPath $processingFolder
 
             # Create a folder within the temporary folder for generating XML
-            $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFileName
+            $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingFolder
 
             #Generate XML Files
             GenerateXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryFolder $deliveryFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
