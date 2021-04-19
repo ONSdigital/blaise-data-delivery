@@ -7,6 +7,7 @@
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 . "$PSScriptRoot\..\functions\CloudFunctions.ps1"
 . "$PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
+. "$PSScriptRoot\..\functions\xmlFunctions.ps1"
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
