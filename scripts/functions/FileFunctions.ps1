@@ -63,6 +63,24 @@ function AddFilesToZip {
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
 }
 
+function AddFolderToZip {
+    param (
+        [string] $folder,
+        [string] $zipFilePath
+    )
+    
+    If (-not (Test-Path $folder)) {
+        throw [System.IO.FileNotFoundException] "$zipFilePath not found"
+    }
+
+    If (-not (Test-Path $zipFilePath)) {
+        throw [System.IO.FileNotFoundException] "$zipFilePath not found"
+    }
+
+    Compress-Archive -Path $folder -Update -DestinationPath $zipFilePath
+    LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
+}
+
 function CreateANewFolder {
     param (
         [string] $folderPath,
