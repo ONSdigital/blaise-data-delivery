@@ -77,7 +77,8 @@ function CreateANewFolder {
 
     if (-not (Test-Path $folderpath\$folderName))
     {
-        New-Item -Path $folderpath -Name $folderName -ItemType "directory"
+        New-Item -Path $folderpath -Name $folderName -ItemType "directory" | Out-Null
     }
-    return "$folderpath\$folderName"
+    
+    return "$folderPath\$folderName"
 }

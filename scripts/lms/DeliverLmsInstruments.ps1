@@ -60,7 +60,7 @@ try {
             $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFileName
 
             #Generate XML Files
-            GenerateXMLFileForPackage -tempFolder $processingFolder -deliveryFolder $deliveryFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
+            GenerateXMLFileForPackage -processingFolder $processingFolder -deliveryFolder $deliveryFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
 
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET

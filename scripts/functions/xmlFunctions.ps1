@@ -1,3 +1,4 @@
+. "$PSScriptRoot\..\functions\FileFunctions.ps1"
 function GenerateXML{
     param(
         [string] $processingFolder,
