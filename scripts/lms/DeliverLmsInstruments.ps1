@@ -45,10 +45,10 @@ try {
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
             # Create a temporary folder for processing instruments
-            $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
+            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
             
             # Extract Manipula files to the processing folder
-            ExtractZipFile -zipFilePath "$tempPath\Manipula.zip" -destinationPath $processingFolder
+            ExtractZipFile -zipFilePath "$env:TempPath\Manipula.zip" -destinationPath $processingFolder
 
             # Copy Manipula xml files to the processing folder
             Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
