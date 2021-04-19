@@ -48,7 +48,7 @@ try {
             $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($instrument.name)-$(Get-Date -format "yyyyMMddHHmmss")"
             
             # Extract Manipula files to the processing folder
-            ExtractZipFile -zipFilePath "$tempPath\manipula.exe" -destinationPath $processingFolder
+            ExtractZipFile -zipFilePath "$tempPath\Manipula.zip" -destinationPath $processingFolder
 
             # Copy Manipula xml files to the processing folder
             Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
