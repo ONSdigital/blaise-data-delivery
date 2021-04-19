@@ -58,7 +58,7 @@ try {
             ExtractZipFile -zipFilePath $deliveryFile -destinationPath $processingFolder
 
             # Create a folder within the temporary folder for generating XML
-            $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingFolder
+            $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName "$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             #Generate XML Files
             GenerateXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryFolder $deliveryFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
