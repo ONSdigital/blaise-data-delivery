@@ -1,0 +1,3429 @@
+﻿{*************************************************}
+{                                                 }
+{  Blaise 5. A Survey Processing System           }
+{  Copyright (c) 2021 Statistics Netherlands      }
+{                                                 }
+{*************************************************}
+
+PROCESS GenerateStatisticalScript
+//********************************************************************************************
+//                                                 
+// Version: 1.21 - October 13, 2020                  
+// Based on Blaise 4 script 1.3 - 29-Feb-2016      
+//                                                 
+// Generate scripts for statistical packages       
+// Based on ideas from                             
+// - Peter <psnz@cbs.nl>,                          
+// - Leif Bochis Madsen <lbm@dst.dk> and           
+// - Lon Hofman <lhfn@cbs.nl>                      
+// Some SPSS improvements were provided by         
+// - Kees de Boer (VUmc, Amsterdam)                
+// Many valuable comments on the Stata script      
+// were received from Innovations for Poverty      
+// Action (Matthew White and others)               
+//
+// The following packages are supported:           
+// 1. SAS. Implementation based on SAS_32.cif      
+//    Cameleon script and a Manipula              
+//    implementation by Leif                       
+// 2. SPSS. Implementation based on SPSS.cif       
+//    Cameleon script                              
+// 3. Stata. No previous .cif available so we      
+//    had to read the Stata manual...              
+//                                                 
+// Note:                                           
+// Compared to the Cameleon implementation,        
+// - Scripts now have a better naming of fields    
+//   and types using an improved unique name       
+//   algorithm                                     
+// - For all packages: support for dichotomisation 
+//   (0/1 or 0/X) of set fields                    
+//   is available                                  
+// Change log                                      
+// 0.1 Jun-9-2017. First version                   
+// 0.9 Oct-24-2017                                 
+//   - SAS: Improved special answer code            
+//   - General: Improved labels for set elements            
+//   - General: Added progress indicator for generating     
+//     unique names                                  
+//   - SAS: Added missing values for enum's      
+//   - General: support for field selection added           
+//   - General: create of manipula export script added      
+// 0.91 Oct-30-2017                                 
+//   - SAS: GenerateSetArray improved
+//   - SAS: RECFM=F changed to RECFM=V
+// 0.92 November-1-2017                                 
+//   - Some code clean-up
+//   - Added: generation of project files .manx / .blax 
+//   - Added: generation of .cmd files for export
+//   - General: improved names of generated .manx files
+// 0.93 November-4-2017                                 
+//   - SAS: Corrected some issues with generating 0/1 and 0/x 
+//     set vars for long set field names and sets with many 
+//     non-consecutive items, and consecutive items for which
+//     the name was initially not unique. 
+//   - SAS: improved naming for value label that end with
+//     a 0..9.  
+// 1.0 November-25-2017                                 
+//   - SAS: added redirect of log output to file <script>.log in 
+//     output folder
+//   - General: Generate additional file to list the Blaise field 
+//     name and corresponding unique field name as used in the 
+//     statistical script
+// 1.01 December-13-2017
+//   - General: improved generated unique name for enum type when
+//     enum is specified at the field (so not using a type)
+//   - SPSS: Started using TAB as separator by default to correct 
+//     for UTF-8 import problem. SPSS can not handle multi byte
+//     characters in fixed column mode in certain versions
+//   - Stata: Repaired 'label define'
+//   - Stata: Support for separator added
+//   - Support for ANSI added. Both the produced Script and data export are then in ANSI 
+// 1.02 December-18-2017
+//   - Stata: Changed IF in if
+// 1.03 December-20-2017
+//   - Stata: improved export using separtor. Type added
+// 1.04 February-16-2018
+//   - Some improvements for text label length
+// 1.05 July-5-2018
+//   - Fixed array of DateType/TimeType issue
+// 1.1 August 9-2018
+//   - Introduced option for preceeding zero in field index (command line option 15)
+//   - Changed unique field naming algorithm: handle names of root first when name
+//     is based on 'local name'
+//   - Additional command line options (for now only for SAS):
+//     - Introduced option to Yes(=default)/No convert date/time fields (command line option 16)
+//     - Introduced option to Yes(=default)/No recode special answers for non-numeric variables 
+//       (command line option 17)           
+//     - Introduced option to Yes(=default)/No recode Empty to Missing (command line option 18) 
+//     - Introduced option to drop PROC FORMAT (command line option 19)
+//   - Added TRUNCOVER to imrove SAS import of too short lines in ASCII data file
+//   - SAS. Trucated <name> of LIBRARY.<name> to 32 positions
+// 1.11 August 15-2018
+//   - Improved parameter #10 default
+//   - SAS: Improved recode of set when parameter #18 is 'N'
+//   - SAS: improved naming for value label that end with a 0..9. 
+// 1.12 August 20-2018
+//   - SAS: Improved of recode special answers when parameter #18 is 'N'
+// 1.2 October 3-2020
+//   - BLOBTYPE now handled. Just like OPEN no output for such a field in generated script
+//   - Stata insheet improved. String fields now handled using tostring
+// 1.21 October 13-2020
+//   - Stata script improved, for instance: INSHEET replaced by IMPORT and large
+//     integer/real no longer handled as string
+//   - Generated files no longer have BOM when in UTF8 format. Stata can not handle BOM.
+
+//
+//*******************************************************************************************
+//                                                                                           
+// This script supports the following command line                                           
+// parameters:                                                                               
+//                                                                                           
+// -K:meta=<bmi-file>        (required)                                                       
+//                           Prepared datamodel to be used                                    
+// -N:iFname=<selection-file> (optional)                                               
+//                           Text file that contains field names for which the script has to
+//                           be produced                              
+// -N:iData=<bdix-file>      (optional)                                                       
+//                           Name of data file used for export                                
+// -N:oScript=<script-name>  (optional)                                                       
+//                           Name of the statistical script to produce. 
+//                           When not specified then the datamodel path+name will be used         
+// -H:<meta-search-path>     (optional)                                                       
+// -L:<library-search-path>  (optional)                                                       
+// -P:<parameters>                                                                            
+//  parameter  1: Package. Must be SPSS, SAS or Stata using the correct casing                
+//                (required)                                                                  
+//  parameter  2: Language ID (optional) = the language identifier to use. If not present     
+//                the default / first language will be used.                                  
+//  parameter  3: Role ID (optional) = the Role identifier to use. If not present             
+//                the default will be used.                                                   
+//  parameter  4: Mode ID (optional) = the Mode identifier to use. If not present             
+//                the default.                                                                
+//  parameter  5: Output file path (optional) = the location where the package                
+//                will produce the output file. When not specified: the location of the .bmix      
+//                will be used.                                                               
+//  parameter  6: Input data file path (optional) = the location where the package         
+//                expects the ASCII data file to be. When not specified: the location of the      
+//                datamodel .bmix will be used.                                               
+//  parameter  7: Input data file name (optional) = the name of the ASCII data file           
+//                (excluding the path) that contains the data for the statistical package.    
+//                When not specified: the name of the datamodel will be used.                     
+//  parameter  8: Do not handle DK and RF for enum and set field as missing (optional).       
+//                When value is 'Y' they will not be handled as missing.                       
+//  parameter  9: Do set conversion to 0/1 or 0/X variables (optional).                       
+//                When value is 'Y' code will be added to the scripts to convert the          
+//                sets to 0/1 variables during the import by the package.                     
+//                When value is 'X' code will be added to the scripts to convert the          
+//                sets to 0/x variables during the import by the package. X represents        
+//                the position in which the answer was present in the set.                    
+//  parameter 10: Unique name generator base (optional). Possible values:                     
+//                1 = use fully qualified name                                                
+//                2 = use local name                                                          
+//                3 = use local name and the array indexes present in the fully               
+//                   qualified name (if applicable)                                           
+//                When not specified the value 1 (=fully qualified name) will be used.        
+//  parameter 11: Do lowercase conversion for names (optional).                               
+//                When value is 'Y' the names will be converted to lowercase.                 
+//  parameter 12: Maximum var length (optional).                                              
+//                When not specified: SAS=32, SPSS=64, Stata=32                               
+//  parameter 13: Separator (SAS/SPSS only; Default = no separator). It can be TAB or 
+//                a single character 
+//  parameter 14: Export data to ANSI? When 'Y' data will be exported by the Manipula
+//                script to ANSI, else (default) it will be exported to UTF-8
+//  parameter 15: Add zero to index of array elements when number of elements is more
+//                than 9. When 'N' (no) this will be disabled. Default is 'Y' (Yes)
+//  parameter 16: SAS only. Convert date/time fields (optional). When 'Y' conversion will be
+//                done. When 'N' this will not be done. Default is 'Y'
+//  parameter 17: SAS only. Recode DK/RF for non-numeric veriables. When 'Y' recoding will be
+//                done. When 'N' this will not be done. Default is 'Y'
+//  parameter 18: SAS only. Recode empty to missing. Default is 'Y'  
+//  parameter 19: SAS only. Generate formats. Default is 'Y'
+//  parameter 20: Produce Manipula export script. Default is 'Y'
+//                                                                                            
+// You can us the StartStatisticalScriptGenerator.ps1 PowerShell script to specify the        
+// parameters and run this script.                                                            
+//                                                                                            
+//********************************************************************************************
+{.$DEFINE DEBUG}
+
+SETTINGS
+  DESCRIPTION = 'SAS/SPSS/Stata Script Generator'
+  AUTOREAD = NO
+  CREATEBDIX = NO
+  ESCAPE = YES
+{$IFDEF DEBUG}
+  DAYFILE='GenerateStatisticalScript_day.txt'
+  MESSAGEFILE='GenerateStatisticalScript_message.txt'
+{$ENDIF}  
+USES
+  Meta (VAR)
+
+  DATAMODEL AsciiMeta
+  FIELDS
+    Text : STRING[2000]
+  ENDMODEL
+
+  DATAMODEL dmRecordDescription
+  Primary RecNr
+  SECONDARY
+    uniqueftn
+    ordered_by_name = basename, level, RecNr
+  FIELDS
+    RecNr             : INTEGER[6]
+    vFieldName        : STRING
+    vUniqueName       : STRING
+    vLocalName        : STRING
+    vFieldNameB5      : string
+    fieldtype         : STRING[15]
+    fieldtypename     : STRING
+    ftNameGenerated   : STRING[1]
+    ftAdded           : (_true_)
+    uniqueftn         : STRING[64]
+    width,catCount    : INTEGER[8]
+    minValue,
+    maxValue          : STRING[24]
+    decim             : INTEGER[3]
+    attribute         : STRING[60]
+    setsize           : INTEGER[5]
+    lastFromSet       : INTEGER[1]
+    generatedtype     : INTEGER[1]
+    basename          : STRING
+    level             : INTEGER[3]
+  ENDMODEL
+
+  DATAMODEL dmUniqueFNames
+  PRIMARY
+    Name
+  SECONDARY
+    OriName
+  FIELDS
+    Name: STRING
+    OriName: STRING
+    Added: (_true_)
+  ENDMODEL
+
+  DATAMODEL dmUniqueTNames
+  PRIMARY
+    Name
+  SECONDARY
+    OriName
+  FIELDS
+    Name: STRING
+    OriName: STRING
+    FieldNameB5: STRING
+  ENDMODEL
+
+INPUTFILE iFNames: AsciiMeta (ASCII)
+SETTINGS
+  OPEN = NO
+  
+INPUTFILE iData: Meta (BDIX)
+SETTINGS
+  OPEN = NO  
+
+TEMPORARYFILE DM: Meta
+SETTINGS 
+  CONNECT = NO
+  
+TEMPORARYFILE tTypeNames: dmUniqueTNames
+TEMPORARYFILE tfRec: dmRecordDescription
+TEMPORARYFILE tfUniqueFieldNames: dmUniqueFNames
+TEMPORARYFILE tfUniqueTypeNames: dmUniqueTNames
+
+OUTPUTFILE oScript: AsciiMeta (ASCII)
+SETTINGS
+   TRAILINGSPACES = NO
+   OPEN = NO
+   ADDUTF8BOM = NO //needed for Stata...
+   BUFFERSIZE = 1000
+
+OUTPUTFILE oASCII: AsciiMeta (ASCII)
+SETTINGS
+   TRAILINGSPACES = NO
+   OPEN = NO
+  
+OUTPUTFILE oFieldNames: dmUniqueFNames (ASCII)
+SETTINGS
+  OPEN = NO
+  SEPARATOR = TAB
+  TRAILINGSPACES = NO
+   
+{$IFDEF DEBUG}   
+OUTPUTFILE oTypeNames: dmUniqueTNames ('otypenames.xml',XML)
+SETTINGS
+  OPEN=NO
+OUTPUTFILE oRec: dmRecordDescription ('otfRec.xml',XML)
+SETTINGS
+  OPEN=NO
+OUTPUTFILE oUniqueTypeNames: dmUniqueTNames ('otfUniqueTypeNames.xml',XML)
+SETTINGS
+  OPEN=NO
+{$ENDIF}   
+
+AUXFIELDS
+  Package: STRING
+  LangID: STRING
+  RoleID: STRING
+  ModeID: STRING
+  DoSetConversion: (Yes),EMPTY
+  DoMaintainSetOrder: (Yes),EMPTY
+  DoTreatDKRFasValues: (Yes),emPty
+  DoLowercaseNames: (Yes),EMPTY
+  DoProduceANSI: (Yes),EMPTY
+  DoAddZeroToIndex: (Yes),EMPTY
+  DoConvertDateTime: (Yes),EMPTY
+  DoDKRFConversionForNonNumeric: (Yes),EMPTY
+  DoRecodeEmpty: (Yes),EMPTY
+  DoGenerateFormats: (Yes),EMPTY
+  DoProduceManExportScript: (YES),EMPTY
+  UseSeparator: (Yes),EMPTY
+  DateOrTimePresent: (Yes),EMPTY
+  FieldNamesPresent: (Yes),EMPTY
+  UniqueNameBasedOn:
+    (fullname "Full name",
+     _localname "Local name",
+     localname_indexed "Local name and array index")
+  MaxNameLen: INTEGER
+  ElmStr: STRING
+  DMSize,DMSizeUnicode: INTEGER
+  DMNrOfDataFields: INTEGER
+  OutputFilePath: STRING
+  InputDataFilePath: STRING
+  InputDataFileName: STRING 
+  InputDataFile: STRING
+  BlaiseDataFileName: STRING 
+  ScriptName: STRING
+  BlaiseSystemPath: STRING
+  array_name_index: INTEGER
+  PeriodReplaceChar: STRING[1]
+  SeparatorChar: STRING
+  DictionaryFileName: STRING
+  GlobRec: INTEGER
+
+PROCEDURE DisplayProgress
+PARAMETERS pText: STRING
+INSTRUCTIONS
+  DISPLAY(pText)
+{$IFDEF DEBUG}
+  MESSAGE(DATETOSTR(SYSDATE,'yyyyMMdd')+';'+TIMETOSTR(SYSTIME,'HH:mm:ss')+' >> '+pText)
+{$ENDIF}  
+ENDPROCEDURE
+
+include "fileutils.incx"
+  
+FUNCTION getSpaces : STRING
+PARAMETERS
+  prmSpaces : INTEGER
+INSTRUCTIONS
+  RESULT:= FILL(' ',prmSpaces)
+ENDFUNCTION
+
+PROCEDURE oScript_OPEN
+PARAMETERS
+  pFileName: STRING
+  pAppend: INTEGER
+INSTRUCTIONS
+  IF DoProduceANSI=Yes THEN
+    oScript.SETCHARACTERSET(ANSI)
+  ENDIF  
+  IF pAppend=1 THEN
+    oScript.OPEN(pFileName,APPEND)
+  ELSE  
+    oScript.OPEN(pFileName)
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE oScript_CLOSE
+INSTRUCTIONS
+  oScript.CLOSE
+ENDPROCEDURE
+
+PROCEDURE WriteText
+PARAMETERS
+  pText : OPEN
+  pLevel : INTEGER
+AUXFIELDS
+  auxIndent : STRING
+  iLen : INTEGER
+  strT : OPEN
+  i : INTEGER
+  iSingle : INTEGER
+  idouble  : INTEGER
+INSTRUCTIONS
+  auxIndent:= GetSpaces(pLevel)
+  strT:= auxIndent + pText
+//8-1-2020. Restriction on SPSS length removed. Does not seem to be needed anymore
+//  CASE Package OF
+//  'SPSS':
+//    iLen:= LEN(strT)
+//    IF iLen > 151 THEN
+//      idouble:= 0
+//      isingle:= 0
+//      strT:= SUBSTRING(strT,1,150)
+//      FOR i:= 1 TO 150 DO
+//       IF SUBSTRING(strT,i,1) = '\'' THEN isingle:= iSingle + 1 ENDIF
+//        IF SUBSTRING(strT,i,1) = '"' THEN idouble:= idouble + 1 ENDIF
+//      ENDDO
+//      IF (isingle MOD 2 ) = 1 THEN strT:= strT + '\'' ENDIF
+//      IF (idouble MOD 2 ) = 1 THEN strT:= strT + '"' ENDIF
+//    ENDIF
+//  ENDCASE
+  oScript.Text:= strT
+  oScript.WRITE
+ENDPROCEDURE
+
+FUNCTION RemoveFormattingCodes: OPEN
+PARAMETERS pText: OPEN
+AUXFIELDS 
+  tmp: OPEN
+  tmp1,tmp2: OPEN
+  p1,p2: INTEGER
+INSTRUCTIONS
+  tmp:= pText
+  tmp:= REPLACE(tmp,'\<','#1')
+  tmp:= REPLACE(tmp,'\>','#2')
+  tmp:= REPLACE(tmp,'<newline>',' ',TRUE)
+  p1:= POSITION('<',tmp)
+  p2:= POSITION('>',tmp)
+  WHILE (p1>0) AND (p2>0) AND (p2>p1)  DO
+     tmp1:=  SUBSTRING(tmp,1,p1-1)
+     tmp2:=  SUBSTRING(tmp,p2+1,LEN(tmp))
+     tmp:= tmp1+tmp2
+     p1:= POSITION('<',tmp)
+     p2:= position('>',tmp)
+  ENDWHILE
+  tmp:= REPLACE(tmp,'#1','\<')
+  tmp:= REPLACE(tmp,'#2','\>')
+  tmp:= REPLACE(tmp,'\'','')
+  tmp:= REPLACE(tmp,'""','"')
+  REPEAT
+    tmp:= REPLACE(tmp,'  ',' ')
+  UNTIL POSITION('  ',tmp)=0  
+  tmp:= REPLACE(tmp,CHAR(13)+CHAR(10),' ')
+  tmp:= REPLACE(tmp,CHAR(10),' ')
+  tmp:= REPLACE(tmp,CHAR(13),' ')
+  RESULT:= tmp 
+ENDFUNCTION
+
+FUNCTION LocalName: STRING
+PARAMETERS 
+  pFQName: STRING
+AUXFIELDS
+  s: STRING
+INSTRUCTIONS
+  s:= pFQName
+  WHILE POSITION('.',s)>0 DO
+    s:= SUBSTRING(s,POSITION('.',s)+1,LEN(s))
+  ENDWHILE
+  RESULT:= s
+ENDFUNCTION
+
+FUNCTION StrippedLocalName: STRING
+PARAMETERS 
+  pFQName: STRING
+AUXFIELDS
+  s: STRING
+INSTRUCTIONS
+  s:= LocalName(pFQName)
+  IF POSITION('[',s)>0 THEN
+    s:= SUBSTRING(s,1,POSITION('[',s)-1)
+  ENDIF
+  RESULT:= s
+ENDFUNCTION
+
+FUNCTION ShrinkNameOneLevel: STRING
+PARAMETERS
+  pFQName: STRING
+  pMaxLen: INTEGER
+  pCutRight: INTEGER
+  pType: INTEGER
+AUXFIELDS
+  s,c: STRING
+  i: INTEGER
+  ppos: INTEGER
+  upos: INTEGER
+INSTRUCTIONS
+  s:= pFQName
+  IF pCutRight=0 THEN {shrink on the left side}
+    {SEARCH last '.'}
+    FOR i:= 1 to LEN(s) DO
+      IF SUBSTRING(s,i,1)='.' THEN ppos:= i ENDIF
+    ENDDO
+    IF ppos>0 THEN
+      s:= SUBSTRING(s,1,ppos-1)
+    ELSE
+      s:= SUBSTRING(s,1,pmaxlen)
+    ENDIF
+  ELSE {shrink on the right side}
+    IF POSITION('.',s)>0 THEN
+      s:= SUBSTRING(s,POSITION('.',s)+1,LEN(s))
+    ELSE
+      s:= SUBSTRING(s,1,pmaxlen)
+    ENDIF
+  ENDIF
+  IF (pType=1) AND (Package='SAS') THEN
+    //check for '0'..'9' at end...
+    c:= SUBSTRING(s,LEN(s),1) 
+    IF c IN ['0'..'9'] THEN
+      IF LEN(s)<pMaxLen THEN S:= S+'F'
+      ELSE s:= SUBSTRING(s,1,pMaxLen-1)+'F'
+      ENDIF
+    ENDIF  
+  ENDIF
+  RESULT:= s
+ENDFUNCTION
+
+FUNCTION SetFieldName:STRING
+PARAMETERS
+  pFieldName : STRING
+AUXFIELDS
+  sp,L : INTEGER
+INSTRUCTIONS
+  IF SUBSTRING(pfieldname,LEN(pfieldname),1)=']' THEN
+    sp:= LEN(pfieldname)-2
+    REPEAT
+      sp:= sp-1
+      L:= POSITION('[',pfieldname,sp)
+    UNTIL L>0
+    RESULT:= SUBSTRING(pfieldname,1,L-1)
+  ELSE
+    RESULT:= pFieldname
+  ENDIF
+ENDFUNCTION
+
+FUNCTION DetermineAttributes: STRING
+PARAMETERS 
+  pFieldName: STRING
+AUXFIELDS
+  Res, SpecialA: STRING
+  index: INTEGER
+  EmptyStr: STRING
+  ModeName: STRING  
+INSTRUCTIONS
+  Res:= ''
+  IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed('refusal')]] = 'True' THEN
+    Res:= ';rf;'
+  ENDIF
+  IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed('dontknow')]] = 'True' THEN
+    Res:= Res +';dk;'
+  ENDIF
+  IF [[meta.Modes.Count]]='0' THEN
+    IF [[meta.GetField(pFieldName).IsRequired]] = 'False' THEN
+      Res:= Res +';empty;'
+    ENDIF
+  ELSE     
+    EmptyStr:= ''
+    FOR index:= 0 TO val([[meta.Modes.Count]])-1 DO
+       ModeName:= [[meta.Modes[index].name]]
+       IF [[meta.GetModeDatamodel(ModeName).GetField(pFieldName).IsRequired]]='False' THEN
+         EmptyStr:= ';empty;'
+      ENDIF
+    ENDDO
+    Res:= Res+EmptyStr
+  ENDIF     
+  FOR index:=  0 TO  VAL([[meta.SpecialAnswers.Count]])-1 DO
+    SpecialA:= [[meta.SpecialAnswers[index].Name]]
+    IF SpecialA<>'DontKnow' AND SpecialA<>'Refusal' THEN
+      IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+        Res:= Res +';'+SpecialA+';'
+      ENDIF  
+    ENDIF
+  ENDDO 
+  RESULT:= Res
+ENDFUNCTION  
+
+FUNCTION GetFieldTextDef: OPEN
+PARAMETERS 
+  pFieldName, pMode, pRole, pLangStr: STRING
+AUXFIELDS
+  ti: INTEGER
+  tmp: OPEN
+INSTRUCTIONS
+  tmp:= ''
+  IF pMode<>'' THEN
+    IF [[meta.GetField(pFieldName).ModeRoleTexts.Contains(pMode)]]='True' THEN
+      IF [[meta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[meta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLangStr)]]='True' THEN
+          tmp:= [[meta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLangStr).ToFormattedString(SourceCode)]]
+        ENDIF
+      ENDIF   
+    ENDIF 
+  ENDIF
+  IF tmp='' THEN
+    IF [[meta.GetField(pFieldName).RoleTexts.Contains(pRole)]]='True' THEN
+      IF [[meta.GetField(pFieldName).RoleTexts.GetItem(pRole).Texts.Contains(pLangStr)]]='True' THEN
+        tmp:= [[meta.GetField(pFieldName).RoleTexts.GetItem(pRole).Texts.GetItem(pLangStr).ToFormattedString(SourceCode)]]
+      ENDIF
+    ENDIF
+    tmp:= REPLACE(tmp, CHAR(13)+CHAR(10),' ')
+  ENDIF 
+  RESULT:= tmp
+ENDFUNCTION
+
+FUNCTION GetCategoryTextDef: STRING
+PARAMETERS
+  pFieldName: STRING
+  pIndex: INTEGER
+  pMode: STRING
+  pRole: STRING
+  pLan: STRING
+AUXFIELDS
+  tmp: string
+INSTRUCTIONS
+  tmp:= ''
+  IF VAL([[meta.GetField(pFieldName).CategoryTexts.Count]])>0 THEN //there are fill's present in one of the categories in one of the modes
+    IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+      IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[meta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF
+      ENDIF
+    ENDIF      
+    IF tmp='' THEN
+      IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[meta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF    
+      ENDIF  
+    ENDIF
+    IF tmp='' THEN
+      IF [[meta.GetField(pFieldName).CategoryTexts[pIndex].Texts.Contains(pLan)]]='True' THEN
+        tmp:= [[meta.GetField(pFieldName).CategoryTexts[pIndex].Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+      ENDIF    
+    ENDIF  
+  ENDIF //with fill's
+  IF tmp='' THEN
+    IF [[meta.GetField(pFieldName).Type.Structure]]='Set' or [[meta.GetField(pFieldName).Type.Structure]]='Array' THEN
+      IF pMode<>'' THEN
+        IF [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+          IF [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF      
+      ENDIF
+      IF tmp='' THEN  
+        IF [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+          IF [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+            tmp:= [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+          ENDIF    
+        ENDIF  
+      ENDIF  
+    ELSEIF [[meta.GetField(pFieldName).Type.Structure]]='Enumeration' THEN
+      IF pMode<>'' THEN
+        IF [[meta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+          IF [[meta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[meta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[meta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF
+        IF tmp='' THEN
+          IF [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF      
+      ELSEIF [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[meta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF    
+      ENDIF  
+    ENDIF 
+  ENDIF 
+  RESULT:= tmp
+ENDFUNCTION 
+
+FUNCTION GetDefinedDictionaryText: STRING
+AUXFIELDS Title: STRING
+INSTRUCTIONS
+  Title:= ''
+  IF [[meta.RoleTexts.Contains('Title')]]='True' THEN
+    IF [[meta.Languages.count]]='0' THEN
+      Title:= [[meta.RoleTexts.GetItem('Title').Texts.GetItem('')]]
+    ELSEIF [[meta.RoleTexts.GetItem('Title').Texts.Contains(LangID)]]='True' THEN
+     Title:= [[meta.RoleTexts.GetItem('Title').Texts.GetItem(LangID)]]
+    ENDIF
+  ENDIF
+  RESULT:= Title
+ENDFUNCTION  
+
+FUNCTION GetSetSize: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  IF [[meta.GetField(pFieldName).Type.Structure]]='Set' THEN
+    s:= [[meta.GetField(pFieldName).Type.Cardinality]]
+    IF s='' THEN 
+      s:= [[meta.GetField(pFieldName).Type.MemberType.Categories.Count]]
+    ENDIF
+  ELSE 
+    s:= ''
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetDecimals: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  IF [[meta.GetField(pFieldName).Type.Structure]]='Real' THEN
+    s:= [[meta.GetField(pFieldName).Type.Decimals]]
+  ELSE s:= '' ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetMinValue: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+    s:= [[meta.GetField(pFieldName).Type.Structure]]
+    IF s='Real' or S='Integer' THEN
+      s:= [[meta.GetField(pFieldName).Type.MinValue]]
+      IF s='' THEN s:= '-'+fill('9',17) ENDIF
+    ELSE s:= '' ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetMaxValue: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+    s:= [[meta.GetField(pFieldName).Type.Structure]]
+    IF s='Real' or S='Integer' THEN
+      s:= [[meta.GetField(pFieldName).Type.MaxValue]]
+      IF s='' THEN s:= fill('9',18) ENDIF
+    ELSE s:= '' ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetLocalFieldTypeName: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= [[meta.GetField(pFieldName).Type.WrappedType]]
+  IF s='' THEN
+    IF [[meta.GetField(pFieldName).Type.Structure]]='Set' THEN
+      s:= [[meta.GetField(pFieldName).Type.MemberType.Name]]
+    ELSE
+      s:= [[meta.GetField(pFieldName).Type.Name]]   
+    ENDIF  
+  ENDIF
+  Result:= s
+ENDFUNCTION  
+
+FUNCTION GetCategoriesCount: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s, mt: STRING
+INSTRUCTIONS
+  mt:= [[meta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[meta.GetField(pFieldName).Type.MemberType.Categories.Count]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[meta.GetField(pFieldName).Type.Categories.Count]]
+  ELSE 
+    s:= ''
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetBaseFieldTypeName: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS s, mt: STRING
+INSTRUCTIONS
+  //Result is: STRING, INTEGER, REAL, DATETYPE, TIMETYPE, OPEN, ENUMERATION, SET, CLASSIFICATION or BLOCK, all in UPPERCASE
+  s:= UPPERCASE([[meta.GetField(pFieldName).Type.Structure]])
+  CASE s OF
+  'DATE': s:= 'DATETYPE'
+  'TIME': s:= 'TIMETYPE'
+  'BLOCKNAME': s:= 'BLOCK' 
+  'STRING': IF [[meta.GetField(pFieldName).Type.MaxLength]]='' THEN s:= 'OPEN' ENDIF
+  'BLOB': s:= 'OPEN'
+  ENDCASE
+  Result:= s
+ENDFUNCTION  
+
+function GetCategoryCode: STRING
+PARAMETERS
+  pFieldName: STRING
+  index: INTEGER
+AUXFIELDS mt, s: STRING
+INSTRUCTIONS
+  mt:= [[meta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[meta.GetField(pFieldName).Type.MemberType.Categories[index].Code]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[meta.GetField(pFieldName).Type.Categories[index].Code]]
+  ELSE 
+    s:= ''
+  ENDIF 
+  RESULT:= s
+ENDFUNCTION
+
+function GetCategoryLabel: STRING
+PARAMETERS
+  pFieldName: STRING
+  pIndex: integer
+auxfields mt, s: STRING
+INSTRUCTIONS
+  mt:= [[meta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[meta.GetField(pFieldName).Type.MemberType.Categories[pIndex].Name]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[meta.GetField(pFieldName).Type.Categories[pIndex].Name]]
+  ELSE 
+    s:= ''
+  ENDIF 
+  RESULT:= s
+ENDFUNCTION
+
+function GetCategoryText: STRING
+PARAMETERS
+  pFieldName: STRING
+  pIndex: INTEGER
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= '' 
+  IF RoleID<>'' THEN
+    s:= GetCategoryTextDef(pFieldName, pIndex,ModeID,RoleID,LangID)
+  ENDIF
+  IF s='' THEN
+    s:= GetCategoryTextDef(pFieldName, pIndex,ModeID,'Category',LangID)
+  ENDIF  
+  IF s=''  THEN
+    s:= GetCategoryLabel(pFieldName,pindex)
+  ENDIF
+  RESULT:= s  
+ENDFUNCTION
+
+function GetFieldText: OPEN
+PARAMETERS
+  pFieldName: STRING
+  pText: STRING
+AUXFIELDS s: OPEN  
+INSTRUCTIONS
+  s:= ''
+  IF RoleID<>'' THEN
+    s:= GetFieldTextDef(pFieldName,ModeID,RoleID,LangID)
+  ENDIF
+  IF s='' THEN   
+    s:= GetFieldTextDef(pFieldName,ModeID,'Description',LangID)
+  ENDIF  
+  IF pText<>'' THEN
+    IF s='' THEN 
+      s:= GetFieldTextDef(pFieldName,ModeID,'Question',LangID) 
+    ENDIF
+    IF s='' THEN s:= pText ENDIF
+  ENDIF  
+  RESULT:= s
+ENDFUNCTION  
+
+PROCEDURE tfRecWrite
+INSTRUCTIONS
+  tfRec.WRITE
+  IF tfrec.RECORDCOUNT mod 100 = 0 then
+    DisplayProgress('Decompose meta '+ str(tfrec.RECORDCOUNT))
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE HandleField
+PARAMETERS
+   pFieldName, pBaseFieldType, pFieldTypeName, pSizeOfSet : STRING
+   pIndex: INTEGER
+   pLevel: INTEGER
+AUXFIELDS
+  aCategoriesCount,
+  aSize, aCatNumber : INTEGER
+  aSizeUnicode: INTEGER
+  aAlpha:STRING
+  aCatId, aCatID2: STRING
+  aBTypeName: STRING
+  aLTypeName: STRING
+  aReady: INTEGER
+  aTmp: STRING
+  lastcharacter : STRING
+  Pos: INTEGER
+INSTRUCTIONS
+  aAlpha:=''
+  tfRec.INITRECORD
+  tfRec.FieldType:= pBaseFieldType
+  IF pBaseFieldType IN ['DATETYPE', 'TIMETYPE'] THEN
+    DateOrTimePresent:= Yes
+  ENDIF
+  aTmp:= pFieldName
+  IF pBaseFieldType='ENUMERATION' THEN
+    aCategoriesCount:= VAL(GetCategoriesCount(pFieldName))
+    tfRec.catCount:= aCategoriesCount
+  ELSEIF pBaseFieldType='SET' THEN
+    //aTmp:= pFieldName //including [x] which is not a valid name in B5
+    pos:= LEN(aTmp) 
+    REPEAT
+      pos:= pos-1
+    UNTIL SUBSTRING(atmp,pos,1)='['
+    aTmp:= SUBSTRING(atmp,1,pos-1)
+    aCategoriesCount:= VAL(GetCategoriesCount(aTmp))
+    tfRec.catCount:= aCategoriesCount
+  ENDIF
+  aSize:= VAL([[meta.GetField(aTmp).TextSize('')]])
+  IF pBaseFieldType='STRING' THEN
+    aSizeUnicode:= 4*aSize //SPSS suggested 3*aSize but better be save: UTF-8 char is max 4 bytes
+  ELSE  
+    aSizeUnicode:= aSize
+  ENDIF
+  IF pBaseFieldType <> 'BLOCK' THEN
+    tfRec.vFieldName  := pFieldName
+    tfRec.vFieldNameB5:= aTmp
+    tfRec.vLocalName  := [[DM.GetField(aTmp).LocalName]]
+    IF pFieldName=pFieldTypeName THEN
+      tfRec.FieldTypeName:= [[meta.Name]]+'.'+pFieldTypeName
+    ELSE  
+      tfRec.FieldTypeName:= pFieldTypeName
+    ENDIF  
+    tfRec.Width    := aSize
+    tfRec.Decim    := VAL(GetDecimals(aTmp))
+    tfRec.minValue := GetMinValue(aTmp)
+    tfRec.maxValue := GetMaxValue(aTmp)
+    tfRec.Attribute:= DetermineAttributes(aTmp)
+    tfRec.Level    := pLevel
+    tfRec.basename := AdaptName(pFieldName)
+    IF pSizeOfSet<>'' THEN tfRec.setsize:= val(pSizeOfSet) ELSE tfRec.setsize:= EMPTY ENDIF
+    GlobRec:= GlobRec+1
+    tfRec.RecNr:= GlobRec
+    IF (pBaseFieldType='SET') and (pIndex=tfREc.setsize) THEN
+      tFrec.lastFromSet:= 1
+    ENDIF  
+    tfRecWRITE
+    DMSize:= DMSize+aSize
+    DMSizeUnicode:= DMSizeUnicode+aSizeUnicode
+    DMNrOfDataFields:= DMNrOfDataFields+1
+    IF (pBaseFieldType='SET') and (DoSetConversion=Yes) and (tfRec.lastfromset=1) THEN
+       {we are dealing with a set-question}
+      FOR aCatNumber:= 1 to aCategoriesCount DO
+        aTmp:= tfRec.vFieldNameB5
+        tfrec.INITRECORD
+        tfRec.FieldType:= 'INTEGER'
+        aCatId:= '_' + GetCategoryCode(aTmp, aCatNumber-1)
+        tfRec.vFieldName  := SetFieldName(pFieldName) + ElmStr+aCatId
+        tfRec.vLocalName  := SetFieldName([[DM.GetField(aTmp).LocalName]]) + ElmStr+aCatId
+        //tfRec.vFieldNameB5:= 
+        IF DoMaintainSetOrder=Yes THEN
+          tfRec.Width    := aSize //LEN(pSizeOfSet)
+          tfRec.minValue := '0'
+          tfRec.maxValue := pSizeOfSet
+        ELSE
+          tfRec.Width    :=  aSize//1
+          tfRec.minValue := '0' 
+          tfRec.maxValue := '1' 
+        ENDIF
+        tfRec.ftAdded  := _true_
+        tfRec.Attribute:= DetermineAttributes(aTmp)
+        tfRec.vFieldNameB5:= aTmp
+        GlobRec:= GlobRec+1
+        tfRec.RecNr:= GlobRec
+        tfRecWRITE
+      ENDDO
+    ENDIF
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE ProcessOneDatafield
+PARAMETERS 
+  pFieldName: string
+  pLevel: INTEGER
+AUXFIELDS
+  aFieldName     : STRING
+  aSizeOfSet     : STRING
+  aBaseFieldType : STRING
+  aFieldTypeName : STRING
+  aProperty      : STRING
+  min_a, max_a   : INTEGER
+  FNA            : STRING
+  MyType         : STRING
+  aindex         : INTEGER
+instructions
+  aSizeOfSet    := GetSetSize(pFieldName)
+  aBaseFieldType:= GetBaseFieldTypeName(pFieldName)
+  aFieldTypeName:= GetLocalFieldTypeName(pFieldName)
+  IF aBaseFieldType = 'BLOCK' THEN {Recursively get field names of the current block }
+    LoopDataFields(pFieldName,pLevel+1) 
+  ELSEIF aBaseFieldType = 'ARRAY' THEN
+    min_a:= VAL([[meta.GetField(pFieldName).Type.IndexType.MinIndex]])
+    max_a:= VAL([[meta.GetField(pFieldName).Type.IndexType.MaxIndex]])
+    IF DoAddZeroToIndex=Yes THEN
+      FNA:= pFieldName+'['+FORMAT(STR(min_a),LEN(STR(max_a)),RIGHT,'0')+']'
+    ELSE
+      FNA:= pFieldName+'['+STR(min_a)+']'
+    ENDIF  
+    MyType:= [[meta.GetField(FNA).Type.Structure]]
+    IF MyType = 'BlockName' THEN 
+      FOR aindex:= min_a TO max_a DO
+        IF DoAddZeroToIndex=Yes THEN
+          FNA:= pFieldName+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']'
+        ELSE
+          FNA:= pFieldName+'['+STR(aindex)+']'
+        ENDIF  
+        LoopDataFields(FNA,pLevel+1)
+      ENDDO  
+    ELSE
+      FOR aindex:= min_a TO max_a DO
+        IF DoAddZeroToIndex=Yes THEN
+          FNA:= pFieldName+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']'     
+        ELSE
+          FNA:= pFieldName+'['+STR(aindex)+']'     
+        ENDIF  
+        HandleField(FNA,GetBaseFieldTypeName(FNA),aFieldTypeName,aSizeOfSet, aindex, pLevel)
+      ENDDO    
+    ENDIF 
+  ELSEIF aBaseFieldType='SET' THEN
+    max_a:= VAL(aSizeOfSet)
+    FOR aindex:= 1 TO max_a DO
+        FNA:= pFieldName+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']'     
+        HandleField(FNA,'SET',aFieldTypeName,aSizeOfSet,aindex, pLevel)
+    ENDDO    
+  ELSEIF aBaseFieldType<>'OPEN' THEN
+    HandleField(pFieldName,aBaseFieldType,aFieldTypeName,aSizeOfSet,0, pLevel)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE LoopDataFields
+PARAMETERS
+  pFieldName     : STRING
+  pLevel         : INTEGER
+AUXFIELDS
+  aFieldName     : STRING
+  FN             : STRING
+  Index          : INTEGER
+INSTRUCTIONS
+  aFieldName:= pFieldName  //whcg: via aFieldName onderstaande geeft foutmeldingen als pFieldname=''...
+  FOR index:= 0 TO VAL([[DM.getfields(pFieldName).Count]])-1 DO
+    IF pFieldName<>'' THEN
+      FN:= pFieldName+'.'+[[DM.Getfields(pFieldName)[Index].LocalName]]
+    ELSE
+      FN:= [[DM.Getfields(pFieldName)[Index].LocalName]]
+    ENDIF  
+    IF [[meta.GetField(FN).FieldKind]]='DataField' THEN
+      ProcessOneDataField(fn,pLevel)
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+FUNCTION DataFieldExists: INTEGER
+PARAMETERS pFieldName: STRING
+INSTRUCTIONS
+  RESULT:= 0
+  IF [[meta.FieldExists(pFieldName)]]='True' THEN 
+    IF [[meta.GetField(pFieldName).FieldKind]]='DataField' THEN
+      RESULT:= 1 
+    ENDIF
+  ENDIF 
+ENDFUNCTION
+
+PROCEDURE ProcessDataFields
+AUXFIELDS
+  aFieldName: STRING
+INSTRUCTIONS
+  REPEAT
+    iFNames.READNEXT
+    aFieldName:= iFNames.Text
+    IF aFieldName<>'' and substring(afieldname,1,1)<>';' THEN
+      IF DataFieldExists(aFieldName)=1 THEN
+        ProcessOneDataField(aFieldName,0)
+      ENDIF
+    ENDIF
+  UNTIL iFNames.LASTRECORD
+ENDPROCEDURE
+
+PROCEDURE DecomposeMeta
+INSTRUCTIONS
+  DisplayProgress('Decompose meta')
+  DMSize:= 0
+  IF FieldNamesPresent=Yes then
+    ProcessDataFields
+  ELSE
+    LoopDataFields('',0)
+  ENDIF   
+ENDPROCEDURE
+
+FUNCTION AdaptName: STRING
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS
+  tmp: ARRAY[1..2] OF STRING
+  index, i: INTEGER
+  Res: STRING
+INSTRUCTIONS
+  IF (UniqueNameBasedOn=localname_indexed) AND (POSITION('[',pFieldName)>0) THEN
+    {array index are moved. like x[2].a[1].b --> x.a.b[2][1]}
+    Index:= 1
+    FOR i:= 1 TO LEN(pFieldName) DO
+      IF SUBSTRING(pFieldName,i,1)='[' THEN Index:= 2 ENDIF
+      tmp[Index]:= tmp[Index]+SUBSTRING(pFieldName,i,1)
+      IF SUBSTRING(pFieldName,i,1)=']' THEN tmp[Index]:= tmp[Index]+'_' Index:= 1 ENDIF
+    ENDDO
+    IF NOT (tmp[2]=EMPTY) {<>''} THEN tmp[2]:= SUBSTRING(tmp[2],1,len(tmp[2])-1) ENDIF
+    Res:= tmp[1]+tmp[2]
+  ELSE
+    Res:= pFieldName
+  ENDIF
+  IF (UniqueNameBasedOn=_localname) OR (UniqueNameBasedOn=localname_indexed) THEN
+    Res:= LocalName(Res)
+  ENDIF
+  IF Package='SPSS' THEN 
+    IF POSITION('_',Res)=1 THEN Res:= 'Q'+Res ENDIF
+    IF POSITION('_',Res)=LEN(Res) THEN Res:= Res+'Q' ENDIF
+  ENDIF 
+  Result:= Res
+ENDFUNCTION
+
+FUNCTION MakeUniqueFieldName: STRING
+PARAMETERS
+  pFieldName: STRING
+  pFullName: STRING
+  pMaxLen: INTEGER
+  pStage: INTEGER
+AUXFIELDS
+  tmp, tmp1, c: STRING
+  x: INTEGER
+INSTRUCTIONS
+  tmp:= pFieldName
+  tmp:= REPLACE(tmp,']','')
+  tmp:= REPLACE(tmp,'[','_')
+  IF pStage=1 THEN
+    IF (LEN(tmp)>pMaxLen) OR (tfUniqueFieldNames.SEARCH(REPLACE(tmp,'.',PeriodReplaceChar))) THEN
+      tmp:= MakeUniqueFieldName(tmp,pFullName,pMaxLen,pStage+1)
+    ENDIF
+  ELSE
+    REPEAT
+      tmp:= ShrinkNameOneLevel(tmp,pMaxLen,1,0)
+    UNTIL LEN(tmp)<=pMaxLen
+    tmp1:= tmp
+    x:= EMPTY
+    WHILE tfUniqueFieldNames.SEARCH(REPLACE(tmp1,'.',PeriodReplaceChar)) DO
+      IF x=EMPTY THEN x:= 2 ELSE x:= x+1 ENDIF
+      tmp1:= tmp+STR(x)
+      IF LEN(tmp1)>pMaxLen THEN
+        tmp1:= ShrinkNameOneLevel(tmp,pMaxLen-LEN(STR(x)),1,0)+STR(x)
+      ENDIF
+    ENDWHILE
+    tmp:= tmp1
+  ENDIF
+  IF pStage=1 THEN
+    tmp:= REPLACE(tmp,'.',PeriodReplaceChar)
+    tfUniqueFieldNames.Name:= tmp
+    tfUniqueFieldNames.OriName:= pFullName
+    tfUniqueFieldNames.Added:= tfRec.ftAdded
+    tfUniqueFieldNames.WRITE
+  ENDIF
+  RESULT:= tmp
+ENDFUNCTION
+
+FUNCTION MakeUniqueTypeName: STRING
+PARAMETERS
+  pFieldName: STRING
+  pMaxlen: INTEGER
+  pStage: INTEGER
+AUXFIELDS
+  tmp, tmp1,tmp2: STRING
+  x: INTEGER
+  c: STRING
+  lx: INTEGER
+INSTRUCTIONS
+  tmp:= pFieldName
+  tmp:= REPLACE(tmp,']','')
+  tmp:= REPLACE(tmp,'[','_')
+  tmp:= REPLACE(tmp,':','_')
+  IF Package='SAS' THEN
+    c:= SUBSTRING(tmp,LEN(tmp),1) 
+    IF c IN ['0'..'9'] THEN
+      tmp:= tmp+'F'
+    ENDIF  
+  ENDIF
+  IF pstage=1 THEN
+    IF (LEN(tmp)>pMaxlen) OR (tfUniqueTypeNames.SEARCH(REPLACE(tmp,'.','_'))) THEN
+      tmp:= MakeUniqueTypeName(tmp,pmaxlen,pstage+1)
+    ENDIF
+  ELSE
+    REPEAT
+      tmp:= ShrinkNameOneLevel(tmp,pmaxlen,1,1)
+    UNTIL LEN(tmp)<=pmaxlen
+    tmp1:= tmp
+    x:= EMPTY
+    WHILE tfUniqueTypeNames.SEARCH(REPLACE(tmp1,'.','_')) DO
+      IF x=EMPTY THEN x:= 2 ELSE x:= x+1 ENDIF
+      tmp1:= tmp+STR(x)
+      lx:= LEN(STR(x))
+      IF Package='SAS' THEN tmp1:= tmp1+'F' lx:= lx+1 ENDIF
+      IF LEN(tmp1)>pmaxlen THEN
+        tmp1:= ShrinkNameOneLevel(tmp,pmaxlen-lx,1,1)+STR(x)
+        IF Package='SAS' THEN tmp1:= tmp1+'F' ENDIF
+      ENDIF
+    ENDWHILE
+    tmp:= tmp1
+  ENDIF
+  IF pstage=1 THEN
+    tmp:= REPLACE(tmp,'.','_')
+    tfUniqueTypeNames.Name:= tmp
+    tfUniqueTypeNames.OriName:= pFieldName
+    tfUniqueTypeNames.WRITE
+  ENDIF
+  RESULT:= tmp
+ENDFUNCTION
+
+PROCEDURE MakeUniqueFieldNames
+AUXFIELDS
+  i: INTEGER
+  Attr: STRING
+  tmp: STRING
+INSTRUCTIONS
+  DisplayProgress('Make unique field names')
+  tfRec.RESET
+  IF UniqueNameBasedOn<>fullname then
+    tfRec.SETREADKEY(SECONDARY('ordered_by_name'))
+  ENDIF
+
+  FOR i:= 1 TO tfRec.RECORDCOUNT DO
+    IF i MOD 100=0 THEN
+     DisplayProgress('Unique field names generator '+STR(i)+' of '+STR(tfRec.RECORDCOUNT))
+    ENDIF
+    tfrec.READNEXT
+    tfrec.vUniqueName:= MakeUniqueFieldName(AdaptName(tfrec.vfieldname),tfrec.vfieldname,MaxNameLen,1)
+    IF DoLowercaseNames=1 THEN
+      tfrec.vUniqueName:= LOWERCASE(tfrec.vUniqueName)
+    ENDIF
+    tfrecWRITE
+    IF (tfRec.FieldType IN ['ENUMERATION','SET']) AND (tfrec.fieldtypename<>'') THEN
+      attr:= ''
+      IF tfrec.Attribute<>'' AND tfrec.Attribute<>';empty;' THEN
+        attr:= REPLACE(REPLACE(tfrec.Attribute,';empty;',''),';;','_')
+      ENDIF  
+      IF attr<>'' THEN 
+        attr:= '_'+REPLACE(REPLACE(tfrec.Attribute,';;','_'),';','') 
+      ENDIF
+      tTypeNames.Name:= tfrec.fieldtypename+attr
+      tTypeNames.FieldNameB5:= tfrec.vFieldNameB5
+      IF DoLowercaseNames=1 THEN
+        tTypeNames.Name:= LOWERCASE(tTypeNames.Name)
+      ENDIF
+      tTypeNames.WRITE
+    ENDIF
+  ENDDO
+  tfRec.RESET
+  IF UniqueNameBasedOn<>fullname then
+    tfRec.SETREADKEY(PRIMARY)
+  ENDIF
+  tTypeNames.RESET
+  FOR i:= 1 to tTypeNames.RECORDCOUNT DO
+    tTypeNames.READNEXT
+    tmp:= MakeUniqueTypeName(tTypeNames.Name,MaxNameLen,1)
+    tTypeNames.oriName:= tmp
+    IF DoLowercaseNames=1 THEN
+      tTypeNames.oriName:= LOWERCASE(tTypeNames.oriName)
+    ENDIF
+    tTypeNames.WRITE
+  ENDDO
+  FOR i:= 1 to tfRec.RECORDCOUNT DO
+    tfrec.READNEXT
+    attr:= ''
+    IF tfrec.Attribute<>'' AND tfrec.Attribute<>';empty;' THEN
+      attr:= REPLACE(REPLACE(tfrec.Attribute,';empty;',''),';;','_')
+    ENDIF  
+    IF attr<>'' THEN 
+      attr:= '_'+REPLACE(REPLACE(tfrec.Attribute,';;','_'),';','') 
+    ENDIF
+    IF tfrec.fieldtype IN ['SET','ENUMERATION'] THEN
+    tTypeNames.GET(tfrec.fieldtypename+attr)
+    IF ttypenames.RESULTOK THEN
+      tfrec.uniqueftn:= tTypeNames.oriName
+      tfrecWRITE
+      tfUniqueTypeNames.GET(tTypeNames.oriName)
+      IF tfUniqueTypeNames.RESULTOK THEN
+        tfUniqueTypeNames.oriName:=tfrec.vFieldNameB5
+        tfUniqueTypeNames.WRITE
+      ENDIF  
+    ENDIF
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+FUNCTION MakeMissingValue: OPEN
+PARAMETERS
+  pFieldName : STRING
+  pSpecialA: STRING
+INSTRUCTIONS
+  RESULT:= [[meta.GetField(pFieldName).AllSpecialAnswers.GetSpecialAnswerTextFileValue(pSpecialA)]] //!
+ENDFUNCTION  
+
+FUNCTION MakeMissingValueLetter: STRING
+PARAMETERS
+  pSpecialA: STRING
+AUXFIELDS
+  i,c,k: INTEGER
+INSTRUCTIONS
+  IF pSpecialA='DontKnow' THEN RESULT:= 'D'
+  ELSEIF pSpecialA='Refusal' THEN RESULT:= 'R'
+  ELSE
+    c:= VAL([[meta.SpecialAnswers.AllNames.Count]])
+    k:= 0
+    FOR i:= 2 TO c-1 DO
+      IF [[meta.SpecialAnswers.AllNames[i] ]]=pSpecialA THEN
+        k:= i 
+        EXITFOR
+      ENDIF
+    ENDDO  
+    IF (k>=2) AND (k<=4) THEN RESULT:= CHAR(k+63)
+    ELSEIF k<= 16 THEN RESULT:= CHAR(k+65) //skip 'D','E'
+    ELSEIF k<= 24 THEN RESULT:= CHAR(k+66) //skip 'R'
+    ELSE RESULT:= 'Z'
+    ENDIF
+  ENDIF
+ENDFUNCTION
+
+FUNCTION SpecialAnswerCount: INTEGER
+PARAMETERS
+  pFieldName: STRING
+AUXFIELDS 
+  I: INTEGER  
+  SpecialA: STRING
+INSTRUCTIONS
+  Result:= 0
+  FOR i:=  0 TO  VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+    SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]
+    IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+      RESULT:= RESULT+1
+    ENDIF
+  ENDDO    
+ENDFUNCTION  
+
+//Start of generating Manipula scripts
+PROCEDURE WriteLineToASCII
+PARAMETERS pLine: STRING
+INSTRUCTIONS
+  oASCII.Text:= pLine
+  oASCII.WRITE
+ENDPROCEDURE
+
+//Next code is a trial with generating a export script for
+//the selection using the generated .blax and field assignments
+//NOT YET COMPLETE
+//PROCEDURE  WriteToASCIIManSelectionExport
+//PARAMETERS
+//  pPath: STRING
+//  pMAN : STRING
+//  pBMI : STRING
+//  pBDB : STRING
+//  pASC : STRING
+//AUXFIELDS
+//  Rslt: INTEGER
+//  Index: INTEGER
+//  aSel: string
+//INSTRUCTIONS
+//  toASCIIOut.OPEN(pPath+'\\'+pMAN ) {dictionaryfilename}
+//  WriteLineToASCII('//Manipula export-script generated on '+DATETOSTR(SYSDATE)+' '+TIMETOSTR(SYSTIME,'HH:mm:ss'))
+//  WriteLineToASCII('SETUP ExportData')
+//  WriteLineToASCII('SETTINGS')
+//  WriteLineToASCII('  METASEARCHPATH=\''+pPath+'\'')
+//  WriteLineToASCII('USES BlaiseMeta \'' + pBMI + '\'')
+//  aSel:= ExtractFilePath(DictionaryFileName)+'\'ExportSelectedData_'+ReplaceExtension(ExtractFileName(DictionaryFileName),'.blax')
+//  WriteLineToASCII('   Selection \''+ aSel +'\'')
+//  WriteLineToASCII('')
+//  WriteLineToASCII('INPUTFILE iData: BlaiseMeta (\'' + pBDB + '\', BLAISE)')
+//  WriteLineToASCII('')
+//  WriteLineToASCII('OUTPUTFILE AsciiData: Selection (\'' + pASC + '\', ASCII)')
+//  IF UseSeparator=Yes THEN
+//    WriteLineToASCII('SETTINGS')
+//    IF SeparatorChar='TAB' THEN
+//      WriteLineToASCII('  SEPARATOR = TAB')
+//    ELSE
+//      WriteLineToASCII('  SEPARATOR = \''+SeparatorChar+'\'')
+//    ENDIF  
+//    WriteLineToASCII('  DELIMITER = \'"\'')
+//  ENDIF  
+//  WriteLineToASCII('MANIPULATE')
+//  tfRec.RESET
+//  FOR Index:= 1 TO tfRec.FORMCOUNT DO
+//     tfRec.READNEXT
+//     IF tfRec.ftAdded=EMPTY THEN
+//       WriteLineToASCII(tfRec.vUniqueName+':= '+tfRec.vFieldName)
+//     ENDIF  
+//  ENDDO  
+//  WriteLineToASCII('AsciiData.WRITE')
+//  toASCIIOut.CLOSE
+//  Rslt:=  RUN('"'+BlaiseSystemPath+'\InstrumentBuilder.exe" -F:"' + pPath+'\\'+pMan + '" -DP:"'+pPath+'"', HIDE, WAIT )
+//ENDPROCEDURE
+
+PROCEDURE WriteManipulaProject
+PARAMETERS
+  pPath: STRING 
+  pProjName: STRING
+INSTRUCTIONS
+  oASCII.OPEN(pPath+pProjName+'.bproj')
+  WriteLineToASCII('<?xml version="1.0" encoding="utf-8"?>')
+  WriteLineToASCII('<Project Name="'+pProjName+'" ProjectType="ManipulaProject">')
+  WriteLineToASCII('<MainFile RelativePath="true">'+pProjName+'</MainFile>')
+  WriteLineToASCII('<FileItems>')
+  WriteLineToASCII('  <File FileType="ManipulaFileType" RelativePath="true">'+pProjName+'</File>')
+  WriteLineToASCII('</FileItems>')
+  WriteLineToASCII('<Properties>')
+  WriteLineToASCII('<IncludeSearchPath />')
+  WriteLineToASCII('<LibrarySearchPath />')
+  WriteLineToASCII('<DatamodelSearchPath />')
+  WriteLineToASCII('<ConditionalDefines />')
+  WriteLineToASCII('</Properties>')
+  WriteLineToASCII('</Project>')
+  oASCII.Close
+ENDPROCEDURE
+
+PROCEDURE WriteDatamodelProject
+PARAMETERS
+  pPath: STRING 
+  pProjName: STRING
+INSTRUCTIONS
+  oASCII.OPEN(pPath+pProjName+'.bproj')
+  WriteLineToASCII('<?xml version="1.0" encoding="utf-8"?>')
+  WriteLineToASCII('<Project Name="'+pProjName+'" ProjectType="DatamodelProject">')
+  WriteLineToASCII('<MainFile RelativePath="true">'+pProjName+'</MainFile>')
+  WriteLineToASCII('<FileItems>')
+  WriteLineToASCII('  <File FileType="DatamodelFileType" RelativePath="true">'+pProjName+'</File>')
+  WriteLineToASCII('</FileItems>')
+  WriteLineToASCII('<Properties>')
+  WriteLineToASCII('<IsRunnableSurvey>False</IsRunnableSurvey>')
+  WriteLineToASCII('</Properties>')
+  WriteLineToASCII('</Project>')
+  oASCII.RELEASE
+ENDPROCEDURE
+
+PROCEDURE WriteCmdFileToStartExport
+parAmeters
+  pPath,pMan: STRING
+INSTRUCTIONS
+  oASCII.SETCHARACTERSET(ANSI)
+  oASCII.OPEN(pPath+pMan+'.cmd')
+  oASCII.Text:= '"'+BlaiseSystemPath+'manipula.exe" "'+pPath+ReplaceExtension(pMan,'.msux')+'" -A:True'
+  oASCII.WRITE
+  oASCII.CLOSE
+ENDPROCEDURE
+
+
+PROCEDURE  WriteToASCIIManCompleteExport
+PARAMETERS
+  pPath: STRING
+  pMAN : STRING
+  pBMI : STRING
+  pBDB : STRING
+  pASC : STRING
+AUXFIELDS
+  Rslt: INTEGER
+  Index: INTEGER
+  SetW: INTEGER
+  MSP: STRING
+INSTRUCTIONS
+//Generate a script that does an export from Blaise to Ascii 
+  oASCII.SETCHARACTERSET(UTF8)
+  oASCII.OPEN(pPath+pMAN ) {dictionaryfilename}
+  MSP:= ExtractFilePath(pBMI)
+  MSP:= SUBSTRING(MSP,1,LEN(MSP)-1) //remove / at end because otherwise script produced will not compile...
+  WriteLineToASCII('//Manipula export-script generated on '+DATETOSTR(SYSDATE)+' '+TIMETOSTR(SYSTIME,'HH:mm:ss'))
+  WriteLineToASCII('SETUP ExportData')
+  WriteLineToASCII('SETTINGS')
+  WriteLineToASCII('  METASEARCHPATH=\''+ MSP + '\'')
+  WriteLineToASCII('USES BlaiseMeta (VAR) \'' + ExtractFileName(pBMI) + '\'')
+  WriteLineToASCII('')
+  WriteLineToASCII('INPUTFILE iData: BlaiseMeta (\'' + pBDB + '\', BDIX)')
+  WriteLineToASCII('')
+  WriteLineToASCII('OUTPUTFILE oData: BlaiseMeta (\'' + pASC + '\', ASCII)')
+  IF UseSeparator=Yes THEN
+    WriteLineToASCII('SETTINGS')
+    SetW:= 1
+    IF SeparatorChar='TAB' THEN
+      WriteLineToASCII('  SEPARATOR = TAB')
+    ELSE
+      WriteLineToASCII('  SEPARATOR = \''+SeparatorChar+'\'')
+      WriteLineToASCII('  DELIMITER = \'"\'')
+    ENDIF  
+  ENDIF  
+  IF SetW<>1 THEN WriteLineToASCII('SETTINGS') Setw:= 1 ENDIF
+  WriteLineToASCII('  ADDUTF8BOM = NO')
+  WriteLineToASCII('  BUFFERSIZE = 1000')
+  IF DoProduceANSI=Yes THEN
+    IF SetW<>1 THEN WriteLineToASCII('SETTINGS') ENDIF
+    WriteLineToASCII('  CHARACTERSET = ANSI')
+  ENDIF
+  oASCII.CLOSE
+  Rslt:=  RUN('"'+BlaiseSystemPath+'InstrumentBuilder.exe" -F:"' + pPath+pMan + '" -DP:"'+ExtractFilePath(pBMI)+'"', HIDE, WAIT )
+  WriteManipulaProject(pPath,pMan)
+  WriteCmdFileToStartExport(pPath,pMan)
+ENDPROCEDURE
+
+PROCEDURE  WriteFieldSelectionToASCIIMan
+PARAMETERS
+  pMAN : STRING
+  pBMI : STRING
+  pBDB : STRING
+  pASC : STRING
+AUXFIELDS
+  Rslt: INTEGER
+  c: STRING
+  aPath: STRING
+  pParam: STRING
+INSTRUCTIONS
+//Generate a script that call's the generic export script for a field selection
+  aPath:= ExtractFilePath(SETUPNAME)
+  oASCII.SETCHARACTERSET(UTF8)
+  oASCII.OPEN(pMAN) {dictionaryfilename}
+  WriteLineToASCII('//Manipula export-script generated on '+DATETOSTR(SYSDATE)+' '+TIMETOSTR(SYSTIME,'HH:mm:ss'))
+  WriteLineToASCII('PROCESS ExportFieldSelection')
+  WriteLineToASCII('')
+  WriteLineToASCII('AUXFIELDS aRes:INTEGER')
+  WriteLineToASCII('')
+  WriteLineToASCII('MANIPULATE')
+  WriteLineToASCII(' aRes:= CALL(\''+aPath+'ExportDataForSelectedFields.msux \'+')
+  WriteLineToASCII('              \'-K:Meta="'+pBMI+'" \'+')
+  WriteLineToASCII('              \'-N:iFNames="'+iFNames.PATHNAME+iFNames.FILENAME+'",\'+')
+  WriteLineToASCII('              \'iData="'+pBDB+'",\'+')
+  WriteLineToASCII('              \'oData="'+pAsc+'"\'')
+  IF SeparatorChar<>'' THEN 
+    pParam:= SeparatorChar
+    IF SeparatorChar IN [';',','] THEN //escape needed
+      c:= CHAR(92)+CHAR(39)  //very difficult to generate \' so introduced a variable...
+      pParam:= c+pParam+c
+    ENDIF  
+  ENDIF
+  IF DoProduceANSI=Yes THEN
+    pParam:= pParam+';;;Y'
+  ENDIF
+  IF PParam<>'' THEN    
+    WriteLineToASCII('             + \' -P:'+pParam+'\'') 
+  ENDIF
+  WriteLineToASCII('             )')
+  oASCII.CLOSE
+  Rslt:=  RUN('"'+BlaiseSystemPath+'InstrumentBuilder.exe" -F:"' + pMan + '"', HIDE, WAIT )
+  GenerateandPrepareBlaxForSelection  
+  WriteManipulaProject(ExtractFilePath(pMAN),ExtractFileName(pMan))
+  WriteCmdFileToStartExport(ExtractFilePath(pMAN),ExtractFileName(pMan))
+ENDPROCEDURE
+
+PROCEDURE CreateAndPrepareMatchingManipulaScript
+INSTRUCTIONS
+  IF FieldNamesPresent=Yes THEN
+    WriteFieldSelectionToASCIIMan(
+      ExtractFilePath(ScriptName)+'ExportSelectedData_'+ReplaceExtension(ExtractFileName(BlaiseDataFileName),'')+'_'+iFNames.FILENAME+'.manx'
+      , ReplaceExtension(DictionaryFileName,'.bmix')
+      , BlaiseDataFileName
+      , InputDataFile
+      )
+  ELSE
+    WriteToASCIIManCompleteExport(
+      ExtractFilePath(ScriptName),
+      'ExportData_'+ReplaceExtension(ExtractFileName(BlaiseDataFileName),'')+'.manx'
+      , ReplaceExtension(DictionaryFileName,'.bmix')
+      , BlaiseDataFileName
+      , InputDataFile
+      )
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE BLAX_MakeEnum
+PARAMETERS
+  pTypename : STRING
+  pFieldName : STRING
+AUXFIELDS
+  i, antKategorier : INTEGER
+  c: string
+INSTRUCTIONS
+  antKategorier:= VAL(GetCategoriesCount(pFieldName))
+  WriteLineToASCII('TYPE ' + pTypename+'= (')
+  c:= ','
+  FOR i:=1 TO antKategorier DO
+    IF i=antKategorier THEN c:='' ENDIF
+    WriteLineToASCII(GetCategoryLabel(pFieldName, i-1)+' ('+ GetCategoryCode(pFieldName, i-1)+')'+c)
+  ENDDO
+  WriteLineToASCII(')')
+ENDPROCEDURE
+
+PROCEDURE BLAX_GenerateEnums
+AUXFIELDS
+  i: INTEGER
+INSTRUCTIONS
+  tfUniqueTypeNames.RESET
+  FOR i:= 1 to tfUniqueTypeNames.FORMCOUNT DO
+    tfUniqueTypeNames.READNEXT
+    BLAX_MakeEnum(tfUniqueTypeNames.Name,tfUniqueTypeNames.FieldNameB5)
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE GenerateAndPrepareBlaxForSelection
+AUXFIELDS
+  aBlax: STRING
+  Index: INTEGER
+  aType: STRING
+  aAttrib: STRING
+  c: STRING
+  sac: INTEGER
+  sp_as: STRING
+  Rslt: INTEGER
+INSTRUCTIONS
+  aBlax:= ExtractFilePath(ScriptName)+'ExportSelectedData_'+ReplaceExtension(ExtractFileName(DictionaryFileName),'')+'_'+iFNames.FILENAME+'.blax'
+  oASCII.OPEN(aBlax)
+  WriteLineToASCII('//Generated datamodel matching field selection '+iFNames.PATHNAME+iFNames.FILENAME+', on '+DATETOSTR(SYSDATE)+' '+TIMETOSTR(SYSTIME,'HH:mm:ss'))
+  WriteLineToASCII('DATAMODEL Fieldsel')
+  sac:= VAL([[meta.SpecialAnswers.Count]])
+  IF sac<>0 THEN
+    sp_as:= 'SPECIALANSWERS='
+    c:= ','
+    FOR index:=  0 TO  VAL([[meta.SpecialAnswers.Count]])-1 DO
+      IF index=sac-1 THEN c:= '' ENDIF
+      sp_as:= sp_as+[[meta.SpecialAnswers[index].Name]]+c
+    ENDDO
+    WriteLineToASCII(sp_as)
+  ENDIF    
+  BLAX_GenerateEnums
+  tfRec.RESET
+  WriteLineToASCII('FIELDS')
+  FOR Index:= 1 TO tfRec.FORMCOUNT DO
+    tfRec.READNEXT
+    IF tfRec.ftAdded=EMPTY THEN
+      aType:= tfRec.fieldtype
+      case aType of
+      'SET','ENUMERATION': aType:= tfRec.uniqueftn
+      'INTEGER': aType:= tfrec.minValue+'..'+tfrec.maxValue // 'INTEGER['+str(tfRec.width) +']'
+      'CLASSIFICATION','STRING': aType:= 'STRING['+str(tfRec.width) +']'
+      'REAL': 
+       //two different situations. 
+       //If decimal is present in min & max: use the .. notation
+       //else use the REAL notation
+        IF not(position('.',tfrec.minValue)=0 and position('.',tfrec.maxValue)=0) then
+          aType:= tfrec.minValue+'..'+tfrec.maxValue
+        ELSE  
+          aType:= 'REAL['+str(max(len(tfrec.maxValue),len(tfrec.minValue)))+ ']' 
+        ENDIF
+      ENDCASE
+      aAttrib:= ''
+      IF tfrec.attribute<>EMPTY THEN
+        aAttrib:= tfrec.attribute
+        aAttrib:= replace(aattrib,';;',',')
+        aAttrib:= ','+replace(aattrib,';','')
+      ENDIF  
+      WriteLineToASCII(tfRec.vUniqueName+': '+aType+aAttrib + '// '+tfRec.vFieldName)
+    ENDIF  
+  ENDDO
+  WriteLineToASCII('ENDMODEL')
+  oASCII.CLOSE
+  Rslt:=  RUN('"'+BlaiseSystemPath+'InstrumentBuilder.exe" -F:"' + aBlax + '" -P:- -L:-', HIDE, WAIT )
+  WriteDatamodelProject(ExtractFilePath(ScriptName),'ExportSelectedData_'+ReplaceExtension(ExtractFileName(DictionaryFileName),'')+'_'+iFNames.FILENAME+'.blax')
+ENDPROCEDURE
+
+//Start of SAS implementation
+
+PROCEDURE SAS_Add_Comment
+PARAMETERS
+  pComment: STRING
+INSTRUCTIONS
+  WriteText('/* '+pComment+' */',0)
+ENDPROCEDURE
+
+PROCEDURE SAS_MakeFormatDefinition
+PARAMETERS
+  pTypename : STRING
+  pFieldName : STRING
+AUXFIELDS
+  katTekst, katKode: STRING
+  i, antKategorier : INTEGER
+  SpecialA: STRING
+  C: INTEGER
+INSTRUCTIONS
+  SAS_Add_Comment(pTypename + ' defined from type definition')
+  antKategorier:= VAL( GetCategoriesCount(pFieldName) )
+  WriteText( 'VALUE ' + pTypename, 0)
+  FOR i:=1 TO antKategorier DO
+    katTekst:= GetCategoryText(pFieldName, i-1)
+    katKode := GetCategoryCode(pFieldName, i-1)
+    katTekst:= RemoveFormattingCodes(katTekst)
+    IF LEN(KatTekst) > 200 THEN
+      WriteText(  katKode + ' = ', 1)
+      WriteText( '\'' + SUBSTRING(KatTekst, 1, 254) + '\'', 0)
+    ELSE
+      WriteText( katKode + ' = \'' + katTekst + '\'', 1)
+    ENDIF
+  ENDDO
+  C:= VAL([[meta.SpecialAnswers.AllNames.Count]])
+  IF doTreatDkRfAsValues=yes THEN
+    FOR i:=  0 TO  C-1 DO
+      SpecialA:= [[meta.SpecialAnswers.AllNames[C-1-i] ]]
+      IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+        WriteText(MakeMissingValue(pFieldName,SpecialA)+' = \''+SpecialA+'\'', 1)
+      ENDIF
+    ENDDO
+  ELSE
+    FOR i:=  0 TO  C-1 DO
+      SpecialA:= [[meta.SpecialAnswers.AllNames[C-1-i] ]]
+      IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+        WriteText('.'+MakeMissingValueLetter(SpecialA)+' = \''+SpecialA+'\'', 1)
+      ENDIF
+    ENDDO
+  ENDIF
+  WriteText( ';', 0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_GeneratePROCFORMAT_types
+AUXFIELDS
+  i: INTEGER
+INSTRUCTIONS
+  tfUniqueTypeNames.RESET
+  FOR i:= 1 to tfUniqueTypeNames.FORMCOUNT DO
+    tfUniqueTypeNames.READNEXT
+    IF i MOD 100=0 THEN
+       DisplayProgress('SAS Generate PROC FORMAT '+STR(i)+' of '+STR(tfUniqueTypeNames.FORMCOUNT))
+    ENDIF
+    SAS_MakeFormatDefinition(tfUniqueTypeNames.Name,tfUniqueTypeNames.FieldNameB5)
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SAS_GeneratePROCFORMAT
+INSTRUCTIONS
+  IF DoGenerateFormats=Yes THEN
+    DisplayProgress('SAS Generate PROC FORMAT')
+    WriteText( 'PROC FORMAT LIBRARY=LIBRARY;', 0)
+    WriteText( '', 0)
+    SAS_GeneratePROCFORMAT_types
+    WriteText( '', 0)
+    WriteText( 'RUN;              /*   end of PROC FORMAT - step!    */', 0)
+    WriteText( '', 0)
+  ENDIF
+ENDPROCEDURE
+
+FUNCTION SAS_GetRelevantQuestiontext : STRING
+PARAMETERS
+  pFieldName : STRING
+INSTRUCTIONS
+  RESULT:= RemoveFormattingCodes(GetFieldText(pFieldName,tfrec.vFieldname))
+ENDFUNCTION
+
+PROCEDURE SAS_WriteLabelLine
+PARAMETERS
+  IMPORT pFieldName : STRING
+  TRANSIT idx : INTEGER
+AUXFIELDS
+  def_typename, ftype, fname, text, set_elm_name,
+  uname, kat_text, kat_kode, lokal_name, temp_name : STRING
+  antal_elm, antal_kat, i, minIdx, maxIdx, idxLen : INTEGER
+INSTRUCTIONS
+  ftype:= tfrec.fieldtype
+  text:= SAS_GetRelevantQuestiontext(pFieldName)
+  IF text=pFieldName AND ftype='SET' THEN text:= tfrec.vFieldName ENDIF
+  IF LEN(text) > 200 THEN
+    WriteText( tfRec.vUniqueName + ' = ', 1)
+    WriteText( '\'' + SUBSTRING(text, 1, 254) + '\'', 0)
+  ELSE
+    WriteText( FORMAT(tfRec.vUniqueName,MaxNameLen+2,LEFT) + ' = \'' + text + '\'', 1)
+  ENDIF
+  {extra FOR set when last element of the set has been handled...}
+  IF (ftype='SET') and (DoSetConversion=Yes) and (tfRec.lastfromset=1) THEN
+    { second: number of categories - derived 0/1-array }
+    antal_kat:= tfrec.catCount
+    FOR i:= 1 to antal_kat DO
+      tfrec.READNEXT
+      kat_kode:= GetCategoryCode(pFieldName, i-1)
+      kat_text:= GetCategoryText(pFieldName, i-1)
+      kat_text:= RemoveFormattingCodes(kat_text)
+      IF LEN(kat_text) > 200 THEN
+        WriteText( tfRec.vUniqueName + ' = ', 1)
+        WriteText( '\'' + SUBSTRING(kat_text,1,220) + ' (Code ' + kat_kode + ')\'', 2)
+      ELSE
+        WriteText( tfrec.vUniqueName + '=\'' + kat_text + ' (Code ' + kat_kode + ')\'', 2)
+      ENDIF
+    ENDDO
+  ENDIF
+  IF ftype IN ['DATETYPE', 'TIMETYPE'] AND DoConvertDateTime=Yes THEN
+    idx:= idx + 1
+    temp_name:= 'GenDTVar_' + STR(idx)
+    IF LEN(text) > 200 THEN
+      WriteText( temp_name + ' = ', 1)
+      WriteText( '\'' + SUBSTRING(text, 1, 254) + '\'', 0)
+    ELSE
+      WriteText( temp_name + ' = \'' + text + '\'', 1)
+    ENDIF
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SAS_WriteLabels
+PARAMETERS
+   TRANSIT datetime_field_index : INTEGER
+AUXFIELDS
+   fname : STRING
+   i: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  REPEAT
+    tfrec.READNEXT
+    IF tfRec.ftAdded=EMPTY THEN
+      SAS_WriteLabelLine(tfrec.vFieldNameB5, datetime_field_index)
+    ENDIF
+  UNTIL tfrec.LASTRECORD
+ENDPROCEDURE
+
+PROCEDURE SAS_ProcLABEL_OB
+AUXFIELDS
+  fname : STRING
+  datetime_fields : INTEGER
+INSTRUCTIONS
+  WriteText( '', 0)
+  WriteText( 'LABEL', 0)
+  SAS_WriteLabels(datetime_fields)
+  WriteText( ';', 0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_Generate_INPUT
+AUXFIELDS
+  i: INTEGER
+  spos: INTEGER
+  l: INTEGER
+  Dollar: STRING
+INSTRUCTIONS
+  tfRec.RESET
+  spos:= 1
+  FOR i:= 1 to tfRec.FORMCOUNT DO
+    tfRec.READNEXT
+    Dollar:= ''
+    IF tfRec.ftAdded=EMPTY THEN
+      l:= tfrec.width
+      IF tfrec.fieldtype in ['DATETYPE','CLASSIFICATION','TIMETYPE','STRING'] THEN
+        Dollar:='$'
+      ENDIF
+      IF tfRec.vUniqueName<>tfRec.vFieldName THEN
+        IF UseSeparator=Yes THEN
+          WriteText( FORMAT(tfRec.vUniqueName,MaxNameLen+2,LEFT)+' /* '+tfrec.vFieldName+' */', 1)
+        ELSE
+          WriteText( FORMAT('@'+str(spos),8,LEFT)+' '+FORMAT(tfRec.vUniqueName+' '+Dollar+str(l)+'.',MaxNameLen+2,LEFT)+'/* '+tfrec.vFieldName+' */', 1)
+          spos:= spos+l
+        ENDIF
+      ELSE
+        IF UseSeparator=Yes THEN
+          WriteText( tfrec.vFieldName, 1)
+        ELSE
+          WriteText( FORMAT('@'+str(spos),8,LEFT)+' '+tfrec.vFieldName+' '+Dollar+str(l)+'.', 1)
+          spos:= spos+l
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SAS_WriteLengthLine
+PARAMETERS
+   IMPORT pFieldName : STRING
+   IMPORT Plevel : INTEGER
+   TRANSIT idx : INTEGER
+AUXFIELDS
+   ftype, uname, enumtype, spaces, temp_name : STRING
+   i, spaceRequirement, nOfChars : INTEGER
+INSTRUCTIONS
+  ftype:= GetBaseFieldTypeName(pFieldName)
+  uname:= tfRec.vUniqueName
+  spaces:= getSpaces(35-LEN(uname))
+
+  CASE ftype OF
+  'STRING', 'CLASSIFICATION' :
+    WriteText( uname + spaces + ' $ ' + [[meta.GetField(pFieldName).TextSize('')]], Plevel)
+
+  'DATETYPE', 'TIMETYPE' :
+    idx:= idx + 1
+    temp_name:= 'GenDTVar_' + STR(idx)
+    WriteText( uname + spaces + ' $ 8', Plevel)
+    IF DoConvertDateTime=Yes THEN
+      spaces:= getSpaces(35-LEN(temp_name))
+      WriteText( temp_name + spaces + ' 8', Plevel+1)
+    ENDIF  
+
+  'INTEGER', 'REAL', 'ENUMERATION' :
+    nOfChars:= VAL([[meta.GetField(pFieldName).TextSize('')]])
+    IF nOfChars > 13  THEN  spaceRequirement:= 8
+    ELSEIF  nOfChars > 11 THEN spaceRequirement:= 7
+    ELSEIF  nOfChars > 8  THEN spaceRequirement:= 6
+    ELSEIF  nOfChars > 6  THEN spaceRequirement:= 5
+    ELSEIF  nOfChars > 3  THEN spaceRequirement:= 4
+    ELSE spaceRequirement:= 3
+    ENDIF
+    IF spaceRequirement > 3
+    THEN
+      WriteText( uname + spaces + ' ' + STR(spaceRequirement), Plevel)
+    ENDIF
+  ENDCASE
+ENDPROCEDURE
+
+PROCEDURE SAS_WriteLengths
+PARAMETERS
+  TRANSIT datetime_field_index : INTEGER
+AUXFIELDS
+  i: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  FOR i:= 1 to tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    SAS_WriteLengthLine(tfrec.vfieldnameB5, 1, datetime_field_index)
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateLengths
+AUXFIELDS
+  datetime_fields : INTEGER
+INSTRUCTIONS
+  WriteText( '', 0)
+  WriteText( 'LENGTH', 0)
+  SAS_WriteLengths(datetime_fields)
+  WriteText( 'DEFAULT=8;', 0) //was: DEFAULT=3. Changed request from U of Michigan
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_WriteFormats
+AUXFIELDS
+  i: INTEGER
+  ftype, uname, enumtype, spaces : STRING
+INSTRUCTIONS
+  tfRec.RESET
+  FOR i:= 1 to tfRec.FORMCOUNT DO
+    tfRec.READNEXT
+    ftype:= tfrec.fieldtype
+    uname:= tfRec.vUniqueName
+    spaces:= getSpaces(35-LEN(uname))
+    enumtype:= tfRec.uniqueftn
+    CASE ftype OF
+    'INTEGER' : WriteText( uname + spaces + ' ' + STR(tfrec.width) + '.', 1)
+    'REAL'    : IF tfrec.decim<>0 {255} THEN
+                  WriteText( uname + spaces + ' ' + STR(tfrec.width) + '.' + STR(tfrec.decim), 1)
+                ELSE  
+                  WriteText( uname + spaces + ' ' + STR(tfrec.width) + '.', 1)
+                ENDIF
+    'ENUMERATION',
+    'SET'     : WriteText( uname + spaces + ' ' + enumtype + '.', 1)
+    ENDCASE
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateFormater
+INSTRUCTIONS
+  WriteText( '', 0)
+  WriteText( 'FORMAT', 0)
+  SAS_WriteFormats
+  WriteText( ';', 0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateDateTimeModification
+PARAMETERS
+  IMPORT pFieldName : STRING
+  IMPORT pLevel : INTEGER
+  TRANSIT idx : INTEGER
+AUXFIELDS
+  temp_name, u_name, SasInFormat, SasFormat : STRING
+  I: INTEGER
+  SpecialA, SpecialACode: STRING
+  RecodeInCurrentField: (Yes,No)
+  Tmp: STRING
+  First: (Yes)
+INSTRUCTIONS
+  idx:= idx + 1
+  temp_name:= 'GenDTVar_' + STR(idx)
+  u_name:= tfrec.vUniqueName
+  RecodeInCurrentField:= No
+  IF DoConvertDateTime=Empty and DoDKRFConversionForNonNumeric=Yes THEN
+    RecodeInCurrentField:= Yes
+  ENDIF  
+  IF GetBaseFieldTypeName(pFieldName) = 'DATETYPE'
+  THEN
+    SasInFormat:= 'DDMMYY8.'
+    SasFormat:= 'DATE9.'
+  ELSE
+    SasInFormat:= 'TIME8.'
+    SasFormat:= 'TIME8.'
+  ENDIF
+  IF RecodeInCurrentField=No THEN 
+    WriteText( 'ATTRIB ' + temp_name + ' FORMAT=' + SasFormat + ' ;', pLevel)
+  ELSE
+    temp_name:= u_name
+  ENDIF
+  IF DoRecodeEmpty=Yes THEN    
+    WriteText( 'IF ' + u_name + '=\' \' THEN ' + temp_name + '=.E;', pLevel)
+  ENDIF  
+  First:= Yes 
+  FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+    SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+    IF [[meta.GetField(vFieldNameB5).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+      SpecialACode:= MakeMissingValue(vFieldNameB5,SpecialA)
+      IF First=Yes and (DoRecodeEmpty=EMPTY) THEN Tmp:= 'IF ' ELSE Tmp:= 'ELSE IF ' ENDIF
+      First:= EMPTY
+      WriteText( Tmp + u_name + '=\''+SpecialACode+'\' THEN ' + temp_name + '=.'+MakeMissingValueLetter(SpecialA)+';', pLevel)
+    ENDIF
+  ENDDO
+  IF RecodeInCurrentField=No AND DoConvertDateTime=Yes THEN   
+    IF First=Yes THEN Tmp:= '' ELSE Tmp:= 'ELSE ' ENDIF
+    WriteText( Tmp + temp_name + '=INPUT(' + u_name + ', ' + SasInFormat + ');', pLevel)
+    WriteText( 'DROP ' + u_name + ';', pLevel)
+    WriteText( 'RENAME ' + temp_name + '=' + u_name + ';', pLevel)
+  ENDIF  
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateDateTimeModifications
+PARAMETERS
+  TRANSIT datetime_field_index : INTEGER
+AUXFIELDS
+  fname, base_field_type : STRING
+  i: INTEGER
+INSTRUCTIONS
+  IF DateOrTimePresent=Yes AND (DoConvertDateTime=Yes OR DoDKRFConversionForNonNumeric=Yes) THEN
+    tfrec.RESET
+    FOR i:= 1 to tfrec.FORMCOUNT DO
+      tfrec.READNEXT
+      IF tfrec.fieldtype IN ['DATETYPE', 'TIMETYPE'] THEN
+        SAS_GenerateDateTimeModification(tfrec.vFieldNameB5, 1, datetime_field_index)
+      ENDIF
+    ENDDO
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateSetArray
+PARAMETERS
+  pFieldName : STRING
+  pLevel : INTEGER
+AUXFIELDS
+  first_kat, last_kat,
+  array_name, first_elm, this_elm, u_name, array_Sf, local_n: STRING
+  antal_elm, antal_kat, i, j : INTEGER
+  names: array[1..20] of STRING[1024]
+  names_c: INTEGER
+  s : STRING
+  SpecialA: STRING
+  SpecialACode: STRING
+  ElseStr: STRING
+INSTRUCTIONS
+  array_name_index:= array_name_index+1
+  array_sf:= '_SETARRAY'+STR(array_name_index)
+  local_n:= [[DM.GetField(pFieldName).LocalName]]
+  array_name:= SUBSTRING(local_n,1,32-LEN(array_sf)) + array_sf   { temporary name IN the data-step }
+  antal_elm:= VAL( GetSetSize(pFieldName) )             { number of elements IN the set }
+  antal_kat:= VAL( GetCategoriesCount(pFieldName) )    { number of categories IN the enum type of the set }
+  first_elm:= pFieldName {+ '[1]'}                                      { first element of the set }
+  u_name:= tfrec.vUniqueName
+  {Find out the names of the generated category elements  }
+  {This is done by some readnext and readprev instructions}
+  FOR i:= 1 to antal_elm DO
+    tfrec.READNEXT
+  ENDDO
+  {now the first name is read}
+  first_kat:= tfrec.vUniqueName
+  names[1]:= first_kat
+  names_c:= 1
+  FOR i:= 2 TO antal_kat DO
+    tfrec.READNEXT
+    names[names_c]:= names[names_c]+ ' '+tfrec.vUniqueName
+    IF i=antal_kat THEN names[names_c]:= names[names_c]+ ';' ENDIF
+    IF (i<>antal_kat) AND (i MOD 5) = 0 THEN names_c:= names_c+1 ENDIF //group the category names per 5
+  ENDDO
+
+  {now the last name is read}
+  last_kat:= tfrec.vUniqueName
+  FOR i:= 1 TO antal_kat+antal_elm-1 DO
+    tfrec.readprev
+  ENDDO
+  {now cursor in file is at correct position again}
+  WriteText( 'ARRAY ' + array_name + ' {' + STR(antal_kat) + '} ' + names[1], plevel) //  + ';', pLevel)
+  FOR i:= 2 TO names_c DO WriteText(' '+names[i],plevel) ENDDO 
+  ElseStr:= ''
+  FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+    SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+    IF [[meta.GetField(first_elm).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+      SpecialACode:= MakeMissingValue(first_elm,SpecialA)
+      WriteText( ElseStr+'IF ' + u_name + '=' + SpecialACode + ' THEN', pLevel)
+      WriteText( 'DO I=1 TO ' + STR(antal_kat) + '; ' + array_name + '(I)=.'+MakeMissingValueLetter(SpecialA)+'; END;', pLevel+1)
+      ElseStr:= 'ELSE '
+    ENDIF 
+  ENDDO
+  IF ElseStr<>'' THEN
+    WriteText( 'ELSE DO;', pLevel)
+  ELSE
+    WriteText( 'DO;', pLevel)  
+  ENDIF
+  WriteText( 'DO I=1 TO ' + STR(antal_kat) + '; ' + array_name + '(I)=0; END;  /* initialize */', pLevel+1)
+  WriteText( '', 0)
+  FOR i:= 1 TO antal_elm DO
+    this_elm:= pFieldName + '[' + STR(i) + ']'     { element of the set }
+    u_name:= tfRec.vUniqueName
+    IF DoMaintainSetOrder=Yes THEN
+      s:= STR(i)
+    ELSE
+      s:= '1'
+    ENDIF
+    WriteText( 'IF ' + u_name + '=' + GetCategoryCode(pFieldName,0) + ' THEN ' + array_name + '(1) = '+s+';', pLevel+1)
+    FOR j:= 2 TO antal_kat DO
+      WriteText( 'ELSE IF ' + u_name + '=' + GetCategoryCode(pFieldName, j-1) + ' THEN ' + array_name + '(' + STR(j) + ') = '+s+';', pLevel+1)
+    ENDDO
+    tfrec.READNEXT
+  ENDDO
+  WriteText( 'END;', pLevel)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateSetArrays
+PARAMETERS
+  pLevel : INTEGER
+AUXFIELDS
+  fname, base_field_type : STRING
+  i: INTEGER
+INSTRUCTIONS
+  tfRec.RESET
+  REPEAT
+    tfrec.READNEXT
+    i:= i+1
+    IF tfRec.ftAdded=EMPTY THEN
+      IF (VAL( GetSetSize(tfRec.vFieldNameB5) ) > 0) THEN
+        SAS_GenerateSetArray(tfrec.vfieldnameB5, pLevel)
+      ENDIF
+    ENDIF
+  UNTIL (tfrec.LASTRECORD) OR (NOT (tfrec.RESULTOK))
+ENDPROCEDURE
+
+PROCEDURE SAS_GenerateMissingCode
+PARAMETERS
+  pFieldName : STRING
+  pLevel : INTEGER
+AUXFIELDS
+  u_name, EmptyCode  { strings differs from numeric } , attr : STRING
+  strlen : INTEGER
+  i: INTEGER
+  SpecialA : STRING
+  SpecialACode: OPEN
+  First: (Yes)
+  Tmp: STRING
+INSTRUCTIONS
+  attr:= tfrec.Attribute // GETFIELDINFO(field_name, 'ATTRIBUTES')
+  u_name:= tfrec.vUniqueName
+  IF DoRecodeEmpty=Yes THEN
+    IF tfrec.fieldtype IN ['STRING','CLASSIFICATION']
+    THEN
+      EmptyCode:= '\' \''
+    ELSE
+      EmptyCode:= '.'   { SAS code for missing numeric variables }
+    ENDIF
+    WriteText( 'IF ' + u_name + '=' + EmptyCode + ' THEN ' + u_name + '=.E;', pLevel)
+  ENDIF
+  First:= Yes  
+  FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+    SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+    IF [[meta.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+      SpecialACode:= MakeMissingValue(pFieldName,SpecialA)
+      strlen:= len(SpecialACode)
+      IF tfrec.fieldtype IN ['STRING','CLASSIFICATION']
+      THEN
+        SpecialACode:= '\'' + SpecialACode + '\''
+      ENDIF
+      IF First=Yes and (DoRecodeEmpty=EMPTY) THEN Tmp:= 'IF ' ELSE Tmp:= 'ELSE IF ' ENDIF
+      First:= EMPTY
+      IF LEN(SpecialACode) < 20 THEN
+        WriteText( Tmp + u_name + '=' + SpecialACode + ' THEN ' + u_name + '=.'+MakeMissingValueLetter(SpecialA) +';', pLevel)
+      ELSE //only possible for STRING/CLASSIFICATION type. Note: SpecialA THEN between '' 
+        WriteText( Tmp + 'SUBSTR(' + u_name + ',' + STR(strlen-4) + ',5)=\''+SUBSTRING(SpecialACode,strlen+2-5,5)+'\' THEN ' + u_name + '=.'+MakeMissingValueLetter(SpecialA)+';', pLevel)
+      ENDIF
+    ENDIF 
+  ENDDO
+  WriteText( '', pLevel)
+ENDPROCEDURE
+
+
+PROCEDURE SAS_GenerateMissingCodes
+PARAMETERS
+  Plevel : INTEGER
+AUXFIELDS
+  fname, base_field_type : STRING
+  i: INTEGER
+INSTRUCTIONS
+  tfRec.RESET
+  FOR i:= 1 TO tfRec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF tfrec.ftAdded=EMPTY THEN
+      IF DoDKRFConversionForNonNumeric=Yes or NOT (tfrec.fieldtype IN ['DATETYPE','TIMETYPE','STRING','CLASSIFICATION']) THEN
+        IF NOT (tfrec.fieldtype IN ['DATETYPE', 'TIMETYPE'])
+             { always handled in PROCEDURE SAS_GenerateDateTimeModifications}
+        THEN
+          IF (DoTreatDKRFasValues<>Yes) OR
+             ((DoTreatDKRFasValues=Yes) AND (NOT (tfrec.fieldtype IN ['ENUMERATION', 'SET'])))
+          THEN
+            SAS_GenerateMissingCode(tfRec.vFieldNameB5, pLevel)
+          ENDIF
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SAS_Generate_Modifications
+PARAMETERS
+  pGenMissingCodes : INTEGER
+AUXFIELDS
+  datetime_fields : INTEGER
+  i: integer
+  SpecialA: STRING
+INSTRUCTIONS
+  SAS_Add_Comment('Generating special missing-codes FOR date/time-variables')
+  WriteText( '', 0)
+  datetime_fields:= 0
+  SAS_GenerateDateTimeModifications(datetime_fields)
+  IF DoSetConversion=Yes THEN
+    SAS_Add_Comment('Generate 0/1-variables for set fields')
+    WriteText('', 0)
+    SAS_GenerateSetArrays(1)
+  ENDIF
+  IF pGenMissingCodes = 1 THEN
+    SAS_Add_Comment('Generating special missing-codes')
+    IF DoRecodeEmpty=Yes THEN 
+      SAS_Add_Comment('     .E = EMPTY') 
+    ENDIF
+    FOR i:=  0 TO  VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+      SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]
+      SAS_Add_Comment('     .'+MakeMissingValueLetter(SpecialA)+' = '+SpecialA)
+    ENDDO    
+    WriteText( '', 0)
+    SAS_GenerateMissingCodes(1)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SAS_Write_ATTRIB
+AUXFIELDS
+  i: INTEGER
+  Attrib_Line: STRING[2000]
+  _label: STRING[2000]
+  _format: STRING
+  _length: STRING
+INSTRUCTIONS
+  WriteText( 'ATTRIB', 0)
+  tfRec.RESET
+  FOR i:= 1 to tfRec.FORMCOUNT DO
+    tfRec.READNEXT
+    IF tfRec.ftAdded=EMPTY THEN
+      Attrib_line:= ''
+      //fieldname:
+      Attrib_line:= tfRec.vUniqueName
+      //label:
+      _label:= SAS_GetRelevantQuestiontext(tfrec.vFieldNameB5)
+      IF _label=tfrec.vFieldNameB5 AND tfrec.fieldtype='SET' THEN 
+        _label:= tfrec.vFieldName 
+      ENDIF
+      Attrib_Line:= Attrib_Line+' label=\''+_label+'\'' 
+      //format:
+      CASE tfrec.fieldtype OF
+        'INTEGER' : _format:= STR(tfrec.width) + '.'
+        'REAL'    : IF tfrec.decim<>0 {255} THEN
+                      _format:= STR(tfrec.width) + '.' + STR(tfrec.decim)
+                    ELSE
+                      _format:= STR(tfrec.width) + '.'
+                    ENDIF
+        'ENUMERATION','SET': _format:= STR(tfrec.width) + '.'
+        'DATETYPE','CLASSIFICATION','TIMETYPE','STRING': _format:= '$char'+STR(tfrec.width) + '.'
+      ENDCASE
+
+      Attrib_Line:= Attrib_Line+' format='+_format 
+      //length
+      CASE tfrec.fieldtype OF
+        'INTEGER','REAL','ENUMERATION','SET': _length:= '8'
+        'DATETYPE','CLASSIFICATION','TIMETYPE','STRING': _length:= '$'+STR(tfrec.width)
+      ENDCASE
+      Attrib_Line:= Attrib_Line+' length='+_length 
+      WriteText(Attrib_Line, 2)
+    ENDIF
+  ENDDO
+  WriteText( ';', 0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_DataStepStatements
+AUXFIELDS
+  CChar: STRING
+INSTRUCTIONS
+  IF DoGenerateFormats=Yes THEN
+    DisplayProgress('SAS DATA step statements - Write Labels')
+    SAS_ProcLABEL_OB
+    DisplayProgress('SAS DATA step statements - Write Lengths')
+    SAS_GenerateLengths
+    DisplayProgress('SAS DATA step statements - Write Formats')
+    SAS_GenerateFormater
+  ELSE
+    DisplayProgress('SAS DATA step statements - Write Attrib')
+    SAS_Write_ATTRIB
+  ENDIF
+  IF UseSeparator=Yes THEN
+    CChar:= SeparatorChar
+    IF CChar='TAB' THEN CChar:=char(39)+'09'+char(39)+'x' ELSE CChar:= char(39)+CChar+char(39) ENDIF
+    WriteText( 'INFILE inpfil DELIMITER='+CChar+' DSD MISSOVER LRECL = ' + STR(DMSize + DMNrOfDataFields) + ' ;', 0)
+  ELSE
+    WriteText( 'INFILE inpfil RECFM=V LRECL = ' + STR(DMSize) + ' TRUNCOVER ;', 0)
+  ENDIF
+  WriteText( '', 0)
+  DisplayProgress('SAS DATA step statements - Write Input')
+  WriteText( 'INPUT', 0)
+  SAS_Generate_INPUT
+  WriteText( ';', 0)
+  WriteText( '', 0)
+  DisplayProgress('SAS DATA step statements - Write Modifications')
+  SAS_Generate_Modifications(1)
+  WriteText( 'RUN;', 0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SAS_ProduceScript
+AUXFIELDS
+  DicFileName: STRING
+  startpos, pos: INTEGER
+  DicText: STRING
+INSTRUCTIONS
+  oScript_OPEN(ScriptName+'.sas',0)
+  tfRec.RESET
+{ SAS-program }
+  DicFileName:= DictionaryFileName
+  startpos:= 1
+  REPEAT
+    pos:= POSITION(CHAR(92), DicFileName, startpos)
+    IF pos > 0 THEN startpos:= pos + 1 ENDIF
+  UNTIL pos = 0
+  DicFileName:= SUBSTRING(DicFileName, startpos, LEN(DicFileName))
+  DicFileName:= SUBSTRING(DicFileName, 1, LEN(DicFileName)-5) //was 4=len(.bmi')
+  IF LEN(DicFileName)>MaxNameLen {Default=32} THEN
+    DicFileName:= ShrinkNameOneLevel(DicFileName,MaxNameLen,1,0)
+  ENDIF  
+  DicFileName:= REPLACE(DicFileName,'.','_')
+  DicFileName:= REPLACE(DicFileName,'$','_') //perhaps replace other symbols also...
+  AddStartComments
+  WriteText( 'PROC PRINTTO LOG="'+OutputFilePath+ExtractFilename(scriptname)+'.log"; RUN;', 0) //redirect log to file
+
+  WriteText( 'OPTIONS FMTSEARCH = (TMPFMT LIBRARY);', 0)
+  WriteText( 'OPTIONS NOCENTER;', 0)
+  WriteText( '', 0)
+  DicText:= GetDefinedDictionaryText
+  IF DicText='' THEN
+    DicText:= [[meta.Name]]
+  ENDIF
+  WriteText( 'TITLE \'' + DicText + '\';', 0)
+  WriteText( '', 0)
+  WriteText( 'libname LIBRARY \'' + OutputFilePath + '\';', 0)
+  WriteText( 'filename inpfil \'' + InputDataFile + '\';', 0)
+  WriteText( '', 0)
+
+{ PROC FORMAT: }
+  SAS_GeneratePROCFORMAT
+
+{ DATA-step }
+  WriteText( 'DATA LIBRARY.' + DicFileName + ';', 0)
+  WriteText( '', 0)
+
+  SAS_DataStepStatements
+  
+  WriteText( 'PROC PRINTTO; RUN;', 0) //reset redirect of log
+ENDPROCEDURE
+
+//END SAS Implementation
+
+//START SPSS Implementation
+
+PROCEDURE SPSS_Make_VALUE_LABELS
+AUXFIELDS
+  i,j: INTEGER
+  FName: STRING
+  c: INTEGER
+  close: STRING
+  tmp: STRING
+  First: INTEGER
+INSTRUCTIONS
+  tfUniqueTypeNames.RESET
+  First:= 1
+  FOR i:= 1 TO tfUniqueTypeNames.FORMCOUNT DO
+    IF First=1 THEN   WriteText('VALUE LABELS',0) ENDIF
+    First:= EMPTY
+    Close:= ''
+    tfUniqueTypeNames.READNEXT
+    tfrec.get(SECONDARY,tfUniqueTypeNames.Name)
+    fname:= tfrec.vFieldNameB5
+    WHILE tfrec.uniqueftn=tfUniqueTypeNames.Name DO
+      WriteText(tfrec.vUniqueName,4)
+      tfrec.READNEXT
+    ENDWHILE
+    {WRITE labels FOR fname}
+    c:= VAL(GetCategoriesCount(fname))
+    FOR j:= 1 TO c DO
+      IF j=c THEN
+        IF i=tfUniqueTypeNames.FORMCOUNT THEN close:= '.' ELSE close:= '/' ENDIF
+      ENDIF
+      tmp:= GetCategoryText(fname, j-1)
+      WriteText(GetCategoryCode(fname,j-1)+' \''+SUBSTRING(RemoveFormattingCodes(tmp),1,200)+'\''+Close,8)
+    ENDDO
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SPSS_Make_ADD_VALUE_LABELS
+AUXFIELDS
+  i: INTEGER
+  close: STRING
+  First: INTEGER
+  Index: INTEGER
+  SpecialA: STRING
+  FN: STRING
+INSTRUCTIONS
+  tfrec.RESET
+  First:= 1
+  Close:= '  '
+  FOR i:= 1 to tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF tfrec.fieldtype in ['ENUMERATION','SET'] THEN
+      IF SpecialAnswerCount(tfrec.vFieldNameB5)>0 THEN
+        IF First=1 THEN   WriteText('ADD VALUE LABELS',0) ENDIF
+        WriteText(Close+tfrec.vUniqueName,2)
+        First:= EMPTY
+        FN:= tfrec.vFieldNameB5
+        FOR index:=  0 TO  VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+           SpecialA:= [[meta.SpecialAnswers.AllNames[index] ]]
+           IF [[meta.GetField(FN).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+             WriteText(MakeMissingValue(FN,SpecialA)+' \''+SpecialA+'\'',4)
+          ENDIF
+        ENDDO
+        Close:= '/ ' 
+      ENDIF
+    ENDIF
+  ENDDO
+  IF First=EMPTY THEN WriteText('.',8) ENDIF
+ENDPROCEDURE
+
+PROCEDURE SPSS_Add_Comment
+PARAMETERS
+  comment: STRING
+INSTRUCTIONS
+  WriteText('*'+Comment+'.',0)
+ENDPROCEDURE
+
+PROCEDURE SPSS_Make_Data
+AUXFIELDS
+  formatstr: STRING
+  i: INTEGER
+  FirstWritten: INTEGER
+  strTitle : STRING
+  iTitle : INTEGER
+  list: STRING
+INSTRUCTIONS
+  tfrec.RESET
+  strTitle:= ReplaceExtension(DictionaryFileName,'')
+  iTitle:= LEN(strTitle)
+  IF UseSeparator=Yes THEN
+    list:= ' LIST ('
+    IF SeparatorChar='TAB' THEN list:= list+'TAB) '
+    ELSE
+      list:= list+'"'+SeparatorChar+'") '
+    ENDIF  
+  ENDIF
+  IF iTitle > 60 THEN
+    strTitle:= SubString(strTitle,1,29) + '..' + SubString(strTitle,iTitle-29,iTitle)
+  ENDIF
+  WriteText('TITLE   \'' + strTitle + '\'.',0)
+  IF DMSizeUnicode > 8192 THEN
+    WriteText('FILE HANDLE '+ [[meta.Name]] +' /NAME =',0)
+    WriteText('\''+InputDataFile+'\'',2)
+    WriteText('/LRECL = '+STR(DMSizeUnicode)+'.',2)
+    WriteText('DATA LIST FILE = '+[[meta.Name]]+list,0)
+  ELSE
+    WriteText('DATA LIST FILE =',0)
+    WriteText('\''+InputDataFile+'\''+list,2)
+  ENDIF
+  WriteText('/',0)
+  FirstWritten:= EMPTY
+  FOR i:= 1 TO tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF (tfRec.ftAdded=EMPTY) AND (tfrec.FieldType<>'OPEN') THEN
+      formatstr:= EMPTY
+      IF tfrec.FieldType IN ['INTEGER','ENUMERATION','DATETYPE','SET'] THEN
+        formatstr:= '(F'+STR(tfrec.width)+'.0)'
+      ELSEIF  tfrec.FieldType='REAL' THEN
+        //IF tfrec.decim<>255 THEN
+        //  formatstr:= '(COMMA'+STR(tfrec.width)+'.'+STR(tfrec.decim)+')'
+        //ELSE
+          formatstr:= '(COMMA'+STR(tfrec.width)+'.0)'
+        //ENDIF
+      ELSEIF  tfrec.FieldType='STRING' THEN
+        IF DoProduceAnsi=Yes THEN
+          formatstr:= '(A'+STR(tfrec.width)+')'
+        ELSE
+          formatstr:= '(A'+STR(tfrec.width*4)+')'
+        ENDIF  
+      ELSEIF tfrec.FieldType='CLASSIFICATION' THEN
+        formatstr:= '(A'+STR(tfrec.width)+')'
+      ELSEIF  tfrec.FieldType IN ['TIMETYPE'] THEN
+        formatstr:= '(TIME'+STR(tfrec.width)+')'
+      ENDIF
+      WriteText(FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT)+formatstr,2)
+    ENDIF
+  ENDDO
+  WriteText('.',2)
+  WriteText('',0)
+ENDPROCEDURE
+
+PROCEDURE SPSS_COMPUTE_SETVARS
+AUXFIELDS
+  i: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  FOR i:= 1 to tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF (tfRec.ftAdded<>EMPTY) THEN
+      WriteText('COMPUTE '+tfrec.vUniqueName+' = $sysmis.',0)
+      WriteText('FORMATS '+tfrec.vUniqueName+' (F'+STR(tfRec.WIDTH)+'.0).',0)
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SPSS_Make_MISSING_VALUES
+PARAMETERS
+  Added: INTEGER
+AUXFIELDS
+  i: INTEGER
+  First: INTEGER
+  Close: STRING
+  DontKnowCode: STRING
+  RefusalCode: STRING
+  tmp: STRING
+  OneAdded: (_true_)
+  field_name: STRING
+  SpecialA, SpecialACode: STRING
+  LowCode, HighCode: STRING
+  DoneCount: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  First:= 1
+  Close:= '  '
+  FOR i:= 1 to tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    field_name:= tfrec.vFieldNameB5
+    OneAdded:= EMPTY
+    tmp:= EMPTY
+    IF (tfrec.fieldtype<>'OPEN') AND ((tfRec.ftadded=empty AND Added=0) OR (tfRec.ftAdded=Added)) THEN
+      IF (DoTreatDKRFasValues<>Yes) OR
+         ((DoTreatDKRFasValues=Yes) AND (NOT (tfrec.fieldtype IN ['ENUMERATION', 'SET']))) THEN
+        IF (tfrec.fieldtype<>'STRING') OR ((tfrec.fieldtype='STRING') AND (tfrec.width<=8)) THEN
+          IF SpecialAnswerCount(field_name)>0 THEN
+            IF First=1 THEN WriteText('MISSING VALUES',0) ENDIF
+            First:= EMPTY
+            tmp:= '('
+            IF (SpecialAnswerCount(field_name)>3) AND NOT (tfrec.fieldtype IN ['STRING', 'CLASSIFICATION']) THEN {use range in SPSS THRU}
+              LowCode:= '' HighCode:= ''
+              FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+                SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+                IF [[meta.GetField(field_name).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+                  IF HighCode='' THEN 
+                    HighCode:= MakeMissingValue(field_name,SpecialA)
+                  ELSE  
+                    LowCode:= MakeMissingValue(field_name,SpecialA)
+                  ENDIF  
+                ENDIF
+              ENDDO  
+              tmp:= tmp + LowCode + ' THRU '+ HighCode
+            ELSE
+              DoneCount:= 0
+              FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+                SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+                IF [[meta.GetField(field_name).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+                  SpecialACode:= MakeMissingValue(field_name,SpecialA)
+                  IF OneAdded=_true_ THEN tmp:= tmp+', ' ENDIF
+                  OneAdded:= _true_
+                  DoneCount:= DoneCount+1
+                  IF (tfrec.fieldtype IN ['STRING', 'CLASSIFICATION']) THEN tmp:= tmp+'\'' ENDIF
+                  tmp:= tmp+SpecialACode
+                  IF (tfrec.fieldtype IN ['STRING', 'CLASSIFICATION']) THEN tmp:= tmp+'\'' ENDIF
+                  IF (tfrec.fieldtype IN ['STRING', 'CLASSIFICATION']) AND (DoneCount=3) THEN EXITFOR ENDIF //SPSSS limit...
+                ENDIF
+              ENDDO
+            ENDIF
+            tmp:= tmp+')'
+            WriteText(FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT)+tmp,4)
+          ENDIF
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDDO
+  IF First=EMPTY THEN
+    WriteText('.',6)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SPSS_ComputeDateTimeVariables
+AUXFIELDS i: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  FOR i:= 1 TO tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF tfrec.fieldtype='DATETYPE' THEN
+      {LHFN Changed 4-9-2013. Always test on missing}
+      {IF (POSITION(';rf;',tfrec.attribute)>0) OR (POSITION(';dk;',tfrec.attribute)>0) THEN}
+        WriteText('DO IF NOT MISSING('+tfRec.vUniquename+').',0)
+      {ENDIF}
+      WriteText('COMPUTE',0)
+      WriteText('#DD = NUMBER(SUBSTRING(STRING('+tfrec.vUniqueName+',F8.0),1,2),F2).',2)
+      WriteText('COMPUTE',0)
+      WriteText('#MM = NUMBER(SUBSTRING(STRING('+tfrec.vUniqueName+',F8.0),3,2),F2).',2)
+      WriteText('COMPUTE',0)
+      WriteText('#YY = NUMBER(SUBSTRING(STRING('+tfrec.vUniqueName+',F8.0),5,4),F4).',2)
+      WriteText('COMPUTE',0)
+      WriteText(tfrec.vUniqueName+' = DATE.DMY(#DD, #MM, #YY).',2)
+      {LHFN Changed 4-9-2013. Always test on missing}
+      {IF (POSITION(';rf;',tfrec.attribute)>0) OR (POSITION(';dk;',tfrec.attribute)>0) THEN}
+        WriteText('END IF.',0)
+      {ENDIF}
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE SPSS_WriteFormats
+PARAMETERS ftype: STRING
+AUXFIELDS
+  i: INTEGER
+  FirstWritten: (_true_)
+  tmp: STRING
+INSTRUCTIONS
+  tfrec.RESET
+  FirstWritten:= EMPTY
+  FOR i:= 1 to tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    IF tfrec.fieldtype=ftype THEN
+      IF FirstWritten=EMPTY THEN
+        WriteText('FORMATS',0)
+        FirstWritten:= _true_
+      ELSE
+        tmp:= tmp+', '
+      ENDIF
+      tmp:= tmp+tfrec.vUniqueName
+      IF ftype='REAL' THEN
+        IF tfrec.decim<>0 {255} THEN
+          tmp:= tmp+' (F'+STR(tfrec.width)+'.'+STR(tfrec.decim)+')'
+        ELSE
+          tmp:= tmp+' (F'+STR(tfrec.width)+'.0'+')'
+        ENDIF
+      ENDIF
+      IF LEN(tmp)>80 THEN WriteText(tmp,2) tmp:= '' ENDIF
+    ENDIF
+  ENDDO
+  IF FirstWritten=_true_ THEN
+    CASE ftype OF
+    'DATETYPE': tmp:= tmp+' (EDATE10).'
+    'TIMETYPE': tmp:= tmp+' (TIME10.0).'
+    'REAL': tmp:= tmp+'.'
+    ENDCASE
+    WriteText(tmp,2)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SPSS_Make_VAR_LABELS
+AUXFIELDS
+  i,j: INTEGER
+  FirstWritten: (_true_)
+  tmp: OPEN
+  antal_kat: INTEGER
+  kat_kode : STRING
+  kat_text : STRING
+  fn: STRING
+INSTRUCTIONS
+  tfrec.RESET
+  FirstWritten:= EMPTY
+  WriteText('VAR LABELS',0)
+  repeat
+    tfrec.READNEXT
+    IF tfrec.ftAdded=EMPTY THEN
+      tmp:= GetFieldText(tfrec.vFieldNameB5,tfrec.vFieldname)
+      WriteText(FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT)+'\''+RemoveFormattingCodes(tmp)+'\'',2) 
+      IF (tfrec.fieldtype='SET') AND (DoSetConversion=Yes) AND (tfRec.lastfromset=1) THEN
+     { second: number of categories - derived 0/1-array }
+        antal_kat:= tfrec.catCount
+        fn:= tfrec.vfieldnameB5
+        FOR j:= 1 TO antal_kat DO
+          tfrec.READNEXT
+          kat_kode:= GetCategoryCode(fn, j-1)
+          kat_text:= GetCategoryText(fn, j-1)
+          kat_text:= RemoveFormattingCodes(kat_text)
+          WriteText(FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT)+'\'' + kat_text + ' (Code ' + kat_kode + ')\'', 4) 
+        ENDDO
+      ENDIF
+    ENDIF
+  UNTIL tfrec.LASTRECORD
+  WriteText('.',0)
+ENDPROCEDURE
+
+PROCEDURE SPSS_GenerateSetArray
+PARAMETERS
+  field_name : STRING
+  level : INTEGER
+  VecNr: INTEGER
+AUXFIELDS
+  u_name1, u_name2: STRING
+  antal_elm, antal_kat, i: INTEGER
+  s: STRING
+INSTRUCTIONS
+  antal_elm:= tfrec.setsize     { number of elements IN the set }
+  antal_kat:= tfrec.catCount    { number of categories IN the enum type of the set }
+  u_name1:= tfrec.vUniqueName
+  FOR i:= 1 TO antal_elm-1 DO
+    tfrec.READNEXT
+  ENDDO
+  u_name2:= tfrec.vUniqueName
+  WriteText('VECTOR v'+STR(VecNr)+' = '+u_name1+' to '+u_name2+'.',0)
+  WriteText('DO IF NOT MISSING('+u_name1+').',0)
+  FOR i:= 1 TO antal_kat DO
+    tfrec.READNEXT
+    WriteText('COMPUTE '+tfrec.vuniquename+' = 0.',0)
+  ENDDO
+  WriteText('LOOP #I=1 TO '+STR(antal_elm)+'.',0)
+  FOR i:= 1 TO antal_kat DO
+    tfrec.readprev
+  ENDDO
+  FOR i:= 1 TO antal_kat DO
+    tfrec.READNEXT
+    IF DoMaintainSetOrder=Yes THEN
+      s:= '#i'
+    ELSE
+      s:= '1'
+    ENDIF
+    WriteText('DO IF v'+STR(VecNr)+'(#I) EQ '+GetCategoryCode(field_name, i-1)+'.',0)
+    WriteText('COMPUTE '+tfrec.vuniquename+' = '+s+'.',0)
+    WriteText('END IF.',0)
+  ENDDO
+  WriteText('END LOOP.',0)
+  WriteText('ELSE.',0)
+  FOR i:= 1 TO antal_kat DO
+    tfrec.readprev
+  ENDDO
+  FOR i:= 1 TO antal_kat DO
+    tfrec.READNEXT
+    WriteText('COMPUTE '+tfrec.vuniquename+' = VALUE('+u_name1+').',0)
+  ENDDO
+  WriteText('END IF.',0)
+  WriteText( '', 0)
+ENDPROCEDURE
+
+PROCEDURE SPSS_GenerateSetArrays
+PARAMETERS
+  level: INTEGER
+AUXFIELDS
+   fname, base_field_type : STRING
+   i: INTEGER
+   VecNr: INTEGER
+INSTRUCTIONS
+  tfRec.RESET
+  REPEAT
+    tfrec.READNEXT
+    IF tfRec.ftAdded=EMPTY THEN
+      IF tfRec.fieldtype='SET' THEN
+        VecNr:= VecNr+1
+        SPSS_GenerateSetArray(tfRec.vFieldNameB5,level,VecNr)
+      ENDIF
+    ENDIF
+  UNTIL tfrec.LASTRECORD
+ENDPROCEDURE
+
+PROCEDURE SPSS_ProduceScript
+INSTRUCTIONS
+  oScript_OPEN(ScriptName+'.sps',0) {dictionaryfilename}
+  tfRec.RESET
+  AddStartComments
+{ SPSS-program }
+  DisplayProgress('SPSS DATA')
+  SPSS_Make_Data
+  DisplayProgress('SPSS MISSING VALUES')
+  SPSS_Make_MISSING_VALUES(0)
+  DisplayProgress('SPSS Compute Date Time Variables')
+  SPSS_ComputeDateTimeVariables
+  DisplayProgress('SPSS Write Formats (DATETYPE)')
+  SPSS_WriteFormats('DATETYPE')
+  DisplayProgress('SPSS Write Formats (TIMETYPE)')
+  SPSS_WriteFormats('TIMETYPE')
+  DisplayProgress('SPSS WriteFormats (REAL)')
+  SPSS_WriteFormats('REAL')
+  IF DoSetConversion=Yes THEN
+    DisplayProgress('SPSS COMPUTE SETVARS')
+    SPSS_COMPUTE_SETVARS
+    DisplayProgress('SPSS MISSING VALUES (1)')
+    SPSS_Make_MISSING_VALUES(1)
+    DisplayProgress('SPSS Generate Set Arrays(1)')
+    SPSS_GenerateSetArrays(1)
+  ENDIF
+  DisplayProgress('SPSS VAR LABELS')
+  SPSS_Make_VAR_LABELS
+  DisplayProgress('SPSS VALUE LABELS')
+  SPSS_Make_VALUE_LABELS
+  DisplayProgress('SPSS ADD VALUE LABELS')
+  SPSS_Make_ADD_VALUE_LABELS
+  WriteText('SAVE /OUTFILE',0)
+  WriteText('\''+OutputFilePath+ExtractFileName(ScriptName+'.SAV')+'\'.',2)
+ENDPROCEDURE
+
+//END SPSS implementation
+
+//START Stata implementation
+
+PROCEDURE Stata_Add_Comment
+PARAMETERS
+  comment: STRING
+INSTRUCTIONS
+  WriteText('/* '+Comment+' */',0)
+ENDPROCEDURE
+
+PROCEDURE Stata_MakeData
+AUXFIELDS
+  formatstr: STRING
+  i: INTEGER
+  FirstWritten: INTEGER
+  Posi: integer
+  MinValue, MaxValue: INTEGER
+  strToString: OPEN
+  addToString: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  WriteText('set more off',0)
+  IF tfrec.FORMCOUNT+2>2047 THEN
+    WriteText('if c(maxvar) < '+str(tfrec.FORMCOUNT+2)+ ' set maxvar '+str(tfrec.FORMCOUNT+2),0)
+  ENDIF
+  IF UseSeparator<>YES THEN //use .dct
+    WriteText('infix using "'+ScriptName+'.dct'+'"',0)    {using "C:\My_Data_Model.dct"}
+    oScript_OPEN(ScriptName+'.dct',0)
+    WriteText('infix dictionary using "'+InputDataFile+'" {',0)
+    FirstWritten:= EMPTY
+    Posi:= 1
+    FOR i:= 1 TO tfrec.FORMCOUNT DO
+      tfrec.READNEXT
+      IF (tfRec.ftAdded=EMPTY) AND (tfrec.FieldType<>'OPEN') THEN
+        formatstr:= FILL(' ',4)
+        CASE tfrec.FieldType OF
+        'STRING','CLASSIFICATION','DATETYPE','TIMETYPE':
+          formatstr:= 'str'{+STR(MIN(tfrec.width,244))}+' '
+        {'ENUMERATION',}
+        'INTEGER':
+          {IF (-127<=VAL(tfrec.minvalue)) AND (VAL(tfrec.MaxValue)<=100) THEN
+            formatstr:= 'byte '
+          ELSEIF (-32767<=VAL(tfrec.MinValue)) AND (VAL(tfrec.MaxValue)<=32740) THEN
+            formatstr:= 'int  '}
+          {IF tfrec.width>16 THEN
+            formatstr:= 'str '
+          ELSE}IF (-2147483647<=VAL(tfrec.MinValue)) AND (VAL(tfrec.MaxValue)<=2147483620) THEN
+            formatstr:= 'long '
+          ELSE
+            formatstr:= 'double'
+          ENDIF
+        'REAL':
+          {IF tfrec.width>16 THEN
+            formatstr:= 'str '
+          ELSE}IF tfrec.width>7 THEN
+            formatstr:= 'double'
+          ELSE
+            formatstr:= 'float'
+          ENDIF
+        ENDCASE
+        IF UseSeparator=EMPTY THEN 
+          WriteText(formatstr+' '+FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT)+' '+str(posi)+'-'+STR(posi+MIN(tfrec.width,244)-1){+' ///'},2)
+        ELSE
+          WriteText(formatstr+' '+FORMAT(tfrec.vUniqueName,MaxNameLen+2,LEFT),2)
+        ENDIF
+        posi:= posi+tfrec.width
+      ENDIF
+    ENDDO
+    WriteText('}',0)
+    oScript_Close
+    oScript_OPEN(ScriptName+'.do',1) {dictionaryfilename}
+  ELSE
+    //WriteText('insheet ///',0)  //infile  
+    WriteText('import delimited ///',0)  //not supported in older version of Stata
+    FOR i:= 1 TO tfrec.FORMCOUNT DO
+      tfrec.READNEXT
+      IF (tfRec.ftAdded=EMPTY) AND (tfrec.FieldType<>'OPEN') THEN
+        WriteText(' '+tfrec.vUniqueName+' /// '+tfrec.vFieldNameB5+'-'+ tfrec.FieldType,0)
+        IF tfrec.FieldType in ['DATETYPE','TIMETYPE'] {OR (tfrec.FieldType in ['DATETYPE','TIMETYPE'] AND tfrec.width>16)} THEN addToString:= 1 ENDIF
+      ENDIF  
+    ENDDO
+//    IF SeparatorChar='TAB' THEN
+//      WriteText('using "'+InputDataFile+'", TAB case',0)  
+//    ELSE
+//      WriteText('using "'+InputDataFile+'", delimiter("'+SeparatorChar+'") case',0)  
+//    ENDIF
+    IF SeparatorChar='TAB' THEN
+      WriteText('using "'+InputDataFile,0) //+'", delimiter("\t")',0)  
+    ELSE
+      WriteText('using "'+InputDataFile+'", delimiter("'+SeparatorChar+'") varnames(nonames) case(preserve)',0)  
+    ENDIF
+    IF addToString=1 THEN
+      WriteText('tostring ///',0)
+      tfrec.RESET
+      FOR i:= 1 TO tfrec.FORMCOUNT DO
+        tfrec.READNEXT
+        IF (tfRec.ftAdded=EMPTY) THEN
+          IF tfrec.FieldType in ['DATETYPE','TIMETYPE'] THEN
+            WriteText(tfrec.vUniqueName+' ///',0)
+          {ELSEIF tfrec.FieldType in ['REAL','INTEGER'] AND tfrec.width>16 THEN
+            WriteText(tfrec.vUniqueName+' ///',0)}
+          ENDIF  
+        ENDIF  
+      ENDDO
+      WriteText(', replace',0) 
+    ENDIF  
+  ENDIF  
+  IF DateOrTimePresent=Yes AND DoConvertDateTime=Yes THEN
+    tfrec.RESET
+    Writetext('tempvar tempdt',0)
+    FOR i:= 1 TO tfrec.FORMCOUNT DO
+      tfrec.READNEXT
+      CASE tfrec.FieldType OF
+        'DATETYPE':
+          Writetext('generate `tempdt\'=date('+tfrec.vUniqueName+',"DMY")',0)
+          WriteText('move `tempdt\' '+tfrec.vUniqueName,0)
+          WriteText('drop '+tfrec.vUniqueName,0)
+          WriteText('rename `tempdt\' '+tfrec.vUniqueName,0)
+          WriteText('format '+tfrec.vUniqueName+' %td',0)
+        'TIMETYPE':
+          Writetext('generate `tempdt\'=clock('+tfrec.vUniqueName+',"hms")',0)
+          WriteText('move `tempdt\' '+tfrec.vUniqueName,0)
+          WriteText('drop '+tfrec.vUniqueName,0)
+          WriteText('rename `tempdt\' '+tfrec.vUniqueName,0)
+          WriteText('format '+tfrec.vUniqueName+' %tc',0)
+      ENDCASE
+    ENDDO
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE Stata_Make_MISSING_VALUES
+PARAMETERS
+  Added: INTEGER
+AUXFIELDS
+  i: INTEGER
+  First: INTEGER
+  Close: STRING
+  Delim: STRING[1]
+  field_name: STRING
+  SpecialA, SpecialACode: STRING
+INSTRUCTIONS
+  tfrec.RESET
+  First:= 1
+  Close:= '  '
+  FOR i:= 1 TO tfrec.FORMCOUNT DO
+    tfrec.READNEXT
+    Delim:= ''
+    IF (tfrec.fieldtype<>'OPEN') AND ((tfRec.ftadded=empty AND Added=0) OR (tfRec.ftAdded=Added)) THEN
+      IF (DoTreatDKRFasValues<>Yes) OR
+         ((DoTreatDKRFasValues=Yes) AND (NOT (tfrec.fieldtype IN ['ENUMERATION', 'SET'])))
+      THEN
+      IF (tfrec.fieldtype in ['INTEGER','REAL','ENUMERATION','SET']) THEN
+        field_name:= tfrec.vFieldNameB5
+        {IF tfrec.width>16 THEN
+          Delim:= '"'
+        ENDIF}
+        FOR i:= 0 TO VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+          SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]  
+          IF [[meta.GetField(field_name).AllSpecialAnswers.IsAllowed(SpecialA)]]='True' THEN
+            SpecialACode:= MakeMissingValue(field_name,SpecialA)
+            WriteText('replace '+tfrec.vUniqueName+'='+Delim+'.'+lowercase(MakeMissingValueLetter(SpecialA))+Delim+' if '+tfrec.vUniqueName+'=='+Delim+SpecialACode+Delim,0)
+          ENDIF
+        ENDDO        
+        {IF tfrec.width>16 THEN
+          WriteText('destring '+tfrec.vUniqueName+', replace',0)
+        ENDIF}
+      ENDIF
+    ENDIF
+    ENDIF
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE Stata_GenerateSetArray
+PARAMETERS
+  field_name : STRING
+  level : INTEGER
+  VecNr: INTEGER
+AUXFIELDS
+  u_name1, u_name2: STRING
+  antal_elm, antal_kat, i: INTEGER
+  Move_anchor: STRING
+  s: STRING
+INSTRUCTIONS
+  antal_elm:= VAL( GetSetSize(field_name) )             { number of elements IN the set }
+  antal_kat:= VAL( GetCategoriesCount(field_name) )    { number of categories IN the enum type of the set }
+  u_name1:= tfrec.vUniqueName
+  FOR i:= 1 TO antal_elm-1 DO
+    tfrec.READNEXT
+  ENDDO
+  u_name2:= tfrec.vUniqueName
+
+  FOR i:= 1 TO antal_kat DO
+    tfrec.READNEXT
+    WriteText('generate byte '+tfrec.vuniquename+' = cond(!missing('+u_name1+'), 0, '+u_name1+')',0)
+  ENDDO
+  IF DoMaintainSetOrder=Yes THEN WriteText('local ind = 0',0) ENDIF
+  WriteText('foreach x of varlist '+u_name1+'-'+u_name2+' {',0)
+  IF DoMaintainSetOrder=Yes THEN WriteText('local ind = `ind\' + 1',0) ENDIF
+
+  FOR i:= 1 TO antal_kat DO
+    tfrec.readprev
+  ENDDO
+  FOR i:= 1 TO antal_kat DO
+    tfrec.READNEXT
+    IF DoMaintainSetOrder=Yes THEN
+      s:= '`ind\''
+    ELSE
+      s:= '1'
+    ENDIF
+    WriteText('replace '+tfrec.vuniquename+'='+s+' if `x\'=='+GetCategoryCode(field_name, i-1),0)
+  ENDDO
+  WriteText( '}', 0)
+  tfrec.READNEXT
+  Move_Anchor:= tfrec.vuniquename
+  IF Move_Anchor<>EMPTY THEN
+    FOR i:= 1 TO antal_kat+1 DO
+      tfrec.readprev
+    ENDDO
+    FOR i:= 1 TO antal_kat DO
+      tfrec.READNEXT
+      WriteText('move '+tfrec.vuniquename+' '+Move_Anchor,0)
+    ENDDO
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE Stata_GenerateSetArrays
+PARAMETERS
+  level: INTEGER
+AUXFIELDS
+   fname, base_field_type : STRING
+   i: INTEGER
+   VecNr: INTEGER
+INSTRUCTIONS
+  tfRec.RESET
+  REPEAT
+    tfrec.READNEXT
+    IF tfRec.ftAdded=EMPTY THEN
+      IF tfRec.fieldtype='SET' THEN
+        VecNr:= VecNr+1
+        Stata_GenerateSetArray(tfRec.vFieldNameB5,level,VecNr)
+      ENDIF
+    ENDIF
+  UNTIL tfrec.LASTRECORD OR tfrec.EOF
+ENDPROCEDURE
+
+PROCEDURE Stata_Make_VAR_LABELS
+AUXFIELDS
+  i,j: INTEGER
+  tmpT, tmpD, tmpQ, tmpN: STRING
+  antal_kat: INTEGER
+  elm_name, kat_text, kat_kode: STRING
+  FN: STRING
+  DicText: STRING
+  IsDescriptionText: INTEGER
+INSTRUCTIONS
+  tfrec.RESET
+  DicText:= GetDefinedDictionaryText
+  IF DicText='' THEN
+    DicText:= [[meta.Name]]
+  ENDIF
+  WriteText('label data "'+DicText+'"',0)
+  REPEAT
+    tfrec.READNEXT
+    IF tfrec.ftAdded=EMPTY THEN
+      tmpD:= GetFieldText(tfrec.vFieldNameB5,tfrec.vFieldname)
+      tmpN:= tfrec.vFieldNameB5
+      tmpT:= [[meta.GetField(tmpN).Tag]] //does not accept composed name... WHCG
+      IF tmpT<>'' THEN tmpT:= tmpT+' - ' ENDIF
+      WriteText('label variable '+tfrec.vUniqueName+' "'+SUBSTRING(tmpT+RemoveFormattingCodes(tmpD),1,200)+'"',0)
+
+      tmpQ:= GetFieldTextDef(tfrec.vFieldNameB5,ModeID,'Question',LangID)
+      IF tmpQ<>'' THEN
+        WriteText('note '+tfrec.vUniqueName+': '+SUBSTRING(RemoveFormattingCodes(tmpQ),1,200),0)
+      ENDIF
+      IF (tfrec.fieldtype='SET') AND (DoSetConversion=Yes) AND (tfRec.lastfromset=1) THEN
+      { second: number of categories - derived 0/1-array }
+        antal_kat:= tfrec.catCount
+        fn:= tfrec.vFieldNameB5
+        FOR j:= 1 TO antal_kat DO
+          tfrec.READNEXT
+          kat_kode:= GetCategoryCode(fn, j-1)
+          kat_text:= GetCategoryText(fn, j-1)
+          IF kat_text = '' THEN kat_text:= GetCategoryLabel(fn, j-1) ENDIF
+          kat_text:= RemoveFormattingCodes(kat_text)
+          WriteText('label variable '+tfrec.vuniquename+' "' + SUBSTRING(kat_text,1,200) + ' (Code ' + kat_kode + ')"', 0)
+        ENDDO
+      ENDIF
+    ENDIF
+  UNTIL tfrec.LASTRECORD
+ENDPROCEDURE
+
+PROCEDURE Stata_Make_VALUE_LABELS
+AUXFIELDS
+  i,j: INTEGER
+  FName: STRING
+  SpecialA: STRING
+  C,SAC,tot: INTEGER
+  close: STRING
+  tmp: STRING
+  TN: string
+INSTRUCTIONS
+  tfUniqueTypeNames.RESET
+  tfRec.SETREADKEY(SECONDARY)
+  tfRec.RESET
+  FOR i:= 1 TO tfUniqueTypeNames.FORMCOUNT DO
+    Close:= ''
+    tfUniqueTypeNames.READNEXT
+    TN:= tfUniqueTypeNames.Name
+    tfrec.get(SECONDARY,TN)
+    fname:= tfrec.vFieldNameB5
+    {WRITE labels FOR fname}
+    C:= VAL(GetCategoriesCount(fname))
+    IF DoTreatDKRFasValues=Yes THEN
+      SAC:= SpecialAnswerCount(fname)
+    ELSE
+      SAC:= 0  
+    ENDIF  
+    tot:= 0 
+    WriteText('label define '+TN+' ///',0)
+    FOR j:= 1 to C DO
+      tot:= tot+1
+      IF tot=C+SAC THEN
+        close:= ', replace'
+      ELSE
+        close:= ' ///'
+      ENDIF
+      tmp:= GetCategoryText(fname, j-1)
+      WriteText(GetCategoryCode(fname, j-1)+' "'+SUBSTRING(RemoveFormattingCodes(tmp),1,200)+'"'+Close,1)
+    ENDDO
+    //next only when special answers are made part of enum field
+    IF DoTreatDKRFasValues=Yes THEN
+      FOR i:=  0 TO  VAL([[meta.SpecialAnswers.AllNames.Count]])-1 DO
+        SpecialA:= [[meta.SpecialAnswers.AllNames[i] ]]
+        IF [[meta.GetField(fname).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+          tot:= tot+1
+          IF tot=C+SAC THEN
+            close:= ', replace'
+          ELSE
+            close:= ' ///'
+          ENDIF
+          WriteText(MakeMissingValue(fname,SpecialA)+' "'+SpecialA+'"'+Close,1)
+        ENDIF
+      ENDDO    
+    ENDIF
+    WHILE tfrec.uniqueftn=TN do
+      WriteText('label values '+tfrec.vUniqueName+' '+TN,0)
+      tfrec.READNEXT //gaat goed maar levert leeg record op...
+    ENDWHILE
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE Stata_ProduceScript
+INSTRUCTIONS
+  oScript_OPEN(ScriptName+'.do',0) {dictionaryfilename}
+  tfRec.RESET
+  AddStartComments
+{ Stata-program }
+  DisplayProgress('Stata DATA')
+  Stata_MakeData
+  DisplayProgress('Stata MISSING VALUES')
+  Stata_Make_MISSING_VALUES(0)
+  IF DoSetConversion=Yes THEN
+    DisplayProgress('Stata Generate Set Arrays(1)')
+    Stata_GenerateSetArrays(1)
+  ENDIF
+  DisplayProgress('Stata VAR LABELS & NOTES')
+  Stata_Make_VAR_LABELS
+  DisplayProgress('Stata VALUE LABELS')
+  Stata_Make_VALUE_LABELS
+  WriteText('compress',0)  {added 4-1-2013. Suggestion of Matthew White}
+  WriteText('save "'+ OutputFilePath+ExtractFileName(ScriptName+'.dta')+'",replace',0)
+ENDPROCEDURE
+
+PROCEDURE CreateStatisticalScript
+INSTRUCTIONS
+  oFieldNames.open(scriptname+'.FieldNames.txt')
+  tfUniqueFieldNames.RESET
+  repeat
+    tfUniqueFieldNames.readnext
+    IF tfUniqueFieldNames.Added=EMPTY THEN
+      oFieldNames.write
+    ENDIF  
+  until tfUniqueFieldNames.lastrecord  
+{$IFDEF DEBUG}
+  oTypeNames.open(scriptname+'.TypeNames.xml')
+  oRec.open(scriptname+'.FieldInfo.xml')
+  oUniqueTypeNames.open(scriptname+'.UniqueTypeNames.xml')
+  tfRec.RESET
+  tTypeNames.RESET
+  tfUniqueTypeNames.RESET
+  repeat
+    tfrec.readnext
+    oRec.write
+  until tfrec.lastrecord  
+  repeat
+    tfUniqueTypeNames.readnext
+    oUniqueTypeNames.Name:= tfUniqueTypeNames.Name
+    oUniqueTypeNames.OriName:=tfUniqueTypeNames.oriName
+    oUniqueTypeNames.FieldNameB5:=tfUniqueTypeNames.FieldNameB5
+    oUniqueTypeNames.write
+  until tfUniqueTypeNames.lastrecord  
+  repeat
+    ttypeNames.readnext
+    oTypeNames.write
+  until tTypeNames.lastrecord  
+{$ENDIF}  
+
+  tfRec.RESET
+  tfUniqueTypeNames.RESET
+  tfUniqueFieldNames.RESET
+  
+  CASE Package of
+  'SAS':  SAS_ProduceScript
+  'SPSS': SPSS_ProduceScript
+  'STATA': Stata_ProduceScript
+  ENDCASE
+ENDPROCEDURE
+
+PROCEDURE AddComment
+PARAMETERS pComment: STRING
+INSTRUCTIONS
+  CASE Package of
+  'SAS':  SAS_Add_Comment(pComment)
+  'SPSS': SPSS_Add_Comment(pComment)
+  'STATA': Stata_Add_Comment(pComment)
+  ENDCASE
+ENDPROCEDURE
+
+FUNCTION YesOrNo: STRING
+PARAMETERS Enum: (Yes)
+INSTRUCTIONS
+  IF Enum=Yes THEN Result:= 'Yes' ELSE Result:= 'No' ENDIF
+ENDFUNCTION  
+
+PROCEDURE AddStartComments
+INSTRUCTIONS
+  AddComment(Fill('-',78))
+  AddComment(Package+'-script generated by '+SETUPNAME+', on '+DATETOSTR(SYSDATE)+' '+TIMETOSTR(SYSTIME,'HH:mm:ss'))
+  IF ModeID<>'' THEN AddComment('Mode used = '+ModeID) ENDIF
+  IF LangID<>'' THEN AddComment('Language used = '+LangID) ENDIF
+  IF RoleID<>'' THEN AddComment('Role text used = '+RoleID) ENDIF
+  AddComment('Set Converion = '+YesOrNo(DoSetConversion))
+  IF DoSetConversion=Yes THEN 
+    AddComment('Maintain set order = '+YesOrNo(DoMaintainSetOrder))
+  ENDIF  
+  AddComment('Treat special answers as values = '+YesOrNo(DoTreatDKRFasValues))
+  IF FieldNamesPresent=Yes THEN
+    AddComment('Based on field selection in file '+iFNames.PATHNAME+iFNames.FILENAME)
+  ENDIF
+  IF UniqueNameBasedOn=fullname THEN AddComment('Unique names = derived from fully qualified field names')
+  ELSEIF UniqueNameBasedOn=_localname THEN AddComment('Unique names = derived from local field names')
+  ELSE AddComment('Unique names = derived from local field names & indexes')
+  ENDIF
+  AddComment('Use ANSI as character set for Export = '+YesOrNo(DoProduceANSI))
+  IF SeparatorChar<>'' THEN AddComment('Used Separator = '+SeparatorChar) ENDIF
+  AddComment('Add zeros to INDEX in names = '+YesOrNo(DoAddZeroToIndex)) 
+  IF Package='SAS' THEN
+    AddComment('Convert Date/Time fields = '+YesOrNo(DoConvertDateTime)) 
+    AddComment('Convert Special answers for non numeric fields = '+YesOrNo(DoDKRFConversionForNonNumeric)) 
+    AddComment('Recode empty to missing = '+YesOrNo(DoRecodeEmpty)) 
+  ENDIF  
+  AddComment(Fill('-',78))
+ENDPROCEDURE
+
+PROCEDURE Initialise
+AUXFIELDS res: INTEGER
+INSTRUCTIONS
+  DictionaryFileName:= [[meta.FileName]]
+  ScriptName:= oScript.PATHNAME+oScript.FILENAME
+  IF ScriptName='' THEN
+    ScriptName:= ReplaceExtension(DictionaryFileName,'')
+  ENDIF
+  Package:= UPPERCASE(PARAMETER(1))
+  IF NOT (Package IN ['SPSS','SAS','STATA']) THEN
+    DISPLAY('Package not specified correctly. Only SAS, SPSS and Stata are supported. Specified: '+Package,WAIT)
+    HALT(1000)
+  ENDIF
+  LangID:= PARAMETER(2)
+  IF LangID='' THEN
+    LangID:= [[meta.Languages[0].Name]] //always at elast one language...
+  ELSEIF [[meta.Languages.Contains(LangID)]]='False' THEN
+    LangID:= [[meta.Languages[0].Name]]
+  ENDIF  
+  RoleID:= PARAMETER(3)
+  IF RoleID<>'' THEN
+    IF [[meta.Roles.Contains(RoleID)]]='False' THEN
+      RoleID:= ''
+    ENDIF  
+  ENDIF
+  ModeID:= PARAMETER(4)
+  IF ModeID<>'' THEN
+    IF [[meta.Modes.IndexOf(ModeID)]]='-1' THEN 
+      ModeID:= ''
+    ENDIF  
+  ENDIF
+  IF ModeID='' THEN
+    IF val([[meta.Modes.Count]])>0 THEN 
+      ModeID:= [[meta.Modes[0].Name]] 
+    ENDIF
+  ENDIF  
+  OutputFilePath:= PARAMETER(5)
+  IF OutputFilePath='' THEN
+    OutputFilePath:= ExtractFilePath(DictionaryFileName)
+  ENDIF
+  IF SUBSTRING(OutputFilePath, LEN(OutputFilePath), 1) <> CHAR(92) THEN
+    OutputFilePath:= OutputFilePath + CHAR(92)
+  ENDIF
+  InputDataFilePath:= PARAMETER(6)
+  IF InputDataFilePath='' THEN
+    InputDataFilePath:= ExtractFilePath(DictionaryFileName)
+  ENDIF
+  IF SUBSTRING(InputDataFilePath, LEN(InputDataFilePath), 1) <> CHAR(92) THEN
+    InputDataFilePath:= InputDataFilePath + CHAR(92)
+  ENDIF
+  InputDataFileName:= PARAMETER(7)
+  IF InputDataFileName='' THEN
+    InputDataFileName:= ExtractFileName(ReplaceExtension(DictionaryFileName,'.ASC'))
+  ENDIF
+  InputDataFile:= InputDataFilePath + InputDataFileName
+  IF parameter(8)='Y' THEN
+    DoTreatDKRFasValues:= Yes
+  ENDIF
+  IF PARAMETER(9)='Y' THEN
+    DoSetConversion:= Yes
+  ELSEIF PARAMETER(9)='X' THEN
+    DoSetConversion:= Yes
+    DoMaintainSetOrder:= Yes
+  ENDIF
+  UniqueNameBasedOn:= fullname
+  IF PARAMETER(10)<>'' THEN
+    IF PARAMETER(10)='1' THEN
+      UniqueNameBasedOn:= fullname
+    ELSEIF PARAMETER(10)='2' THEN
+      UniqueNameBasedOn:= _localname
+    ELSEIF PARAMETER(10)='3' THEN
+      UniqueNameBasedOn:= localname_indexed 
+    ENDIF  
+  ENDIF
+  IF PARAMETER(11)='Y' THEN
+    DoLowercaseNames:= 1
+  ENDIF
+  MaxNameLen:= VAL(PARAMETER(12))
+  IF MaxNameLen=0 THEN
+    CASE Package of
+    'SPSS':  MaxNameLen:= 64
+    'SAS':   MaxNameLen:= 32
+    'STATA': MaxNameLen:= 32
+    ENDCASE
+  ENDIF
+  DoProduceANSI:= EMPTY
+  SeparatorChar:= UPPERCASE(PARAMETER(13))
+  IF PARAMETER(14)='Y' THEN
+    DoProduceANSI:= Yes
+  ENDIF
+  IF DoProduceANSI<>Yes AND Package='SPSS' THEN 
+    SeparatorChar:= 'TAB'  // seems the only way to do it in old versions of SPSS
+  ENDIF  
+  IF SeparatorChar<>EMPTY THEN
+    UseSeparator:= Yes
+  ENDIF
+  DoAddZeroToIndex:= Yes
+  IF PARAMETER(15)='N' THEN
+    DoAddZeroToIndex:= EMPTY
+  ENDIF  
+  DoConvertDateTime:= Yes
+  IF Package='SAS' AND PARAMETER(16)='N' THEN
+    DoConvertDateTime:= EMPTY
+  ENDIF 
+  DoDKRFConversionForNonNumeric:= Yes
+  IF Package='SAS' AND PARAMETER(17)='N' THEN
+    DoDKRFConversionForNonNumeric:= EMPTY
+  ENDIF 
+  DoRecodeEmpty:= Yes
+  IF Package='SAS' AND PARAMETER(18)='N' THEN
+    DoRecodeEmpty:= Empty
+  ENDIF 
+  DoGenerateFormats:= Yes
+  IF Package='SAS' AND PARAMETER(19)='N' THEN
+    DoGenerateFormats:= Empty
+  ENDIF 
+  DoProduceManExportScript:= Yes
+  IF PARAMETER(20)='N' THEN
+    DoProduceManExportScript:= EMPTY
+  ENDIF
+  BlaiseSystemPath:= ExtractFilePath(PARAMETER(0))
+  PeriodReplaceChar:= '_'
+  ElmStr:= '_ELM'
+  IF iFNames.FILENAME<>'' THEN
+    res:= iFNames.OPEN
+    IF iFNames.IORESULTCODE=0 THEN
+      FieldNamesPresent:= Yes
+    ENDIF
+  ENDIF
+  BlaiseDataFileName:= iData.PATHNAME+iData.FILENAME 
+  IF BlaiseDataFileName='' THEN
+    BlaiseDataFileName:= ReplaceExtension(DictionaryFileName,'.bdix')
+  ENDIF  
+ENDPROCEDURE
+
+MANIPULATE
+  Initialise
+  DecomposeMeta
+  MakeUniqueFieldNames
+  CreateStatisticalScript
+  IF DoProduceManExportScript=Yes THEN
+    CreateAndPrepareMatchingManipulaScript
+  ENDIF  
+  DisplayProgress('Finished generating statistical script "'+ oScript.PATHNAME+oScript.FILENAME +'"!')
+  
+{To Do: make sure field names do not conflict with reserved words
+Stata
+- reserved words: _all, _b, byte, _coef, _cons, double, float, if, in, int, long, _n, _N, _pi, _pred, _rc, _skip, strL, using, with, and str#
+SPSS
+- The last character of a variable name cannot be a underscore (_).
+- SPSS reserved keywords cannot be used as variable names. SPSS reserved keywords are ALL, AND, BY, EQ, GE, GT, LE, LT, NE, NOT, OR, TO, and WITH.
+- Variable names cannot use reserved key words. S1, E1, C1, NET, SUB, TN, CALC are all examples of Reserved Key Words.
+- Do not use A, C, E, F, H, I, M, R, S or V, followed by a number (example, S3), for variable names. 
+ 
+  }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution Name="GenerateStatisticalScript">
+  <StartupProject />
+  <ProjectItems>
+    <Project RelativePath="true" BuildSequence="4">GenerateStatisticalScript.bproj</Project>
+    <Project RelativePath="true" BuildSequence="2">ExportDataForSelectedFields.bproj</Project>
+  </ProjectItems>
+</Solution>

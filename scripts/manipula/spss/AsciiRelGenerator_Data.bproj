@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="AsciiRelGenerator_Data" Guid="881464f2-4d3a-466c-ab2f-014602c970da" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">AsciiRelGenerator_Data.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">AsciiRelGenerator_Data.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ConditionalDefines />
+  </Properties>
+</Project>
