@@ -1,3 +1,4 @@
+. "$PSScriptRoot\FileFunctions.ps1"
 function AddManipulaToProcessingFolder {
     param (
         [string] $manipulaPackage = "$env:TempPath/manipula.zip",
