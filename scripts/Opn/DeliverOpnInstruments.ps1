@@ -8,6 +8,7 @@
 . "$PSScriptRoot\..\functions\CloudFunctions.ps1"
 . "$PSScriptRoot\..\functions\SpssFunctions.ps1"
 . "$PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
+. "$PSScriptRoot\..\functions\ManipulaFunctions.ps1"
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
@@ -61,12 +62,12 @@ try {
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
         }
         catch {
-            LogError($_.ScriptStackTrace)
+            LogError("Error occured: $_.Exception.Message at: $_.ScriptStackTrace")
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     }
 }
 catch {
-    LogError($_.ScriptStackTrace)
+    LogError("Error occured: $_.Exception.Message at: $_.ScriptStackTrace")
     exit 1
 }
