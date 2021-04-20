@@ -3,14 +3,13 @@
 
 function AddSpssFilesToDeliveryPackage {
     param(
-        [string] $manipulaPackage = "$env:TempPath\SpssPackage.zip",
         [string] $processingFolder,
         [string] $deliveryZip,
         [string] $instrumentName
     )
 
-    If (-not (Test-Path $manipulaPackage)) {
-        throw [System.IO.FileNotFoundException] "$manipulaPackage file not found"
+    If (-not (Test-Path $processingFolder)) {
+        throw [System.IO.FileNotFoundException] "$processingFolder file not found"
     }
     
     If (-not (Test-Path $deliveryZip)) {
