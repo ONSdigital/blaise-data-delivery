@@ -8,6 +8,7 @@
 . "$PSScriptRoot\..\functions\CloudFunctions.ps1"
 . "$PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
 . "$PSScriptRoot\..\functions\xmlFunctions.ps1"
+. "$PSScriptRoot\..\functions\JsonFunctions.ps1"
 . "$PSScriptRoot\..\functions\ManipulaFunctions.ps1"
 
 try {
@@ -53,6 +54,9 @@ try {
 
             #Generate XML Files
             AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
+
+            #Generate Json Files
+            AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
 
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="GenerateJSON" Guid="c77c1818-481c-4a4d-83fb-a2f7465290db" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">GenerateJSON.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">GenerateJSON.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ExternalSearchPath />
+    <ConditionalDefines />
+    <ResourceDB />
+    <SurveyRoot />
+    <AppSupport />
+    <IsAppMainUserInterface />
+  </Properties>
+</Project>
