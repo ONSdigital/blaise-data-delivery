@@ -24,14 +24,12 @@ variables:
 stages:
  - stage: DataDelivery
    displayName: Opn Data Delivery
-   variables:
-      ENV_RESTAPI_URL : http://localhost:90
    jobs:
     - deployment: OpnDeliveryData
       environment:
           name: ${{parameters.Environment}}
           resourceType: virtualMachine
-          tags: restapi
+          tags: restapitests
       strategy:
         runOnce:
           deploy: 
