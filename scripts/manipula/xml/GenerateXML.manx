@@ -12,6 +12,9 @@ USES
   OUTPUTFILE
     MyOutputFile: OPXMeta ('output.xml', XML)
 
+  SETTINGS
+    BUFFERSIZE = 1000
+   
   MANIPULATE
     MyOutputFile.WRITE
 
