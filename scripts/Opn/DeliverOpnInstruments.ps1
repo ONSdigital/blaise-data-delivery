@@ -45,8 +45,14 @@ try {
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $instrument.serverParkName -instrumentName $instrument.name -fileName $deliveryFile
 
+            # Create a temporary folder for processing instruments
+            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
+
+            #Add manipula and instrument package to processing folder
+            AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
+
             # Generate and add SPSS files
-            AddSpssFilesToInstrumentPackage -instrumentPackage $deliveryFile -instrumentName $instrument.name 
+            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name 
         
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET

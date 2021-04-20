@@ -35,7 +35,6 @@ function AddXMLFileForDeliveryPackage{
     }
     try {
         AddFolderToZip -folder $deliveryFolder -zipFilePath $deliveryZip
-        LogInfo("Added .XML file to $deliveryZip")
     }
     catch {
         LogWarning("Unable to add .XML file to $deliveryZip")
