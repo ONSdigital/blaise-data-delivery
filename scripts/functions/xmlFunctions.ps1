@@ -19,8 +19,11 @@ function AddXMLFileForDeliveryPackage{
     # Copy Manipula xml files to the processing folder
     Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
 
+    #Gets the folder name of the processing folder
+    $deliveryFolderName = Split-Path $processingFolder -Leaf
+    
     # Create a folder within the temporary folder for generating XML
-    $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingFolder
+    $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFolderName
 
     try {
         # Generate XML file
