@@ -62,12 +62,12 @@ try {
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
         }
         catch {
-            LogError("Error occured: $_.Exception.Message at: $_.ScriptStackTrace")
+            LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     }
 }
 catch {
-    LogError("Error occured: $_.Exception.Message at: $_.ScriptStackTrace")
+    LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
     exit 1
 }

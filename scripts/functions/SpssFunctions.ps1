@@ -29,7 +29,7 @@ function AddSpssFilesToDeliveryPackage {
         LogInfo("Generated the .SPS file")
     }
     catch {
-        LogWarning("Generating SPS and FPS Failed for $instrumentName : $_.Exception.Message")
+        LogWarning("Generating SPS and FPS Failed for $instrumentName : $($_.Exception.Message)")
     }
 
     # Generate .ASC file
@@ -38,7 +38,7 @@ function AddSpssFilesToDeliveryPackage {
         LogInfo("Generated the .ASC file")
     }
     catch {
-        LogWarning("Generating ASCII Failed for $instrumentName : $_.Exception.Message")
+        LogWarning("Generating ASCII Failed for $instrumentName : $($_.Exception.Message)")
     }
 
     # Add the SPS, ASC & FPS files to the instrument package

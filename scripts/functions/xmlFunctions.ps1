@@ -31,7 +31,7 @@ function AddXMLFileForDeliveryPackage{
         LogInfo("Generated .XML File for $deliveryZip")
     }
     catch {
-        LogWarning("Generating XML Failed: $_.Exception.Message")
+        LogWarning("Generating XML Failed: $($_.Exception.Message)")
     }
     try {
         AddFolderToZip -folder $deliveryFolder -zipFilePath $deliveryZip
