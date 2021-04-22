@@ -27,7 +27,7 @@ function AddXMLFileForDeliveryPackage{
 
     try {
         # Generate XML file, Export function no longer works in Blaise 5 
-        & cmd.exe /c $processingFolder\MetaViewer.exe -F:D:\Blaise5\Surveys\lms2102_bk1\lms2102_bk1.bmix -Export
+        & cmd.exe /c $processingFolder/MetaViewer.exe -F:$processingFolder/$instrumentName.bmix -Export
         Copy-Item -Path "$processingFolder/$($instrumentName)_meta.xml" -Destination $deliveryFolder/$instrumentName.xml
         LogInfo("Generated .XML File for $deliveryZip")
     }
