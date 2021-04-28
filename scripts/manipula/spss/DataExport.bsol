@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution Name="DataExport">
+  <StartupProject RelativePath="true">DataExportStarter.bproj</StartupProject>
+  <ProjectItems>
+    <Project RelativePath="true" BuildSequence="10">AsciiRelGenerator_Data.bproj</Project>
+    <Project RelativePath="true" BuildSequence="2">AsciiRelGenerator_Meta.bproj</Project>
+    <Project RelativePath="true" BuildSequence="4">GenerateStatisticalScript.bproj</Project>
+    <Project RelativePath="true" BuildSequence="6">ExportDataForSelectedFields.bproj</Project>
+    <Project RelativePath="true" BuildSequence="8">DataExportStarter.bproj</Project>
+  </ProjectItems>
+</Solution>

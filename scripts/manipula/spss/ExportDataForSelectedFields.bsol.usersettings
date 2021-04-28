@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SolutionUserConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DocumentWindows>
+    <OpenedFile>
+      <RelativeFileName>ExportDataForSelectedFields.manx</RelativeFileName>
+      <IsRelative>true</IsRelative>
+      <ViewTypeKey>ManipulaEditorViewType</ViewTypeKey>
+    </OpenedFile>
+  </DocumentWindows>
+  <ActiveFileName>ExportDataForSelectedFields.manx</ActiveFileName>
+  <FileName>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\ExportDataForSelectedFields.bsol</FileName>
+  <ExpandedItems>
+    <SolutionItem>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\ExportDataForSelectedFields.bproj</SolutionItem>
+  </ExpandedItems>
+  <SolutionExplorerSelectedItem>
+    <TreeFileType>Project</TreeFileType>
+    <FileName>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\ExportDataForSelectedFields.bproj</FileName>
+  </SolutionExplorerSelectedItem>
+  <ConfigurationMode>Development</ConfigurationMode>
+  <SearchTextFieldContent />
+</SolutionUserConfig>

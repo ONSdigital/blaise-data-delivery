@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="AsciiRelGenerator_Meta" Guid="d1214320-b96f-4ef4-b386-116f258bc488" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">AsciiRelGenerator_Meta.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">AsciiRelGenerator_Meta.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ConditionalDefines />
+  </Properties>
+</Project>

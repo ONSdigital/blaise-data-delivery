@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Solution Name="ExportDataForSelectedFields Solution">
+  <StartupProject RelativePath="true">ExportDataForSelectedFields.bproj</StartupProject>
+  <ProjectItems>
+    <Project RelativePath="true" BuildSequence="2">ExportDataForSelectedFields.bproj</Project>
+  </ProjectItems>
+</Solution>

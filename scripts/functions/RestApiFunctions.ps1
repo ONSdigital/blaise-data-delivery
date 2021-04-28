@@ -21,7 +21,9 @@ function GetListOfInstrumentsBySurveyType {
     $catiInstrumentsUri = "$restApiBaseUrl/api/v1/cati/instruments"
 
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
-    return Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | Where-Object { $_.name.StartsWith($surveyType) }
+    $allInstruments = Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri 
+
+    return $allInstruments | Where-Object { $_.name.StartsWith($surveyType) }
 }
 
 function DownloadInstrumentPackage {

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="DataExportStarter" Guid="4e2dd716-8de9-4aab-b0c2-2e465571cb38" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">DataExportStarter.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">DataExportStarter.manx</File>
+    <File FileType="IncludeFileType" RelativePath="true">FileUtils.incx</File>
+    <File FileType="PackageSpecificationFileType" RelativePath="true">DataExportStarter.bcps</File>
+    <File FileType="ResourceDatabaseFileType" RelativePath="true">starter.blrd</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ExternalSearchPath />
+    <ConditionalDefines />
+    <ResourceDB RelativePath="true">DataExportStarter.blrd</ResourceDB>
+    <SurveyRoot />
+    <AppSupport />
+  </Properties>
+</Project>

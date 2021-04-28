@@ -1,0 +1,22 @@
+﻿{
+Setup:        ExportXml
+Date Created: $created$ 
+Author:       $user$
+}
+USES
+    OPXMeta (VAR)
+   
+  INPUTFILE
+    MyInputFile: OPXMeta ('input.bdbx', BLAISE)
+
+  OUTPUTFILE
+    MyOutputFile: OPXMeta ('output.xml', XML)
+
+  SETTINGS
+    BUFFERSIZE = 1000
+   
+  MANIPULATE
+    MyOutputFile.WRITE
+
+END
+

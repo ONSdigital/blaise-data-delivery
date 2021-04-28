@@ -1,0 +1,1255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LayoutSpecification xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="StartMetaAndDataExport" Version="10" GenerateAllSections="true" GenerateClientRules="true" UseGenericPages="false">
+  <Languages>
+    <Language Name="" />
+  </Languages>
+  <LayoutSets>
+    <LayoutSet Name="Dialogs1" ResourceSetName="Dialogs" StyleName="Dialogs" RequiredStyle="false" DesignHeight="600" DesignWidth="800" ResizeMode="Auto" RouteItemsPerPage="999" RowsPerTable="999" ReceiptPageName="" IntroPageName="" AbortPageName="Default">
+      <Parallels>
+        <Parallel Name="">
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+        <Parallel Name="SpecifyParams" DialogHeight="670" DialogWidth="750">
+          <InstanceLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.SelLangStr">
+              <Instructions>
+                <TemplateInstruction TemplateName="DropDownList" TemplateTarget="DataValue" Parameters="{ParameterValues IsEnabled={Expression LanguagesCount.IntegerValue &gt; 1}}" />
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues TextColumnWidth='150';ActionButtonVisibility='Collapsed';Margin='0';IsStretched='False'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.SelRoleStr">
+              <Instructions>
+                <TemplateInstruction TemplateName="DropDownList" TemplateTarget="DataValue" Parameters="{ParameterValues IsEnabled={Expression RolesCount.IntegerValue &gt; 0}}" />
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues TextColumnWidth='150';ActionButtonVisibility='Collapsed';Margin='0'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.SelModeStr">
+              <Instructions>
+                <TemplateInstruction TemplateName="DropDownList" TemplateTarget="DataValue" Parameters="{ParameterValues IsEnabled={Expression ModesCount.IntegerValue &gt; 0}}" />
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues TextColumnWidth='150';ActionButtonVisibility='Collapsed';Margin='0'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.strOutputPath">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Visible';TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectProgramPath()})};Margin='0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.strInputPath">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Visible';TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectInputPath()})};Margin='0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.ScriptName">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Hidden';TextColumnWidth='150';Margin='0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.strInputName">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Visible';TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectInputName()})};Margin='0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.FieldSelectionFileName">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility={Expression IF DoAsciiRelational.AnswerStatus = Empty THEN 'Visible' ELSE 'Collapsed' ENDIF};TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectFieldSelection()})};Margin='0';VerticalAlignment='Center'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True';Enabled={Expression DoAsciiRelational.AnswerStatus = Empty}}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.BlaiseDataFileName">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Visible';TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectBlaiseDataName()})};Margin='0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.DoRunExport">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues TextMargin='3,20,3,1';IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True';CheckBoxMargin='3,20,3,3'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.DoAsciiRelational">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action Conditional({Expression DoAsciiRelational.AnswerStatus &lt;&gt; Response},{Action AssignField('DoGenerateExtraAttributes', '', '')},'')};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action Conditional({Expression DoAsciiRelational.AnswerStatus &lt;&gt; Response},{Action AssignField('DoGenerateExtraAttributes', '', '')},'');CurrentPage()}}" ObjectName="yes" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.Package">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues TextColumnWidth='150';OnClick={Action ShowDialog('SpecifyPackageSettings')};ActionButtonVisibility='Collapsed';Margin='0';VerticalAlignment='Center'}" />
+                <TemplateInstruction TemplateName="Enumeration" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action CurrentPage()};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="SAS" />
+                <TemplateInstruction TemplateName="Enumeration" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action CurrentPage()};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="SPSS" />
+                <TemplateInstruction TemplateName="Enumeration" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action CurrentPage()};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="Stata" />
+                <TemplateInstruction TemplateName="AnswerList" TemplateTarget="DataValue" Parameters="{ParameterValues IsEnabled='True';Arrangement='1 Row';Width='Stretch'}" />
+                <TemplateInstruction TemplateName="Enumeration" TemplateTarget="Category" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.strMetaName">
+              <Instructions>
+                <TemplateInstruction TemplateName="InputWithActionButton" TemplateTarget="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Visible';TextColumnWidth='150';OnClick={Action ProcedureCall({Expression SelectMeta()})};Margin='0,10,0,0'}" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='2,0,0,0';IsStretched='True';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.Buttons">
+              <Instructions>
+                <TemplateInstruction TemplateName="ResultButtons" TemplateTarget="FieldPane" PlaceholderName="specifyParams_Buttons1" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues IsEnabled='False'}" ObjectName="" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues IsEnabled={Expression strMetaName.AnswerStatus = Response};OnClick={Action ProcedureCall({Expression SaveCommandFile()})}}" ObjectName="Save" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues IsEnabled={Expression strMetaName.AnswerStatus = Response};OnClick={Action ProcedureCall({Expression GenerateStatisticalScript()})}}" ObjectName="Run" />
+                <TemplateInstruction TemplateName="ResultButtonCancel" TemplateTarget="Category" ObjectName="Cancel" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.DoGenerateExtraAttributes">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" PlaceholderName="specifyParams_DoGenerateExtraAttributes1" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression DoAsciiRelational.AnswerStatus = Response};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression DoAsciiRelational.AnswerStatus = Response}}" ObjectName="yes" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.SepChar">
+              <Instructions>
+                <TemplateInstruction TemplateName="Horizontal" TemplateTarget="FieldPane" Parameters="{ParameterValues Margin='0,10,0,0'}" PlaceholderName="specifyParams_SepChar1" />
+                <TemplateInstruction TemplateName="StringTextBox" TemplateTarget="ResponseValue" Parameters="{ParameterValues Margin='10,0,0,0';IsStretched='False';IsEnabled='True'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.DoProduceANSI">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" PlaceholderName="specifyParams_DoProduceANSI1" />
+                <TemplateInstruction TemplateName="CheckBox" TemplateTarget="Category" ObjectName="" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" ObjectName="Yes" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.EditSelectionButton">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" PlaceholderName="specifyParams_EditSelectionButton1" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues Margin='6,0,0,0';IsEnabled={Expression strMetaName.AnswerStatus = Response AND DoAsciiRelational.AnswerStatus = Empty};OnClick={Action ProcedureCall({Expression EditSelectionFile()})};HorizontalAlignment='Left';Width='100'}" ObjectName="DoEdit" />
+                <TemplateInstruction TemplateName="ResultButtonCancel" TemplateTarget="Category" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyParams.SettingsButton">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" Parameters="{ParameterValues Margin='0'}" PlaceholderName="specifyParams_SettingsButton1" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues Margin='0'}" ObjectName="" />
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues IsEnabled='True';Margin='6,0,0,0';OnClick={Action ShowDialog('SpecifyPackageSettings')};HorizontalAlignment='Left';Width='Auto'}" ObjectName="EditType" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+          </InstanceLayoutInstructions>
+          <CustomPageTemplates>
+            <CustomPageTemplate PageIndex="0">
+              <Template DesignWidth="750" DesignHeight="670">
+                <Items>
+                  <Grid Name="backgroundGrid" Background="{Style Background}" Width="Stretch" Height="Stretch">
+                    <ExpressionReferences>
+                      <StateExpressionReference />
+                      <DatamodelExpressionReference />
+                      <ServerVariablesExpressionReference />
+                      <ClientFeaturesExpressionReference />
+                      <PageExpressionReference />
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Package</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>SettingsButton</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>strMetaName</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>SelLangStr</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>SelRoleStr</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>SelModeStr</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>ScriptName</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>strOutputPath</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>strInputPath</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>strInputName</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>FieldSelectionFileName</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>EditSelectionButton</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>BlaiseDataFileName</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoAsciiRelational</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoGenerateExtraAttributes</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>SepChar</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoProduceANSI</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoRunExport</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Buttons</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_1_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_2_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_3_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_4_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_5_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_6_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_7_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_8_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_9_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_10_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_11_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_12_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_13_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_14_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_15_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_16_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_17_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_18_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_19_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_20_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_21_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_22_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_23_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_24_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>langstr_25_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_1_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_2_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_3_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_4_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_5_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_6_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_7_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_8_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_9_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_10_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_11_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_12_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_13_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_14_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_15_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_16_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_17_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_18_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_19_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_20_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_21_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_22_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_23_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_24_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>rolestr_25_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_1_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_2_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_3_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_4_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_5_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_6_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_7_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_8_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_9_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_10_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_11_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_12_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_13_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_14_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_15_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_16_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_17_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_18_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_19_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_20_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_21_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_22_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_23_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_24_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>modestr_25_</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Fieldselector</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>LanguagesCount</ReferenceName>
+                        <FieldType>Integer</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>RolesCount</ReferenceName>
+                        <FieldType>Integer</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>ModesCount</ReferenceName>
+                        <FieldType>Integer</FieldType>
+                      </MappedFieldExpressionReference>
+                    </ExpressionReferences>
+                    <Columns>
+                      <Column Width="*" />
+                    </Columns>
+                    <Rows>
+                      <Row Height="*" />
+                    </Rows>
+                    <Children>
+                      <Grid Name="mainGrid" Background="#FFF0F0F0" Margin="{Style MainGridMargin}" Width="Stretch" Height="Stretch">
+                        <Columns>
+                          <Column Width="*" />
+                        </Columns>
+                        <Rows>
+                          <Row Height="Auto" />
+                          <Row Height="Auto" />
+                          <Row />
+                          <Row Height="*" />
+                          <Row />
+                        </Rows>
+                        <Children>
+                          <Grid Name="headerGrid" Background="{Style Background}" Width="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                            </Rows>
+                            <Children>
+                              <Panel Name="headerPanel" Background="{Style TitleAreaBackground}" Margin="{Style HeaderMargin}" Width="Stretch" CornerRadius="{Style HeaderCornerRadius}">
+                                <Grid Name="titleAreaGrid" Margin="5" Width="Stretch" BorderColor="#FFE6E6FA">
+                                  <Columns>
+                                    <Column Width="Auto" />
+                                    <Column Width="*" />
+                                    <Column Width="Auto" />
+                                  </Columns>
+                                  <Rows>
+                                    <Row Height="Auto" />
+                                  </Rows>
+                                  <Children>
+                                    <ImageControl Name="companyLogo" Margin="2" ScreenReaderText="Company logo" Source="Logo" ScreenReaderTextSource="Literal" TabIndex="-1" />
+                                    <ParallelsArea Name="parallelsArea1" ColumnIndex="1" DesignHeight="42">
+                                      <DefaultTemplates>
+                                        <TemplateReference Name="DialogHeader" Kind="Parallel" />
+                                      </DefaultTemplates>
+                                    </ParallelsArea>
+                                    <LanguageSelector Name="languageSelector" ColumnIndex="2" Visibility="{Expression IF Datamodel.Languages.Count &gt; 1 THEN 'Visible' ELSE 'Collapsed' ENDIF}" Margin="10" ScreenReaderTextKey="txtSelect" ScreenReaderTextSource="Key" TabIndex="2" />
+                                  </Children>
+                                </Grid>
+                              </Panel>
+                            </Children>
+                          </Grid>
+                          <Grid Name="menuBarGrid" RowIndex="1" Width="Stretch" Comment="Available area for e.g. extra information, showing errors or a menubar. Can be removed if not used." BorderColor="#FFE6E6FA">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                          </Grid>
+                          <Grid Name="instructionGrid" RowIndex="2" Visibility="Collapsed" Margin="5" Width="Stretch" BorderWidth="0,0,0,1">
+                            <Children>
+                              <Label Name="instruction" Margin="2" />
+                            </Children>
+                          </Grid>
+                          <Grid Name="contentGrid" RowIndex="3" Margin="20,15,20,15" Width="Stretch" Height="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                            </Rows>
+                            <Children>
+                              <Grid Name="grid1" Width="Stretch">
+                                <Columns>
+                                  <Column />
+                                  <Column Width="110" />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyParams_Package1" DesignHeight="100" FieldName="SpecifyParams.Package" />
+                                  <FieldPaneInstanceArea Name="specifyParams_SettingsButton1" ColumnIndex="1" DesignHeight="100" FieldName="SpecifyParams.SettingsButton" />
+                                </Children>
+                              </Grid>
+                              <FieldPaneInstanceArea Name="strMetaNameFieldPaneArea" RowIndex="1" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.strMetaName">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <Grid Name="grid4" RowIndex="2" Width="Stretch">
+                                <Columns>
+                                  <Column Width="300" />
+                                  <Column />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyParams_SelLangStr1" DesignHeight="100" FieldName="SpecifyParams.SelLangStr" />
+                                  <Button Name="button1" ColumnIndex="1" Background="#FFD3D3D3" Text="x" OnClick="{Action AssignField('SelLangStr', '', '')}" />
+                                </Children>
+                              </Grid>
+                              <Grid Name="grid5" RowIndex="3" Width="Stretch">
+                                <Columns>
+                                  <Column Width="300" />
+                                  <Column />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyParams_SelRoleStr1" DesignHeight="100" FieldName="SpecifyParams.SelRoleStr" />
+                                  <Button Name="button2" ColumnIndex="1" Background="#FFD3D3D3" Text="x" OnClick="{Action AssignField('SelRoleStr', '', '')}" />
+                                </Children>
+                              </Grid>
+                              <FieldPaneInstanceArea Name="SelModeStrFieldPaneArea" RowIndex="4" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.SelModeStr">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="ScriptNameFieldPaneArea" RowIndex="5" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.ScriptName">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="strOutputPathFieldPaneArea" RowIndex="6" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.strOutputPath">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="strInputPathFieldPaneArea" RowIndex="7" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.strInputPath">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="strInputNameFieldPaneArea" RowIndex="8" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.strInputName">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <Grid Name="grid3" RowIndex="9" VerticalAlignment="Center" Width="Stretch">
+                                <Columns>
+                                  <Column />
+                                  <Column Width="110" />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyParams_FieldSelectionFileName1" DesignHeight="100" FieldName="SpecifyParams.FieldSelectionFileName" />
+                                  <FieldPaneInstanceArea Name="specifyParams_EditSelectionButton1" ColumnIndex="1" DesignHeight="100" FieldName="SpecifyParams.EditSelectionButton" />
+                                </Children>
+                              </Grid>
+                              <FieldPaneInstanceArea Name="BlaiseDataFileNameFieldPaneArea" RowIndex="10" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.BlaiseDataFileName">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="specifyParams_SepChar1" RowIndex="11" DesignHeight="100" FieldName="SpecifyParams.SepChar" />
+                              <FieldPaneInstanceArea Name="specifyParams_DoProduceANSI1" RowIndex="12" DesignHeight="100" FieldName="SpecifyParams.DoProduceANSI" />
+                              <FieldPaneInstanceArea Name="DoAsciiRelationalFieldPaneArea" RowIndex="13" DesignWidth="730" DesignHeight="250" FieldName="SpecifyParams.DoAsciiRelational">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <Grid Name="grid2" RowIndex="14" Width="Stretch">
+                                <Columns>
+                                  <Column Width="30" />
+                                  <Column />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyParams_DoGenerateExtraAttributes1" ColumnIndex="1" DesignHeight="100" FieldName="SpecifyParams.DoGenerateExtraAttributes" />
+                                </Children>
+                              </Grid>
+                              <FieldPaneInstanceArea Name="specifyParams_DoRunExport1" RowIndex="15" DesignHeight="100" FieldName="SpecifyParams.DoRunExport" />
+                              <FieldPaneInstanceArea Name="specifyParams_Buttons1" RowIndex="16" DesignHeight="100" FieldName="SpecifyParams.Buttons" />
+                            </Children>
+                          </Grid>
+                          <Grid Name="footNoteGrid" RowIndex="4" Visibility="Collapsed" Margin="5" Width="Stretch" BorderWidth="0,1,0,0">
+                            <Children>
+                              <Label Name="footNote" Margin="2" />
+                            </Children>
+                          </Grid>
+                        </Children>
+                      </Grid>
+                    </Children>
+                  </Grid>
+                </Items>
+              </Template>
+            </CustomPageTemplate>
+          </CustomPageTemplates>
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+        <Parallel Name="SpecifyPackageSettings" DialogHeight="470" DialogWidth="580">
+          <InstanceLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.UniqueNameBasedOn">
+              <Instructions>
+                <TemplateInstruction TemplateName="Horizontal" TemplateTarget="FieldPane" Parameters="{ParameterValues Margin='5';ColumnWidth='300'}" />
+                <TemplateInstruction TemplateName="DropDownList" TemplateTarget="DataValue" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.varlength">
+              <Instructions>
+                <TemplateInstruction TemplateName="Horizontal" TemplateTarget="FieldPane" Parameters="{ParameterValues Margin='5';ColumnWidth='300'}" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoSetConversion">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues OnValueChanged={Action Conditional({Expression DoSetConversion.AnswerStatus = Empty},{Action AssignField('DoMaintainSetOrder', '', '')},'');CurrentPage()};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="yes" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoMaintainSetOrder">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression DoSetConversion.AnswerStatus = Response}}" ObjectName="yes" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoLowercase">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoTreatDKRFasValues">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoAddZeroToIndex">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoConvertDateTime">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression Package.ValueAsText = '1'};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoDKRFConversionForNonNumeric">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression Package.ValueAsText = '1'};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoRecodeEmpty">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression Package.ValueAsText = '1'};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.DoGenerateFormats">
+              <Instructions>
+                <TemplateInstruction TemplateName="OnlyInput" TemplateTarget="FieldPane" />
+                <TemplateInstruction TemplateName="Set" TemplateTarget="Category" Parameters="{ParameterValues Enabled={Expression Package.ValueAsText = '1'};IsStretched='True';AutoEnter='False';TextAutoEnter='False';CodeAutoEnter='False';IsEnabled='True'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="SpecifyPackageSettings.Res">
+              <Instructions>
+                <TemplateInstruction TemplateName="ResultButtonOK" TemplateTarget="Category" Parameters="{ParameterValues Margin='0,0,20,0';IsEnabled='True'}" ObjectName="" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+          </InstanceLayoutInstructions>
+          <CustomPageTemplates>
+            <CustomPageTemplate PageIndex="0">
+              <Template DesignWidth="580" DesignHeight="470">
+                <Items>
+                  <Grid Name="backgroundGrid" Background="{Style Background}" Width="Stretch" Height="Stretch">
+                    <ExpressionReferences>
+                      <StateExpressionReference />
+                      <DatamodelExpressionReference />
+                      <ServerVariablesExpressionReference />
+                      <ClientFeaturesExpressionReference />
+                      <PageExpressionReference />
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>varlength</ReferenceName>
+                        <FieldType>Integer</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>UniqueNameBasedOn</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoSetConversion</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoMaintainSetOrder</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoLowercase</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoTreatDKRFasValues</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoAddZeroToIndex</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoConvertDateTime</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoDKRFConversionForNonNumeric</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoRecodeEmpty</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>DoGenerateFormats</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Res</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Package</ReferenceName>
+                        <FieldType>Enumeration</FieldType>
+                      </MappedFieldExpressionReference>
+                    </ExpressionReferences>
+                    <Columns>
+                      <Column Width="*" />
+                    </Columns>
+                    <Rows>
+                      <Row Height="*" />
+                    </Rows>
+                    <Children>
+                      <Grid Name="mainGrid" Background="#FFF0F0F0" Margin="{Style MainGridMargin}" Width="Stretch" Height="Stretch">
+                        <Columns>
+                          <Column Width="*" />
+                        </Columns>
+                        <Rows>
+                          <Row Height="Auto" />
+                          <Row Height="Auto" />
+                          <Row />
+                          <Row Height="*" />
+                          <Row />
+                        </Rows>
+                        <Children>
+                          <Grid Name="headerGrid" Background="{Style Background}" Width="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                            </Rows>
+                            <Children>
+                              <Panel Name="headerPanel" Background="{Style TitleAreaBackground}" Margin="{Style HeaderMargin}" Width="Stretch" CornerRadius="{Style HeaderCornerRadius}">
+                                <Grid Name="titleAreaGrid" Margin="5" Width="Stretch" BorderColor="#FFE6E6FA">
+                                  <Columns>
+                                    <Column Width="Auto" />
+                                    <Column Width="*" />
+                                    <Column Width="Auto" />
+                                  </Columns>
+                                  <Rows>
+                                    <Row Height="Auto" />
+                                  </Rows>
+                                  <Children>
+                                    <ImageControl Name="companyLogo" Margin="2" ScreenReaderText="Company logo" Source="Logo" ScreenReaderTextSource="Literal" TabIndex="-1" />
+                                    <ParallelsArea Name="parallelsArea1" ColumnIndex="1" DesignHeight="42">
+                                      <DefaultTemplates>
+                                        <TemplateReference Name="DialogHeader" Kind="Parallel" />
+                                      </DefaultTemplates>
+                                    </ParallelsArea>
+                                    <LanguageSelector Name="languageSelector" ColumnIndex="2" Visibility="{Expression IF Datamodel.Languages.Count &gt; 1 THEN 'Visible' ELSE 'Collapsed' ENDIF}" Margin="10" ScreenReaderTextKey="txtSelect" ScreenReaderTextSource="Key" TabIndex="2" />
+                                  </Children>
+                                </Grid>
+                              </Panel>
+                            </Children>
+                          </Grid>
+                          <Grid Name="contentGrid" RowIndex="3" Margin="5,5,5,0" Width="Stretch" Height="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                              <Row />
+                            </Rows>
+                            <Children>
+                              <FieldPaneInstanceArea Name="varlengthFieldPaneArea" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.varlength">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="UniqueNameBasedOnFieldPaneArea" RowIndex="1" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.UniqueNameBasedOn">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoSetConversionFieldPaneArea" RowIndex="3" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoSetConversion">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <Grid Name="grid1" RowIndex="4" Width="Stretch">
+                                <Columns>
+                                  <Column Width="30" />
+                                  <Column />
+                                </Columns>
+                                <Children>
+                                  <FieldPaneInstanceArea Name="specifyPackageSettings_DoMaintainSetOrder1" ColumnIndex="1" DesignHeight="100" FieldName="SpecifyPackageSettings.DoMaintainSetOrder" />
+                                </Children>
+                              </Grid>
+                              <FieldPaneInstanceArea Name="DoLowercaseFieldPaneArea" RowIndex="5" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoLowercase">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoTreatDKRFasValuesFieldPaneArea" RowIndex="6" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoTreatDKRFasValues">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoAddZeroToIndexFieldPaneArea" RowIndex="8" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoAddZeroToIndex">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoConvertDateTimeFieldPaneArea" RowIndex="9" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoConvertDateTime">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoDKRFConversionForNonNumericFieldPaneArea" RowIndex="10" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoDKRFConversionForNonNumeric">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoRecodeEmptyFieldPaneArea" RowIndex="11" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoRecodeEmpty">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="DoGenerateFormatsFieldPaneArea" RowIndex="12" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.DoGenerateFormats">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                              <FieldPaneInstanceArea Name="ResFieldPaneArea" RowIndex="13" DesignWidth="730" DesignHeight="250" FieldName="SpecifyPackageSettings.Res">
+                                <DefaultTemplates>
+                                  <TemplateReference Name="InputWithActionButton" Kind="FieldPane" Parameters="{ParameterValues ActionButtonVisibility='Collapsed'}" />
+                                  <TemplateReference Name="OnlyInput" Kind="FieldPane" />
+                                  <TemplateReference Name="ResultButtons" Kind="FieldPane" />
+                                  <TemplateReference Name="Vertical" Kind="FieldPane" Parameters="{ParameterValues Width='Stretch'}" />
+                                </DefaultTemplates>
+                              </FieldPaneInstanceArea>
+                            </Children>
+                          </Grid>
+                          <Grid Name="footNoteGrid" RowIndex="4" Visibility="Collapsed" Margin="5" Width="Stretch" BorderWidth="0,1,0,0">
+                            <Children>
+                              <Label Name="footNote" Margin="2" />
+                            </Children>
+                          </Grid>
+                        </Children>
+                      </Grid>
+                    </Children>
+                  </Grid>
+                </Items>
+              </Template>
+            </CustomPageTemplate>
+          </CustomPageTemplates>
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+        <Parallel Name="Confirm">
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+        <Parallel Name="Display">
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+        <Parallel Name="Process">
+          <InstanceLayoutInstructions>
+            <RouteItemLayoutInstructions RouteItemName="Process.Display">
+              <Instructions>
+                <TemplateInstruction TemplateName="QuestionTextOnly" TemplateTarget="FieldPane" />
+              </Instructions>
+            </RouteItemLayoutInstructions>
+          </InstanceLayoutInstructions>
+          <CustomPageTemplates>
+            <CustomPageTemplate PageIndex="0">
+              <Template>
+                <Items>
+                  <Grid Name="backgroundGrid" Background="{Style Background}" Width="Stretch" Height="Stretch">
+                    <ExpressionReferences>
+                      <StateExpressionReference />
+                      <DatamodelExpressionReference />
+                      <ServerVariablesExpressionReference />
+                      <ClientFeaturesExpressionReference />
+                      <PageExpressionReference />
+                      <MappedFieldExpressionReference>
+                        <ReferenceName>Display</ReferenceName>
+                        <FieldType>String</FieldType>
+                      </MappedFieldExpressionReference>
+                    </ExpressionReferences>
+                    <Columns>
+                      <Column Width="*" />
+                    </Columns>
+                    <Rows>
+                      <Row Height="*" />
+                    </Rows>
+                    <Children>
+                      <Grid Name="mainGrid" Background="#FFF0F0F0" Margin="{Style MainGridMargin}" Width="Stretch" Height="Stretch">
+                        <Columns>
+                          <Column Width="*" />
+                        </Columns>
+                        <Rows>
+                          <Row Height="Auto" />
+                          <Row Height="Auto" />
+                          <Row />
+                          <Row Height="*" />
+                          <Row />
+                        </Rows>
+                        <Children>
+                          <Grid Name="headerGrid" Background="{Style Background}" Width="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                            </Rows>
+                            <Children>
+                              <Panel Name="headerPanel" Background="{Style TitleAreaBackground}" Margin="{Style HeaderMargin}" Width="Stretch" CornerRadius="{Style HeaderCornerRadius}">
+                                <Grid Name="titleAreaGrid" Margin="5" Width="Stretch" BorderColor="#FFE6E6FA">
+                                  <Columns>
+                                    <Column Width="Auto" />
+                                    <Column Width="*" />
+                                    <Column Width="Auto" />
+                                  </Columns>
+                                  <Rows>
+                                    <Row Height="Auto" />
+                                  </Rows>
+                                  <Children>
+                                    <ImageControl Name="companyLogo" Margin="2" ScreenReaderText="Company logo" Source="Logo" ScreenReaderTextSource="Literal" TabIndex="-1" />
+                                    <ParallelsArea Name="parallelsArea1" ColumnIndex="1" DesignHeight="42">
+                                      <DefaultTemplates>
+                                        <TemplateReference Name="DialogHeader" Kind="Parallel" />
+                                      </DefaultTemplates>
+                                    </ParallelsArea>
+                                    <LanguageSelector Name="languageSelector" ColumnIndex="2" Visibility="{Expression IF Datamodel.Languages.Count &gt; 1 THEN 'Visible' ELSE 'Collapsed' ENDIF}" Margin="10" ScreenReaderTextKey="txtSelect" ScreenReaderTextSource="Key" TabIndex="2" />
+                                  </Children>
+                                </Grid>
+                              </Panel>
+                            </Children>
+                          </Grid>
+                          <Grid Name="menuBarGrid" RowIndex="1" Width="Stretch" Comment="Available area for e.g. extra information, showing errors or a menubar. Can be removed if not used." BorderColor="#FFE6E6FA">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Children>
+                              <Menu Name="menu1">
+                                <MenuItems>
+                                  <MenuItem Text="klik mij" OnClick="{Action ProcedureCall({Expression EditSelectionFile()})}" />
+                                </MenuItems>
+                              </Menu>
+                            </Children>
+                          </Grid>
+                          <Grid Name="instructionGrid" RowIndex="2" Visibility="Collapsed" Margin="5" Width="Stretch" BorderWidth="0,0,0,1">
+                            <Children>
+                              <Label Name="instruction" Margin="2" />
+                            </Children>
+                          </Grid>
+                          <Grid Name="contentGrid" RowIndex="3" Margin="{Style ContentAreaMargin}" Width="Stretch" Height="Stretch">
+                            <Columns>
+                              <Column Width="*" />
+                            </Columns>
+                            <Rows>
+                              <Row Height="Auto" />
+                            </Rows>
+                            <Children>
+                              <Label Name="label1" Width="Stretch" Text="Hello World" />
+                            </Children>
+                          </Grid>
+                          <Grid Name="footNoteGrid" RowIndex="4" Visibility="Collapsed" Margin="5" Width="Stretch" BorderWidth="0,1,0,0">
+                            <Children>
+                              <Label Name="footNote" Margin="2" />
+                            </Children>
+                          </Grid>
+                        </Children>
+                      </Grid>
+                    </Children>
+                  </Grid>
+                </Items>
+              </Template>
+            </CustomPageTemplate>
+          </CustomPageTemplates>
+          <IsGeneric>false</IsGeneric>
+        </Parallel>
+      </Parallels>
+    </LayoutSet>
+  </LayoutSets>
+  <LayoutSetGroups>
+    <LayoutSetGroup Name="Dialogs" DataEntrySettingsName="FreeInterviewing">
+      <LayoutSetNames>
+        <string>Dialogs1</string>
+      </LayoutSetNames>
+    </LayoutSetGroup>
+  </LayoutSetGroups>
+  <RoleReferences>
+    <RoleReference Name="Help" />
+    <RoleReference Name="Watermark" />
+    <RoleReference Name="ToolTip" />
+    <RoleReference Name="SpecialAnswer" />
+    <RoleReference Name="CategoryGroup" />
+    <RoleReference Name="EditMask" />
+  </RoleReferences>
+  <TypeReferences>
+    <TypeReference Name="THeader" />
+    <TypeReference Name="TCurrency" />
+  </TypeReferences>
+  <LayoutSpecFieldReferences xmlns="layoutspec">
+    <LayoutSpecFieldReference Name="RespondentTimeZone" />
+    <LayoutSpecFieldReference Name="RespondentTime" />
+    <LayoutSpecFieldReference Name="MainSurveyName" />
+    <LayoutSpecFieldReference Name="InstrumentID" />
+    <LayoutSpecFieldReference Name="InterviewerID" />
+    <LayoutSpecFieldReference Name="CaseID" />
+  </LayoutSpecFieldReferences>
+  <FunctionDeclarations>
+    <FunctionDeclaration Name="FillLanguagesEtc" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="LookForFieldSelector" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectBlaiseDataName" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectFieldSelection" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectInputName" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectInputPath" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectMeta" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SelectProgramPath" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="UpdateSetControls" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SaveCommandFile" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="GenerateStatisticalScript" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="Initialize" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="EditSelectionFile" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="LoadSettings" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="WriteSettings" Source="ManipulaSetup" />
+    <FunctionDeclaration Name="SetMeta" Source="ManipulaSetup" />
+  </FunctionDeclarations>
+</LayoutSpecification>

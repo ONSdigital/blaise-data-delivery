@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SolutionUserConfig xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <DocumentWindows>
+    <OpenedFile>
+      <RelativeFileName>GenerateStatisticalScript.manx</RelativeFileName>
+      <IsRelative>true</IsRelative>
+      <ViewTypeKey>ManipulaEditorViewType</ViewTypeKey>
+    </OpenedFile>
+  </DocumentWindows>
+  <ActiveFileName>GenerateStatisticalScript.manx</ActiveFileName>
+  <FileName>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\GenerateStatisticalScript.bsol</FileName>
+  <ExpandedItems>
+    <SolutionItem>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\GenerateStatisticalScript.bproj</SolutionItem>
+  </ExpandedItems>
+  <SolutionExplorerSelectedItem>
+    <TreeFileType>Solution</TreeFileType>
+    <FileName>D:\Repos\ONS\Windows\blaise-data-delivery\scripts\manipula\spss\GenerateStatisticalScript.bsol</FileName>
+  </SolutionExplorerSelectedItem>
+  <ConfigurationMode>Development</ConfigurationMode>
+  <SearchTextFieldContent />
+</SolutionUserConfig>

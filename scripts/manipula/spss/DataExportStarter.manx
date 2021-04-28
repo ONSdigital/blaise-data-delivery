@@ -1,0 +1,822 @@
+﻿
+{*************************************************}
+{                                                 }
+{  Blaise 5. A Survey Processing System           }
+{  Copyright (c) 2021 Statistics Netherlands      }
+{                                                 }
+{*************************************************}
+//
+//This setup can be used to start the statistical script genarator
+//and the data export for the import in SAS,SPSS or Stata
+
+
+PROCESS DataExportStarter "Data export dialog" 
+
+
+SETTINGS
+  DESCRIPTION = 'Start Data export'
+  
+USES
+  Meta (VAR)
+  
+  DATAMODEL Text
+    FIELDS aLine: STRING[2000]
+  ENDMODEL
+  
+  DATAMODEL SettingsUsedForScript
+  FIELDS
+    _Package : (SAS, SPSS, Stata)
+    _strMetaName : STRING
+    _strOutputPath: STRING
+    _strInputPath: STRING
+    _strInputName: STRING
+    _BlaiseDataFileName: STRING
+    _ScriptName: STRING
+    _FieldSelectionFileName: STRING
+    _FieldSelectionDateTime: STRING
+    _DoSetConversion: (Yes)
+    _DoMaintainSetOrder: (Yes)
+    _DoLowercase: (Yes)
+    _DoTreatDKRFasValues: (Yes)
+    _DoProduceANSI: (Yes)
+    _DoAddZeroToIndex: (Yes)
+    _DoConvertDateTime: (Yes)
+    _DoDKRFConversionForNonNumeric: (Yes)
+    _DoRecodeEmpty: (Yes)
+    _DoGenerateFormats: (Yes)
+    _DoAsciiRelational: (Yes)
+    _DoGenerateExtraAttributes: (Yes)
+    _DoRunExport: (Yes)
+    _UniqueNameBasedOn: (fullname,localname,localname_indexed)
+    _varlength: 8..64
+    _LangStr: STRING[40]
+    _ModeStr: STRING[40]
+    _RoleStr: STRING[40]
+    _sepchar: STRING[3]
+  ENDMODEL
+  
+INPUTFILE iSettingsUsed:SettingsUsedForScript(XML)  
+SETTINGS
+  OPEN=NO
+
+OUTPUTFILE oSettingsUsed:SettingsUsedForScript(XML)  
+SETTINGS
+  OPEN=NO
+  CREATEBDIX=NO
+  
+OUTPUTFILE Cmd:Text (ASCII)
+SETTINGS  
+  TRAILINGSPACES=NO
+  ADDUTF8BOM=NO
+  OPEN=NO
+  CREATEBDIX=NO
+
+AUXFIELDS
+  Package "Package:": (SAS "<B>SAS", SPSS "<B>SPSS", Stata "<B>Stata")
+  PackageStr: STRING
+  SettingsButton: (EditType "Settings...")
+  strMetaName "Meta file:": STRING,EMPTY
+  strOutputPath "Output path:": STRING,EMPTY
+  strInputPath "Input path:": STRING,EMPTY
+  strInputName "Input name:": STRING,EMPTY
+  BlaiseDataFileName "Data file:": STRING,EMPTY
+  ScriptName "Script name:": STRING,EMPTY
+  FieldSelectionFileName "Selection file:": STRING,EMPTY
+  FieldSelectionDateTime: STRING,EMPTY
+  FieldSelector: STRING,EMPTY
+  DoSetConversion: (yes "Create 0/1 variables for set fields"),EMPTY
+  DoMaintainSetOrder: (yes "Maintain set order"),EMPTY
+  DoLowercase: (yes "Convert field names to lowercase"),EMPTY
+  DoTreatDKRFasValues: (yes "Do not treat DK & RF as missing values for enumerated/set fields"),EMPTY
+  DoProduceANSI: (Yes "Encoding in ANSI instead of UTF-8"),EMPTY
+  DoAddZeroToIndex: (Yes "Use zero in array index"),EMPTY
+  DoConvertDateTime: (Yes "Convert Date/Time fields"),EMPTY
+  DoDKRFConversionForNonNumeric: (Yes "Convert special answers for non-numeric fields"),EMPTY
+  DoRecodeEmpty: (Yes "Recode empty to missing"),EMPTY
+  DoGenerateFormats: (Yes "Generate formats"),EMPTY
+  DoGenerateExtraAttributes: (Yes "Add Offroute and Unprocessed special attribute"),EMPTY
+  EditSelectionButton: (DoEdit "Edit...")
+  LangStr: ARRAY[1..25] OF STRING[40]
+  ModeStr: ARRAY[1..25] OF STRING[40]
+  RoleStr: ARRAY[1..25] OF STRING[40]
+  UniqueNameBasedOn "Unique name based on:":
+    (fullname "Full name",
+     localname "Local name",
+     localname_indexed "Local name and array index")
+  SepChar "Separator to use for data export (specify TAB or a single char):": STRING[3],EMPTY  //TAB or single separator
+  SelLangStr "Language:": (LangStr1 "^LangStr[1]",LangStr2 "^LangStr[2]",LangStr3 "^LangStr[3]",LangStr4 "^LangStr[4]",LangStr5 "^LangStr[5]",
+                              LangStr6 "^LangStr[6]",LangStr7 "^LangStr[7]",LangStr8 "^LangStr[8]",LangStr9 "^LangStr[9]",LangStr10 "^LangStr[10]",
+                              LangStr11 "^LangStr[11]",LangStr12 "^LangStr[12]",LangStr13 "^LangStr[13]",LangStr14 "^LangStr[14]",LangStr15 "^LangStr[15]",
+                              LangStr16 "^LangStr[16]",LangStr17 "^LangStr[17]",LangStr18 "^LangStr[18]",LangStr19 "^LangStr[19]",LangStr20 "^LangStr[20]",
+                              LangStr21 "^LangStr[21]",LangStr22 "^LangStr[22]",LangStr23 "^LangStr[23]",LangStr24 "^LangStr[24]",LangStr25 "^LangStr[25]"),EMPTY
+  SelModeStr "Mode:" : (ModeStr1 "^ModeStr[1]",ModeStr2 "^ModeStr[2]",ModeStr3 "^ModeStr[3]",ModeStr4 "^ModeStr[4]",ModeStr5 "^ModeStr[5]",
+                              ModeStr6 "^ModeStr[6]",ModeStr7 "^ModeStr[7]",ModeStr8 "^ModeStr[8]",ModeStr9 "^ModeStr[9]",ModeStr10 "^ModeStr[10]",
+                              ModeStr11 "^ModeStr[11]",ModeStr12 "^ModeStr[12]",ModeStr13 "^ModeStr[13]",ModeStr14 "^ModeStr[14]",ModeStr15 "^ModeStr[15]",
+                              ModeStr16 "^ModeStr[16]",ModeStr17 "^ModeStr[17]",ModeStr18 "^ModeStr[18]",ModeStr19 "^ModeStr[19]",ModeStr20 "^ModeStr[20]",
+                              ModeStr21 "^ModeStr[21]",ModeStr22 "^ModeStr[22]",ModeStr23 "^ModeStr[23]",ModeStr24 "^ModeStr[24]",ModeStr25 "^ModeStr[25]"),EMPTY
+  SelRoleStr "Role:" : (RoleStr1 "^RoleStr[1]",RoleStr2 "^RoleStr[2]",RoleStr3 "^RoleStr[3]",RoleStr4 "^RoleStr[4]",RoleStr5 "^RoleStr[5]",
+                              RoleStr6 "^RoleStr[6]",RoleStr7 "^RoleStr[7]",RoleStr8 "^RoleStr[8]",RoleStr9 "^RoleStr[9]",RoleStr10 "^RoleStr[10]",
+                              RoleStr11 "^RoleStr[11]",RoleStr12 "^RoleStr[12]",RoleStr13 "^RoleStr[13]",RoleStr14 "^RoleStr[14]",RoleStr15 "^RoleStr[15]",
+                              RoleStr16 "^RoleStr[16]",RoleStr17 "^RoleStr[17]",RoleStr18 "^RoleStr[18]",RoleStr19 "^RoleStr[19]",RoleStr20 "^RoleStr[20]",
+                              RoleStr21 "^RoleStr[21]",RoleStr22 "^RoleStr[22]",RoleStr23 "^RoleStr[23]",RoleStr24 "^RoleStr[24]",RoleStr25 "^RoleStr[25]"),EMPTY
+  DoRunExport: (yes "<bold>Create the ASCII file(s) for import by ^Package"),EMPTY
+  DoAsciiRelational: (yes "Export the data block-based ('ASCII relational')"),EMPTY
+  select: (sel "...",
+           cancel "Cancel",
+           OK "OK",
+           Generate "Generate",
+           Run "Run",
+           EditSel "Edit",
+           PSettings "Settings...")
+  strLanguage, strRole, strMode: STRING[40]
+  varlength "Max unique name length: ": 8..64, EMPTY
+  Res: (OK, Cancel)
+  Buttons: (Run, Save, Cancel)
+  StatisticalScriptGenerator: STRING
+  StatisticalscriptPath: STRING
+  ASCIIRelGenerator_Meta: STRING
+  ASCIIRelGenerator_Data: STRING
+  ASCIIRelPath: STRING
+  UseCall: (YES)
+  ManipulaExe: STRING
+  LanguagesCount, RolesCount, ModesCount: INTEGER
+  ForceCreate: 0..1
+  ExportSettingsFile: STRING
+  StartFolder: STRING
+  
+INCLUDE "fileutils.incx"
+
+PROCEDURE SelectFieldSelection
+AUXFIELDS
+  s: STRING
+  Start: STRING
+INSTRUCTIONS
+  IF FieldSelectionFileName<>'' THEN
+    Start:= ExtractFilePath(FieldSelectionFileName)
+  ELSE
+    Start:= StartFolder
+  ENDIF    
+  s:= SELECTFILE('Select the field selection file to be used',Start,'*.txt')
+  IF s<>EMPTY THEN
+    FieldSelectionFileName:= s
+    StartFolder:= ExtractFilePath(FieldSelectionFileName)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE FillLanguagesEtc
+AUXFIELDS 
+  iRes,Index: INTEGER
+INSTRUCTIONS
+  res:= meta.LOADDATAMODEL(strMetaName)
+  FOR Index:= 1 TO 25 DO
+    LangStr[Index]:= ''
+    ModeStr[Index]:= ''
+    RoleStr[Index]:= ''
+  ENDDO
+  LanguagesCount:= VAL([[Meta.Languages.Count]])
+  IF LanguagesCount>1 THEN
+    FOR Index:= 0 TO LanguagesCount-1 DO
+      LangStr[Index+1]:=   [[Meta.Languages[Index].Name]]+ ' - '+[[Meta.Languages[Index].Description]]
+    ENDDO  
+  ENDIF
+  ModesCount:= VAL([[Meta.Modes.Count]])
+  FOR Index:= 0 TO ModesCount-1 DO
+    ModeStr[Index+1]:=   [[Meta.Modes[Index].Name]]
+  ENDDO  
+  RolesCount:= VAL([[Meta.Roles.Count]])
+  FOR Index:= 0 TO RolesCount-1 DO
+    RoleStr[Index+1]:=   [[Meta.Roles[Index].Name]]
+  ENDDO  
+ENDPROCEDURE
+
+procedure SetMeta
+parameters pMetaName:string
+AUXFIELDS
+  strPath: STRING
+instructions
+  strMetaName:= pMetaName
+  strPath:= ExtractFilePath(strMetaName)
+  strOutputPath:= strPath
+  strInputPath:= strPath
+  strInputName:= ReplaceExtension(ExtractFileName(strMetaName),'.asc')
+  ScriptName:= strPath+ReplaceExtension(ExtractFileName(strMetaName),'')
+  FillLanguagesEtc
+  LoadSettings
+endprocedure
+
+PROCEDURE SelectMeta
+AUXFIELDS
+  aMetaName: STRING
+  Start: STRING
+INSTRUCTIONS
+  if strMetaName<>'' THEN
+    Start:= ExtractFilePath(strmetaname)
+  ELSE
+    Start:= StartFolder
+  ENDIF  
+  aMetaName:= SELECTFILE('Select the metafile to be used',Start,'*.bmix')
+  IF aMetaName<>'' THEN
+    SetMeta(aMetaName)
+    StartFolder:= ExtractFilePath(aMetaName)
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE SaveCommandFile
+AUXFIELDS 
+  s: STRING
+  strCmdLine: OPEN
+INSTRUCTIONS
+  s:= SELECTFILE ('Save settings as command file', EXTRACTFILEPATH(ScriptName),'Command file (*.cmd)|*.cmd', SAVE)
+  strCmdLine:= PrepareCommandLineForMeta(PackageStr,strInputPath)
+  IF s<>'' THEN
+    Cmd.OPEN(s)
+    Cmd.aLine:= '"'+PARAMETER(0)+'" '+strCmdLine
+    Cmd.WRITE
+    IF DoRunExport<>EMPTY THEN
+      strCmdLine:= PrepareCommandLineForData
+      Cmd.aLine:= '"'+PARAMETER(0)+'" '+strCmdLine
+      Cmd.WRITE
+    ENDIF  
+    Cmd.RELEASE
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE SelectProgramPath
+AUXFIELDS
+  S: STRING
+INSTRUCTIONS
+  S:= SELECTFOLDER('Select output path',strOutputPath)
+  IF S<>'' THEN
+    strOutputPath:= S
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SelectInputPath
+AUXFIELDS
+  S: STRING
+INSTRUCTIONS
+  S:= SELECTFOLDER('Select input path',strInputPath)
+  IF s<>'' THEN
+    strInputPath:= S
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SelectInputName
+AUXFIELDS 
+  S: STRING
+INSTRUCTIONS
+  S:= SELECTFILE('Select the input ascii data file to be used',StartFolder,'*.asc')
+  IF S<>EMPTY then
+    strInputName:= ExtractFileName(S)
+    StartFolder:= ExtractFilePath(S)
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE SelectBlaiseDataName
+AUXFIELDS 
+  S: STRING
+  Start: STRING
+INSTRUCTIONS
+  if BlaiseDataFileName<>'' THEN
+    Start:= ExtractFilePath(BlaiseDataFileName)
+  else
+    Start:= StartFolder
+  endif  
+  S:= SELECTFILE('Select the Blaise database to export to ascii',Start,'*.bdix')
+  IF S<>EMPTY then
+    BlaiseDataFileName:= S
+    StartFolder:= ExtractFilePath(S)
+  ENDIF
+ENDPROCEDURE
+
+FUNCTION PrepareCommandLineForMeta: OPEN
+PARAMETERS
+  TRANSIT 
+    pPackageStr: STRING
+  TRANSIT
+    pIinputPath: STRING
+AUXFIELDS
+  DSStr, DLStr, DMStr: STRING[1]
+  sellanid: STRING
+  SName: STRING
+  strCmdLine: OPEN
+  DAStr: STRING
+  DZStr: STRING
+  DCStr: STRING
+  DSAStr: STRING
+  DEStr: STRING
+  DFStr: STRING
+  EAStr: STRING
+  SepStr: STRING
+  arslt: INTEGER
+  LStr, MStr, RStr: STRING
+  Index: INTEGER
+INSTRUCTIONS
+  CASE package OF
+    SPSS: pPackageStr:= 'SPSS'
+    Stata: pPackageStr:= 'Stata'
+    SAS: pPackageStr:= 'SAS'
+  ENDCASE
+  IF DoSetConversion<>EMPTY THEN
+    IF DoMaintainSetOrder<>EMPTY THEN
+      DSStr:= 'X'
+    ELSE
+      DSStr:= 'Y'
+    ENDIF
+  ENDIF
+  IF DoLowercase<>EMPTY THEN
+    DLStr:= 'Y'
+  ENDIF
+  IF DoTreatDKRFasValues<>EMPTY THEN
+    DMstr:= 'Y'
+  ENDIF
+  IF DoProduceANSI<>EMPTY THEN
+    DAStr:= 'Y'
+  ENDIF  
+  IF DoAddZeroToIndex=EMPTY THEN
+    DZStr:= 'N'
+  ENDIF
+  IF DoConvertDateTime=EMPTY THEN
+    DCStr:= 'N'
+  ENDIF  
+  IF DoDKRFConversionForNonNumeric=Empty THEN
+    DSAStr:='N'
+  ENDIF  
+  IF DoRecodeEmpty=Empty THEN
+    DEStr:= 'N'
+  ENDIF  
+  IF DoGenerateFormats=EMPTY THEN
+    DFStr:= 'N'
+  ENDIF  
+  IF Sepchar<>'' THEN
+    SepStr:= '\''+UPPERCASE(SepChar)+'\''
+  ENDIF
+  IF SelLangStr<>EMPTY THEN
+    Index:= ord(SelLangStr)
+    LStr:= [[Meta.Languages[Index-1].Name]]
+  ENDIF
+  IF SelModeStr<>EMPTY THEN
+    Index:= ord(SelModeStr)
+    MStr:= [[Meta.Modes[Index-1].Name]]
+  ENDIF
+  IF SelRoleStr<>EMPTY THEN
+    Index:= ord(SelRoleStr)
+    RStr:= [[Meta.Roles[Index-1].Name]]
+  ENDIF
+  IF SUBSTRING(pIinputPath,LEN(pIinputPath),1)<>'\\' THEN
+    pIinputPath:= pIinputPath+'\\'
+  ENDIF
+  IF DoAsciiRelational<>EMPTY THEN
+    IF DoGenerateExtraAttributes<>EMPTY THEN
+       EAStr:= 'Y'
+    ENDIF   
+  ENDIF
+  IF DoAsciiRelational<>EMPTY  THEN
+    strCmdLine:= '"'+ASCIIRelGenerator_Meta+'"'+
+                 ' -K:meta="'+strMetaName+'"'+
+                 ' -N:"oScript='+ScriptName+',iData='+BlaiseDataFileName+'"'+
+                 ' -Q:True -S:True'+  //hide but still show messages
+                 ' -H:"'+METASEARCHPATH+'"'+
+                 ' -L:"'+ExtractFilePath(strMetaName)+','+METASEARCHPATH+'"'+
+                 ' -P:"'+EAStr+';'           //param 1
+                       +LStr+';'            //param 2
+                       +RStr+';'            //param 3
+                       +MStr+';'            //param 4
+                       +PackageStr+';'      //param 5
+  ELSE  
+    strCmdLine:= '"'+StatisticalScriptGenerator+'"'+
+                 ' -K:meta="'+strMetaName+'"'+
+                 ' -N:oScript="'+ScriptName+',iFNames='+FieldSelectionFileName+',iData='+BlaiseDataFileName+'"'+
+                 ' -Q:True -S:True'+  //hide but still show messages
+                 ' -H:"'+METASEARCHPATH+'"'+
+                 ' -L:"'+ExtractFilePath(strMetaName)+','+METASEARCHPATH+'"'+
+                 ' -P:"'+PackageStr+';'      //param 1
+                       +LStr+';'            //param 2
+                       +RStr+';'            //param 3
+                       +MStr+';'            //param 4
+  ENDIF
+  strCmdLine:= strCmdLine                   
+                     +strOutputPath+';'   //param 5
+                     +strInputPath+';'    //param 6
+                     +strInputName+';'    //param 7
+                     +DMstr+';'           //param 8
+                     +DSStr+';'           //param 9
+                     +Str(UniqueNameBasedOn)+';'  //param 10
+                     +DLStr+';'           //param 11
+                     +str(varlength)+';'  //param 12
+                     +SepStr+';'          //param 13: Separator  
+                     +DAStr+';'           //param 14: Export data to ANSI
+                     +DZStr+';'           //param 15: Add zero to index of array elements
+                     +DCStr+';'           //param 16: SAS only. Convert date/time fields
+                     +DSAStr+';'          //param 17: SAS only. Recode DK/RF for non-numeric veriables
+                     +DEStr+';'           //param 18: SAS only. Recode empty to missing
+                     +DFStr+';'           //param 19: SAS only. Generate formats
+                     
+  IF DoAsciiRelational<>EMPTY THEN 
+    strCmdLine:= strCmdLine+'N' 
+  ENDIF                   
+  strCmdLine:= strCmdLine+'"' 
+  RESULT:= strCmdLine
+ENDFUNCTION
+
+FUNCTION PrepareCommandLineForData: OPEN
+AUXFIELDS
+  GEA,ANS: STRING
+  SepStr: STRING
+  strCmdLine: OPEN
+  DataFileName: STRING
+INSTRUCTIONS
+  IF Sepchar<>'' THEN
+    SepStr:= '\''+SepChar+'\''
+  ENDIF
+  IF DoProduceANSI<>EMPTY THEN
+    ANS:= 'Y'
+  ENDIF
+  IF DoAsciiRelational<>EMPTY  THEN
+    IF DoGenerateExtraAttributes<>EMPTY THEN GEA:='Y'ENDIF
+    strCmdLine:= '"'+ASCIIRelGenerator_Data+'"'+
+                 ' -K:meta="'+strMetaName+'"'+
+                 ' -N:"oData='+strInputPath+strInputName+',iData='+BlaiseDataFileName+'"'+
+//                 ' -Q:True -S:True'+  //hide but still show messages
+                 ' -H:"'+METASEARCHPATH+'"'+
+                 ' -L:"'+ExtractFilePath(strMetaName)+','+METASEARCHPATH+'"'+
+                 ' -P:'+GEA+';'        //param 1
+                       +SepStr+';'     //param 2
+                       +ANS            //param 3
+  ELSE //export script is generated by StatisticalScriptGenerator.manx
+    DataFileName:= BlaiseDataFileName
+    IF DataFileName='' THEN 
+      DataFileName:= ReplaceExtension(strMetaName,'.bdix')
+    ENDIF  
+    IF FieldSelectionFileName<>'' THEN
+      strCmdLine:= '"'+ExtractFilePath(ScriptName)+'ExportSelectedData_'+ReplaceExtension(ExtractFileName(DataFileName),'')+'_'+ExtractFileName(FieldSelectionFileName)+'.msux"'
+    ELSE  
+      strCmdLine:= '"'+ExtractFilePath(ScriptName)+'ExportData_'+ReplaceExtension(ExtractFileName(DataFileName),'')+'.msux"'
+    ENDIF  
+  ENDIF 
+  RESULT:= strCmdLine
+ENDFUNCTION
+
+FUNCTION SettingsAreTheSame: INTEGER
+AUXFIELDS Index, equal, Res: INTEGER
+INSTRUCTIONS
+  iSettingsUsed.INITRECORD
+  IF ExportSettingsFile='' THEN
+    ExportSettingsFile:= [[Meta.FileName]]+'_$exportsettings.xml'
+  ENDIF
+  IF FILEEXISTS(ExportSettingsFile) THEN
+    res:= iSettingsUsed.OPEN(ExportSettingsFile)
+    IF res=0 THEN
+      iSettingsUsed.READNEXT
+      iSettingsUsed.RELEASE
+    ENDIF
+  ENDIF    
+  Equal:= 0
+  IF iSettingsUsed._sepchar = sepchar AND
+    iSettingsUsed._Package = Package AND 
+    iSettingsUsed._strOutputPath = strOutputPath AND 
+    iSettingsUsed._strInputPath = strInputPath AND
+    iSettingsUsed._strInputName = strInputName  AND
+    iSettingsUsed._BlaiseDataFileName = BlaiseDataFileName AND
+    iSettingsUsed._ScriptName = ScriptName  AND
+    iSettingsUsed._FieldSelectionFileName = FieldSelectionFileName AND
+    iSettingsUsed._FieldSelectionDateTime = GETFILEDATETIME(FieldSelectionFileName) AND
+    iSettingsUsed._DoSetConversion = DoSetConversion AND
+    iSettingsUsed._DoMaintainSetOrder = DoMaintainSetOrder AND
+    iSettingsUsed._DoLowercase = DoLowercase AND
+    iSettingsUsed._DoTreatDKRFasValues = DoTreatDKRFasValues AND
+    iSettingsUsed._UniqueNameBasedOn = UniqueNameBasedOn AND
+    iSettingsUsed._varlength = varlength AND
+    iSettingsUsed._DoProduceANSI = DoProduceANSI AND
+    iSettingsUsed._DoAddZeroToIndex = DoAddZeroToIndex AND
+    iSettingsUsed._DoConvertDateTime = DoConvertDateTime AND
+    iSettingsUsed._DoDKRFConversionForNonNumeric = DoDKRFConversionForNonNumeric AND
+    iSettingsUsed._DoRecodeEmpty = DoRecodeEmpty  AND
+    iSettingsUsed._DoGenerateFormats = DoGenerateFormats AND
+    iSettingsUsed._DoAsciiRelational = DoAsciiRelational AND
+    iSettingsUsed._DoGenerateExtraAttributes = DoGenerateExtraAttributes 
+  THEN Equal:= 1 ENDIF
+  IF Equal=1 THEN
+    IF SelLangStr<>EMPTY THEN
+      Index:= ord(SelLangStr)
+      IF LOWERCASE(iSettingsUsed._LangStr) <> LOWERCASE([[Meta.Languages[Index-1].Name]]) THEN equal:= 0 ENDIF
+    ENDIF  
+  ENDIF
+  IF Equal=1 THEN
+    IF SelModeStr<>EMPTY THEN
+      Index:= ord(SelModeStr)
+      IF LOWERCASE(iSettingsUsed._ModeStr) <> LOWERCASE([[Meta.Modes[Index-1].Name]]) THEN equal:= 0 ENDIF
+    ENDIF
+  ENDIF
+  IF Equal=1 THEN  
+    IF SelRoleStr<>EMPTY THEN
+      Index:= ORD(SelRoleStr)
+      IF LOWERCASE(iSettingsUsed._RoleStr) <> LOWERCASE([[Meta.Roles[Index-1].Name]]) THEN equal:= 0 ENDIF
+    ENDIF
+  ENDIF  
+  Result:= EQual
+ENDFUNCTION
+
+PROCEDURE LoadSettings
+AUXFIELDS index: INTEGER res: INTEGER
+INSTRUCTIONS
+  IF ExportSettingsFile='' THEN
+    ExportSettingsFile:= [[Meta.FileName]]+'_$exportsettings.xml'
+  ENDIF  
+  IF FILEEXISTS(ExportSettingsFile) THEN
+    res:= iSettingsUsed.OPEN(ExportSettingsFile)
+    IF res=0 THEN
+      iSettingsUsed.READNEXT
+      IF iSettingsUsed.RESULTOK THEN
+        sepchar:= iSettingsUsed._sepchar
+        package:= iSettingsUsed._Package
+        strOutputPath:= ExpandFileName(iSettingsUsed._strOutputPath)
+        strInputPath:= ExpandFileName(iSettingsUsed._strInputPath)
+        strInputName:= iSettingsUsed._strInputName
+        BlaiseDataFileName:= ExpandFileName(iSettingsUsed._BlaiseDataFileName)
+        scriptname:= ExpandFileName(iSettingsUsed._ScriptName)
+        FieldSelectionFileName:= ExpandFileName(iSettingsUsed._FieldSelectionFileName)
+        FieldSelectionDateTime:= GETFILEDATETIME(FieldSelectionFileName)
+        DoSetConversion:= iSettingsUsed._DoSetConversion
+        DoMaintainSetOrder:= iSettingsUsed._DoMaintainSetOrder
+        DoLowercase:= iSettingsUsed._DoLowercase
+        DoTreatDKRFasValues:= iSettingsUsed._DoTreatDKRFasValues
+        DoProduceANSI:= iSettingsUsed._DoProduceANSI 
+        DoAddZeroToIndex:= iSettingsUsed._DoAddZeroToIndex
+        DoConvertDateTime:= iSettingsUsed._DoConvertDateTime 
+        DoDKRFConversionForNonNumeric:= iSettingsUsed._DoDKRFConversionForNonNumeric
+        DoRecodeEmpty:= iSettingsUsed._DoRecodeEmpty
+        DoGenerateFormats:= iSettingsUsed._DoGenerateFormats
+        varlength:= isettingsused._varlength
+        DoAsciiRelational:= iSettingsUsed._DoAsciiRelational  
+        DoGenerateExtraAttributes := iSettingsUsed._DoGenerateExtraAttributes
+        DoRunExport := iSettingsUsed._DorunExport
+        UniqueNameBasedOn:= iSettingsUsed._UniqueNameBasedOn
+        IF iSettingsUsed._LangStr<>EMPTY THEN
+          FOR index:= 0 to LanguagesCount DO
+            IF lowercase(iSettingsUsed._LangStr)=lowercase([[Meta.Languages[Index].Name]]) THEN SelLangStr:= Index+1 ENDIF
+          ENDDO  
+        ELSE
+          SelLangStr:= EMPTY
+        ENDIF
+        IF iSettingsUsed._ModeStr<>EMPTY THEN
+          FOR index:= 0 TO ModesCount DO
+            if lowercase(iSettingsUsed._ModeStr)=LOWERCASE([[Meta.Modes[Index].Name]]) THEN SelModeStr:= Index+1 ENDIF
+          ENDDO  
+        ELSE
+          SelModeStr:= EMPTY
+        ENDIF
+        IF iSettingsUsed._RoleStr<>EMPTY THEN
+          FOR index:= 0 TO RolesCount DO
+            if lowercase(iSettingsUsed._RoleStr)=LOWERCASE([[Meta.Roles[Index].Name]]) THEN SelRoleStr:= Index+1 ENDIF
+          ENDDO  
+        ELSE
+          SelRoleStr:= EMPTY
+        ENDIF
+      ENDIF
+      iSettingsUsed.RELEASE
+    ENDIF
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE WriteSettings
+AUXFIELDS index: INTEGER
+INSTRUCTIONS
+  oSettingsUsed.INITRECORD
+  oSettingsUsed._sepchar:= sepchar
+  oSettingsUsed._Package:= Package
+  oSettingsUsed._strMetaName:= strmetaname
+  oSettingsUsed._strOutputPath:= strOutputPath
+  oSettingsUsed._strInputPath:= strInputPath
+  oSettingsUsed._strInputName:= strInputName 
+  oSettingsUsed._BlaiseDataFileName:= BlaiseDataFileName
+  oSettingsUsed._ScriptName:= ScriptName
+  oSettingsUsed._FieldSelectionFileName:= FieldSelectionFileName
+  oSettingsUsed._FieldSelectionDateTime:= GETFILEDATETIME(FieldSelectionFileName)
+  oSettingsUsed._DoSetConversion:= DoSetConversion
+  oSettingsUsed._DoMaintainSetOrder:= DoMaintainSetOrder
+  oSettingsUsed._DoLowercase:= DoLowercase
+  oSettingsUsed._DoTreatDKRFasValues:= DoTreatDKRFasValues
+  oSettingsUsed._UniqueNameBasedOn:= UniqueNameBasedOn
+  oSettingsUsed._DoProduceANSI:= DoProduceANSI
+  oSettingsUsed._DoAddZeroToIndex:= DoAddZeroToIndex
+  oSettingsUsed._DoConvertDateTime:= DoConvertDateTime
+  oSettingsUsed._DoDKRFConversionForNonNumeric:= DoDKRFConversionForNonNumeric
+  oSettingsUsed._DoRecodeEmpty:= DoRecodeEmpty
+  oSettingsUsed._DoGenerateFormats:= DoGenerateFormats
+  oSettingsUsed._varlength:= varlength
+  oSettingsUsed._DoAsciiRelational:= DoAsciiRelational
+  oSettingsUsed._DoGenerateExtraAttributes:= DoGenerateExtraAttributes
+  oSettingsUsed._DoRunExport:= DoRunExport
+  IF SelLangStr<>EMPTY THEN
+    Index:= ord(SelLangStr)
+    oSettingsUsed._LangStr:= [[Meta.Languages[Index-1].Name]]
+  ENDIF
+  IF SelModeStr<>EMPTY THEN
+    Index:= ord(SelModeStr)
+    oSettingsUsed._ModeStr:= [[Meta.Modes[Index-1].Name]]
+  ENDIF
+  IF SelRoleStr<>EMPTY THEN
+    Index:= ord(SelRoleStr)
+    oSettingsUsed._RoleStr:= [[Meta.Roles[Index-1].Name]]
+  ENDIF
+  res:= oSettingsUsed.OPEN(ExportSettingsFile)
+  IF res=0 THEN
+    oSettingsUsed.WRITE
+    oSettingsUsed.RELEASE
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE EditSelectionFile
+AUXFIELDS
+  res: INTEGER
+INSTRUCTIONS
+  IF FieldSelectionFileName='' THEN
+    FieldSelectionFileName:= ReplaceExtension(strMetaName,'')+'.$fieldselection.txt'
+  ENDIF
+  res:= RUN('"'+FieldSelector+'" -f:"'+strMetaName+'" -fieldselector:"'+FieldSelectionFileName)
+ENDPROCEDURE  
+  
+PROCEDURE GenerateStatisticalScript
+AUXFIELDS
+  CmdLine: OPEN
+  arslt: INTEGER
+  SName: STRING
+  ExportMsg: STRING
+  SATS: INTEGER 
+INSTRUCTIONS
+  IF ForceCreate=1 THEN 
+    SATS:= 0
+  ELSE
+    SATS:= SettingsAreTheSame
+  ENDIF  
+  IF SATS=0 THEN
+    WriteSettings
+    CmdLine:= PrepareCommandLineForMeta(PackageStr,strInputPath)
+    IF UseCall=Yes THEN
+      arslt:= CALL(CmdLine)
+    ELSE
+      arslt:= RUN(ManipulaExe+' '+CmdLine,WAIT)
+      IF arslt=0 THEN arslt:= RUNRESULT ENDIF
+    ENDIF     
+  ENDIF  
+  ExportMsg:=''
+  IF arslt=0 THEN
+    IF DoRunExport<>EMPTY THEN
+      CmdLine:= PrepareCommandLineForData 
+      IF UseCall=Yes THEN
+        arslt:= CALL(CmdLine)
+      ELSE
+        arslt:= RUN(ManipulaExe+' '+CmdLine,WAIT)
+        IF arslt=0 THEN arslt:= RUNRESULT ENDIF
+        IF arslt=0 THEN
+          ExportMsg:= '<P><P>Export of data to ASCII succeeded!'
+        ELSE
+          ExportMsg:= '<P><P>Export of data to ASCII failed! (code='+str(arslt)+')'
+        ENDIF
+      ENDIF  
+    ENDIF  
+    CASE package OF
+      SAS: PackageStr:= 'SAS' SName:= scriptname+'.sas'
+      SPSS: PackageStr:= 'SPSS' SName:= scriptname+'.sps'
+      STATA: PackageStr:= 'Stata' SName:= scriptname+'.do'
+    ENDCASE
+    IF SATS=0 THEN
+      IF FieldSelectionFileName<>EMPTY AND DoAsciiRelational=EMPTY THEN
+        DISPLAY(PackageStr+'-script "'+SName+'"'+'<P>'+
+                'for meta file "'+strMetaName+'"'+'<P>'+
+                'using selection '+ FieldSelectionFileName +'<P>'+
+                'has been created!'+
+                 ExportMsg
+                ,WAIT)
+      ELSE
+        DISPLAY(PackageStr+'-script "'+SName+'"'+'<P>'+
+                'for meta file "'+strMetaName+'"'+'<P>'+
+                'has been created!'+
+                ExportMsg
+                ,WAIT)
+      ENDIF
+    ELSE
+      IF FieldSelectionFileName<>EMPTY AND DoAsciiRelational=EMPTY THEN
+        DISPLAY('There was no reason to recreate '+PackageStr+'-script "'+SName+'"'+'<P>'+
+                'for meta file "'+strMetaName+'"'+'<P>'+
+                'using selection '+ FieldSelectionFileName +'<P>'+
+                ExportMsg
+                ,WAIT)
+      ELSE
+        DISPLAY('There was no reason to recreate '+PackageStr+'-script "'+SName+'"'+'<P>'+
+                'for meta file "'+strMetaName+'"'+'<P>'+
+                ExportMsg                
+                ,WAIT)
+      ENDIF          
+    ENDIF  
+  ELSE
+    Display('Generating script failed (result='+STR(arslt)+')!',WAIT)  
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE UpdateSetControls
+INSTRUCTIONS
+  IF DoSetConversion=EMPTY THEN
+    DoMaintainSetOrder:= EMPTY
+  ENDIF
+ENDPROCEDURE
+
+DIALOG SpecifyParams "Export Data" 
+FIELDREFS
+  ASK Package
+  ASK SettingsButton
+  SHOW strMetaName
+  ASK SelLangStr
+  ASK SelRoleStr
+  ASK SelModeStr
+  ASK ScriptName
+  ASK strOutputPath
+  ASK strInputPath
+  ASK strInputName
+  ASK FieldSelectionFileName
+  ASK EditSelectionButton
+  ASK BlaiseDataFileName
+  ASK DoAsciiRelational
+  ASK DoGenerateExtraAttributes
+  ASK SepChar
+  ASK DoProduceANSI
+  ASK DoRunExport
+  ASK Buttons
+  KEEP Fieldselector
+  KEEP LanguagesCount
+  KEEP RolesCount
+  KEEP ModesCount
+
+DIALOG SpecifyPackageSettings "Specify Package Settings"
+FIELDREFS
+  ASK varlength
+  ASK UniqueNameBasedOn
+  ASK DoSetConversion
+  ASK DoMaintainSetOrder
+  ASK DoLowercase
+  ASK DoTreatDKRFasValues
+  ASK DoAddZeroToIndex
+  ASK DoConvertDateTime
+  ASK DoDKRFConversionForNonNumeric
+  ASK DoRecodeEmpty
+  ASK DoGenerateFormats
+  ASK Res (OK)
+  KEEP Package
+
+
+PROCEDURE LookForFieldSelector
+AUXFIELDS
+  s: STRING
+INSTRUCTIONS
+  s:= ExtractFilePath(PARAMETER(0))+'metaviewer.exe'
+  IF FILEEXISTS(s) THEN
+    FieldSelector:= s
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE Initialize
+INSTRUCTIONS
+  UniqueNameBasedOn:= localname_indexed
+  DoSetConversion:= EMPTY
+  DoMaintainSetOrder:= EMPTY
+  DoLowercase:= EMPTY
+  DoTreatDKRFasValues:= EMPTY
+  DoProduceANSI:= EMPTY
+  DoAddZeroToIndex:= Yes
+  DoConvertDateTime:= Yes
+  DoDKRFConversionForNonNumeric:= Yes
+  DoRecodeEmpty:= Yes
+  DoGenerateFormats:= Yes
+  DoGenerateExtraAttributes:= EMPTY
+  Package:= SAS
+  LookForFieldSelector
+  StatisticalscriptPath:= ExtractFilePath(SETUPNAME) 
+  AsciiRelPath:= ExtractFilePath(SETUPNAME)
+  StatisticalScriptGenerator:= StatisticalscriptPath+'GenerateStatisticalScript.msux'
+  ASCIIRelGenerator_Meta:= AsciiRelPath+'AsciiRelGenerator_Meta.msux'
+  ASCIIRelGenerator_Data:= AsciiRelPath+'AsciiRelGenerator_Data.msux'
+  ManipulaExe:= '"'+PARAMETER(0)+'"'
+  UseCall:= EMPTY
+ENDPROCEDURE
+
+MANIPULATE
+  StartFolder:= WorkingFolder+'\\'
+  Initialize
+  IF PARAMETER(1)<>'' THEN
+    IF PARAMETER(4)<>'' THEN
+      ExportSettingsFile:= ExpandFileName(PARAMETER(4))
+    ENDIF 
+    SetMeta(ExpandFileName(PARAMETER(1)))
+    IF UPPERCASE(PARAMETER(2))='R' THEN
+      IF UPPERCASE(PARAMETER(3))='F' THEN 
+        ForceCreate:= 1 
+      ENDIF
+      GenerateStatisticalScript
+    ENDIF  
+  ENDIF  
+  IF UPPERCASE(PARAMETER(2))='' THEN
+    SpecifyParams('Specify Export Data Parameters')
+  ENDIF  
+      
+                           

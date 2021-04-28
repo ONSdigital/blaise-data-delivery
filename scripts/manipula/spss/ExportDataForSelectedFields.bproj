@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="ExportDataForSelectedFields" Guid="64da9d70-4d9e-4ec6-a0be-b5c9d376248a" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">ExportDataForSelectedFields.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">ExportDataForSelectedFields.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ExternalSearchPath />
+    <ConditionalDefines />
+    <ResourceDB />
+    <SurveyRoot />
+  </Properties>
+</Project>
