@@ -32,6 +32,7 @@ function GenerateBatchFileName{
 
 function ExtractZipFile {
     param (
+        [string] $pathTo7zip = $env:TempPath,
         [string] $zipFilePath,
         [string] $destinationPath
     )
@@ -40,13 +41,15 @@ function ExtractZipFile {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
     
-    # Extract the file contents into the path
-    Expand-Archive $zipFilePath -DestinationPath $destinationPath
+    # 7zip extract - x = extract and keep folder structure of zup - o = output file can't have a space between -o and folder
+    & $standard\7za x $zipFilePath -o"$destinationPath"
+
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
 }
 
 function AddFilesToZip {
     param (
+        [string] $pathTo7zip = $env:TempPath,
         [string[]] $files,
         [string] $zipFilePath
     )
@@ -58,13 +61,14 @@ function AddFilesToZip {
     If (-not (Test-Path $zipFilePath)) {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
-
-    Compress-Archive -Path $files -Update -DestinationPath $zipFilePath
+    #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
+    & $pathTo7zip\7za a $zipFilePath $files
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
 }
 
 function AddFolderToZip {
     param (
+        [string] $pathTo7zip = $env:TempPath,
         [string] $folder,
         [string] $zipFilePath
     )
@@ -77,7 +81,8 @@ function AddFolderToZip {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
 
-    Compress-Archive -Path $folder -Update -DestinationPath $zipFilePath
+    #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
+    & $pathTo7zip\7za a $zipFilePath $files
     LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
 }
 

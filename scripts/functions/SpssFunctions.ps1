@@ -42,5 +42,5 @@ function AddSpssFilesToDeliveryPackage {
     }
 
     # Add the SPS, ASC & FPS files to the instrument package
-    AddFilesToZip -files "$processingFolder\*.sps","$processingFolder\*.asc","$processingFolder\*.fps" -zipFilePath $deliveryZip
+    AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.sps","$processingFolder\*.asc","$processingFolder\*.fps" -zipFilePath $deliveryZip
 }

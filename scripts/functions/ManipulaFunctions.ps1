@@ -16,7 +16,7 @@ function AddManipulaToProcessingFolder {
         throw [System.IO.FileNotFoundException] "$deliveryFile not found" }
         
     # Extract Manipula files to the processing folder
-    ExtractZipFile -zipFilePath "$env:TempPath\Manipula.zip" -destinationPath $processingFolder
+    ExtractZipFile -zipFilePath $manipulaPackage -destinationPath $processingFolder
 
     # Extact Instrument Package 
     ExtractZipFile -zipFilePath $deliveryFile -destinationPath $processingFolder
