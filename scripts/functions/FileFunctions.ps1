@@ -42,7 +42,7 @@ function ExtractZipFile {
     }
     
     # 7zip extract - x = extract and keep folder structure of zup - o = output file can't have a space between -o and folder
-    & $standard\7za x $zipFilePath -o"$destinationPath"
+    & $pathTo7zip\7za x $zipFilePath -o"$destinationPath"
 
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
 }
