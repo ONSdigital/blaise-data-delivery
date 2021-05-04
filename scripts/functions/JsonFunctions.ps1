@@ -34,7 +34,7 @@ function AddJsonFileForDeliveryPackage{
         LogWarning("Generating Json Failed: $($_.Exception.Message)")
     }
     try {
-        AddFolderToZip -folder $deliveryFolder -zipFilePath $deliveryZip
+        AddFolderToZip -pathTo7zip $env:TempPath -folder $deliveryFolder -zipFilePath $deliveryZip
     }
     catch {
         LogWarning("Unable to add .Json file to $deliveryZip")

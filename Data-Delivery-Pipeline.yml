@@ -53,6 +53,9 @@ stages:
                         Write-Host "Downloading instrument"
                         gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_8_10.zip $env:TempPath\Manipula.zip
 
+                        Write-Host "Downloading 7zip cli"
+                        gsutil cp gs://ons-blaise-v2-europe-west2-shared-data/7za.exe $env:TempPath\7za.exe
+
                         Write-Host "GCP Login with compute service account"
                         gcloud auth login $env:ENV_VM_SERVICEACCOUNT
 
