@@ -82,7 +82,7 @@ function AddFolderToZip {
     }
 
     #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
-    & $pathTo7zip\7za a $zipFilePath $files
+    & $pathTo7zip\7za a $zipFilePath $folder
     LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
 }
 
@@ -105,4 +105,14 @@ function CreateANewFolder {
     }
     
     return "$folderPath\$folderName"
+}
+
+function GetFolderNameFromAPath {
+    param (
+        [string] $folderPath
+    )
+    If ([string]::IsNullOrEmpty($folderPath)) {
+        throw [System.IO.ArgumentException] "No Path to the new folder provided" 
+    }
+    return Split-Path $processingFolder -Leaf
 }

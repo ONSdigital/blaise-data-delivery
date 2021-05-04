@@ -4,7 +4,8 @@ function AddXMLFileForDeliveryPackage{
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName
+        [string] $instrumentName,
+        [string] $subFolder
     )
 
     If (-not (Test-Path $processingFolder)) {
@@ -19,23 +20,28 @@ function AddXMLFileForDeliveryPackage{
     # Copy Manipula xml files to the processing folder
     Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
 
-    #Gets the folder name of the processing folder
-    $deliveryFolderName = Split-Path $processingFolder -Leaf
-    
-    # Create a folder within the temporary folder for generating XML
-    $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFolderName
-
     try {
         # Generate XML file, Export function no longer works in Blaise 5 
         & cmd.exe /c $processingFolder/MetaViewer.exe -F:$processingFolder/$instrumentName.bmix -Export
-        Copy-Item -Path "$processingFolder/$($instrumentName)_meta.xml" -Destination $deliveryFolder/$instrumentName.xml
         LogInfo("Generated .XML File for $deliveryZip")
     }
     catch {
         LogWarning("Generating XML Failed: $($_.Exception.Message)")
     }
     try {
-        AddFolderToZip -pathTo7zip $env:TempPath -folder $deliveryFolder -zipFilePath $deliveryZip
+        if ([string]::IsNullOrEmpty($subFolder))
+        {      
+            # Add the SPS, ASC & FPS files to the instrument package
+            AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.xml" -zipFilePath $deliveryZip
+            LogInfo("Added .XML File to $deliveryZip")
+        }
+        else {
+            Copy-Item -Path "$processingFolder/$($instrumentName)_meta.xml" -Destination $subFolder/$instrumentName.xml
+            LogInfo("Copied .XML File to $subFolder")
+
+            AddFolderToZip -pathTo7zip $env:TempPath -folder $subFolder -zipFilePath $deliveryZip
+            LogInfo("Added '$subFolder' to '$deliveryZip'")
+        }
     }
     catch {
         LogWarning("Unable to add .XML file to $deliveryZip")

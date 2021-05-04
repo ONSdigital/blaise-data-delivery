@@ -4,7 +4,8 @@ function AddJsonFileForDeliveryPackage{
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName
+        [string] $instrumentName,
+        [string] $subFolder
     )
 
     If (-not (Test-Path $processingFolder)) {
@@ -19,22 +20,24 @@ function AddJsonFileForDeliveryPackage{
     # Copy Manipula xml files to the processing folder
     Copy-Item -Path "$PSScriptRoot\..\manipula\json\GenerateJSON.msux" -Destination $processingFolder
 
-    #Gets the folder name of the processing folder
-    $deliveryFolderName = Split-Path $processingFolder -Leaf
-    
-    # Create a folder within the temporary folder for generating XML
-    $deliveryFolder = CreateANewFolder -folderPath $processingFolder -folderName $deliveryFolderName
-
     try {
         # Generate XML file
-        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateJSON.msux" -A:True -Q:True -K:Meta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$deliveryFolder/$instrumentName.json
+        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateJSON.msux" -A:True -Q:True -K:Meta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$subFolder/$instrumentName.json
         LogInfo("Generated .Json File for $deliveryZip")
     }
     catch {
         LogWarning("Generating Json Failed: $($_.Exception.Message)")
     }
     try {
-        AddFolderToZip -pathTo7zip $env:TempPath -folder $deliveryFolder -zipFilePath $deliveryZip
+        if ([string]::IsNullOrEmpty($subFolder))
+        {
+            AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.json" -zipFilePath $deliveryZip
+            LogInfo("Added .JSON File to '$deliveryZip'")
+        }
+        else {
+            AddFolderToZip -pathTo7zip $env:TempPath -folder $subFolder -zipFilePath $deliveryZip
+            LogInfo("Added '$subFolder' to '$deliveryZip'")
+        }
     }
     catch {
         LogWarning("Unable to add .Json file to $deliveryZip")

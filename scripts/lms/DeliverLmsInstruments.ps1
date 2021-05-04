@@ -48,15 +48,24 @@ try {
 
             # Create a temporary folder for processing instruments
             $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($instrument.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
+            
+            #Gets the folder name of the processing folder
+            $processingSubFolderName = GetFolderNameFromAPath -folderPath $processingFolder
+            
+            # Create a folder within the temporary folder for generating XML
+            $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
 
             #Add manipula and instrument package to processing folder
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
 
+            # Generate and add SPSS files
+            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name -subFolder $processingSubFolder
+
             #Generate XML Files
-            AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
+            AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name -subFolder $processingSubFolder
 
             #Generate Json Files
-            AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name
+            AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name -subFolder $processingSubFolder
 
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET

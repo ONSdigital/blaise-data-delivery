@@ -5,7 +5,8 @@ function AddSpssFilesToDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName
+        [string] $instrumentName,
+        [string] $subFolder
     )
 
     If (-not (Test-Path $processingFolder)) {
@@ -34,13 +35,23 @@ function AddSpssFilesToDeliveryPackage {
 
     # Generate .ASC file
     try {
-        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\ExportData_$instrumentName.msux" -A:True -Q:True
+        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\ExportData_$instrumentName.msux" -A:True -Q:True -O
         LogInfo("Generated the .ASC file")
     }
     catch {
         LogWarning("Generating ASCII Failed for $instrumentName : $($_.Exception.Message)")
     }
 
-    # Add the SPS, ASC & FPS files to the instrument package
-    AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.sps","$processingFolder\*.asc","$processingFolder\*.fps" -zipFilePath $deliveryZip
+    if ([string]::IsNullOrEmpty($subFolder))
+    {      
+        # Add the SPS, ASC & FPS files to the instrument package
+        AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.sps","$processingFolder\*.asc","$processingFolder\*.fps" -zipFilePath $deliveryZip
+        LogInfo("Added .SPS, .ASC, .Fps Files to $deliveryZip")
+    }
+    else {
+        Copy-Item -Path "$processingFolder\*.sps","$processingFolder\*.asc","$processingFolder\*.fps" -Destination $subFolder
+
+        AddFolderToZip -pathTo7zip $env:TempPath -folder $subFolder -zipFilePath $deliveryZip  
+        LogInfo("Added '$subFolder' to '$deliveryZip'")
+    }
 }
