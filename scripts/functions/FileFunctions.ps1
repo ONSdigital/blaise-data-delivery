@@ -40,9 +40,9 @@ function ExtractZipFile {
     If (-not (Test-Path $zipFilePath)) {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
-    
+    New-Item $env:TempPath\output.txt -Force
     # 7zip extract - x = extract and keep folder structure of zup - o = output file can't have a space between -o and folder
-    & $pathTo7zip\7za x $zipFilePath -o"$destinationPath"
+    & $pathTo7zip\7za x $zipFilePath -o"$destinationPath" >$env:ENV_TEMP\output.txt
 
     LogInfo("Extracting zip file '$zipFilePath' to path '$destinationPath'")
 }
@@ -61,8 +61,9 @@ function AddFilesToZip {
     If (-not (Test-Path $zipFilePath)) {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
+    New-Item $env:TempPath\output.txt -Force
     #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
-    & $pathTo7zip\7za a $zipFilePath $files
+    & $pathTo7zip\7za a $zipFilePath $folder >$env:ENV_TEMP\output.txt
     LogInfo("Added the file(s) '$files' to the zip file '$zipFilePath'")
 }
 
@@ -80,9 +81,9 @@ function AddFolderToZip {
     If (-not (Test-Path $zipFilePath)) {
         throw [System.IO.FileNotFoundException] "$zipFilePath not found"
     }
-
+    New-Item $env:TempPath\output.txt -Force
     #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
-    & $pathTo7zip\7za a $zipFilePath $folder
+    & $pathTo7zip\7za a $zipFilePath $folder >$env:ENV_TEMP\output.txt
     LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
 }
 
