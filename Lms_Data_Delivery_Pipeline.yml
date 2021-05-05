@@ -29,7 +29,7 @@ stages:
       environment:
           name: ${{parameters.Environment}}
           resourceType: virtualMachine
-          tags: restapitests
+          tags: data-delivery
       strategy:
         runOnce:
           deploy: 
