@@ -53,7 +53,7 @@ try {
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
 
             # Generate and add SPSS files
-            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name 
+            #AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name 
         
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET

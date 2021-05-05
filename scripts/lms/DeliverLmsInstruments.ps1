@@ -60,7 +60,7 @@ try {
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
 
             # Generate and add SPSS files
-            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name -subFolder $processingSubFolder
+            #AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $instrument.name -subFolder $processingSubFolder
 
             #Generate XML Files
             AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $instrument.name -subFolder $processingSubFolder
