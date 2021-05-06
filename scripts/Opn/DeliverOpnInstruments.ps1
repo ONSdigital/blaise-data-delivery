@@ -57,7 +57,7 @@ try {
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
 
             # Generate and add SPSS files
-            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name 
+            #AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name 
         
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET
@@ -66,12 +66,12 @@ try {
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
         }
         catch {
-            LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+            LogError("Error occured inside loop: $($_.Exception.Message)")
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     } 
 } 
 catch {
-    LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+    LogError("Error occured outside loop: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
     exit 1
 }

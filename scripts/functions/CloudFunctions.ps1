@@ -12,7 +12,12 @@ function UploadFileToBucket {
 
     If ([string]::IsNullOrEmpty($bucketName)) {
         throw "No bucket name provided" }
-
-    LogInfo("Copying '$filePath' to '$bucketName'")
-    gsutil cp $filePath gs://$bucketName   
+    try {
+        LogInfo("Copying '$filePath' to '$bucketName'")
+        gsutil cp $filePath gs://$bucketName  
+    }
+    catch {
+        LogError("cloud function error: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+    }
+     
 }
