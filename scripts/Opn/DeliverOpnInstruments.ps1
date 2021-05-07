@@ -24,7 +24,7 @@ try {
     $instruments | ForEach-Object { $dataset += @{
             Id = $index
             Name = $_.name
-        })
+        }
         $index++
     }
     Write-Host("Dataset")
