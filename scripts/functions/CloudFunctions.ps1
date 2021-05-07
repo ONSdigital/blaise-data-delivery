@@ -19,7 +19,7 @@ function UploadFileToBucket {
 
     LogInfo("Copying '$filePath' to '$bucketName'")
     try {
-        gsutil ls gs://$bucketName
+        gsutil cp $filePath gs://$bucketName/$deliveryFileName 2> $null
         LogInfo("Copied '$filePath' to '$bucketName'")
     }
     catch {
