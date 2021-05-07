@@ -6,7 +6,7 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
-$global:explosions = $false
+$explosions = $false
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
@@ -22,7 +22,7 @@ try {
     $batchStamp = GenerateBatchFileName
 
     # Deliver the instrument package with data for each active instrument
-    $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
+    $instrumentExploded = $instruments | ForEach-Object -AsJob -ThrottleLimit 3 -Parallel {
         try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\FileFunctions.ps1"
@@ -70,13 +70,18 @@ try {
 
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
+            $false
         }
         catch {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
             Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
-            $global:explosions = $true
+            $true
         }
+    } | Wait-Job | Receive-Job
+
+    if ($instrumentExploded) {
+        $explosions = $true
     }
 }
 catch {
@@ -85,6 +90,6 @@ catch {
     exit 1
 }
 
-if ($global:explosions) {
+if ($explosions) {
     exit 1
 }
