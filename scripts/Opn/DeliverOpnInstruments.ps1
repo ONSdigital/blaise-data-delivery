@@ -70,12 +70,26 @@ try {
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
         }
         catch {
-            LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+            $e = $_.Exception
+            $msg = $e.Message
+            while ($e.InnerException) {
+            $e = $e.InnerException
+            $msg += "`n" + $e.Message
+            }
+            $msg
+            LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace) another error type: $($msg)")
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     } 
 } 
 catch {
-    LogError("Error occured: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+    $e = $_.Exception
+            $msg = $e.Message
+            while ($e.InnerException) {
+            $e = $e.InnerException
+            $msg += "`n" + $e.Message
+            }
+            $msg
+    LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace) another error type: $($msg)")
     exit 1
 }
