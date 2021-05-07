@@ -19,7 +19,7 @@ function UploadFileToBucket {
 
     LogInfo("Copying '$filePath' to '$bucketName'")
     try {
-        gsutil -D cp C:\blaise\temp\datadelivery\opn\dd_OPN2101A_07052021_124259.zip gs://ons-blaise-v2-dev-sam8-nifi-staging
+        gsutil ls gs://$bucketName
         LogInfo("Copied '$filePath' to '$bucketName'")
     }
     catch {
