@@ -14,17 +14,17 @@ try {
     If ($instruments.Count -eq 0) {
         LogWarning("No instruments found for '$env:SurveyType'")
         exit
-    }  
-    
+    }
+
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
     # Deliver the instrument package with data for each active instrument
     $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
-        try {          
+        try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\FileFunctions.ps1"
-            . "$using:PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"           
+            . "$using:PSScriptRoot\..\functions\DataDeliveryStatusFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\CloudFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\SpssFunctions.ps1"
@@ -35,7 +35,7 @@ try {
 
             # Generate unique data delivery filename for the instrument
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $_.name
-            
+
             if($_.DeliverData -eq $false)
             {
                 CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "inactive"
@@ -58,11 +58,11 @@ try {
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
 
             # Generate and add SPSS files
-            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name 
+            AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name
 
             # Generate and add Ascii files
-            AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name 
-        
+            AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name
+
             # Upload instrument package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET -deliveryFileName $deliveryFileName
 
@@ -74,10 +74,10 @@ try {
             Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
-    } 
-} 
+    }
+}
 catch {
     LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
     Get-Error
-    exit 0
+    exit 1
 }
