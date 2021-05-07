@@ -91,5 +91,8 @@ catch {
             }
             $msg
     LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace) another error type: $($msg)")
-    exit 1
+    LogError("Error Exception Message: $($error[0].Exception.Message)")
+    LogError("Error on its own: $($error[0])")
+    LogError("Error Exception: $($error[0].Exception)")
+    exit 0
 }
