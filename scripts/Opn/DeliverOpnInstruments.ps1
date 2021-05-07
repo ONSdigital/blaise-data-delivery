@@ -21,10 +21,10 @@ try {
 
     $dataset = $()
     $index = 1
-    $instruments | ForEach-Object { $dataset + @{
+    $instruments | ForEach-Object { $dataset.Add(@{
             Id = $index
             Name = $_.name
-        }
+        })
         $index++
     }
     Write-Host("Dataset")
