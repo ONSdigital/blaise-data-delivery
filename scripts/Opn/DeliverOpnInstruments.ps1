@@ -102,6 +102,8 @@ $sync.Keys | ForEach-Object {
         # Create parameter hashtable to splat
         $param = $sync.$_
 
-        Write-Host($param)
+        if ($param.Status -eq "Errored") {
+            exit 1
+        }
     }
 }
