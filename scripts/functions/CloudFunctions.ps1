@@ -19,7 +19,8 @@ function UploadFileToBucket {
 
     LogInfo("Copying '$filePath' to '$bucketName'")
     try {
-        gsutil cp $filePath gs://foo-$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
+        & cmd /c 'gsutil' cp $filePath gs://foo-$bucketName/$deliveryFileName
+        # gsutil cp $filePath gs://foo-$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
         LogInfo("Copied '$filePath' to '$bucketName'")
     }
     catch {
