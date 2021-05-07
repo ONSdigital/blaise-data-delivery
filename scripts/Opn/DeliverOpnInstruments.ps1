@@ -24,7 +24,8 @@ try {
     $batchStamp = GenerateBatchFileName
 
     $dataset = $()
-    $instruments | ForEach-Object { $dataset + @{Id = $_.name} }
+    $index = 1
+    $instruments | ForEach-Object { $dataset + @{Id = $index, Name = $_.name}; $index++ }
     Write-Host("Dataset")
     Write-Host($dataset)
     $dataset | Foreach-Object {$origin.($_.Id) = @{}}
