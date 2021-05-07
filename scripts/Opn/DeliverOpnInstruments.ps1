@@ -33,7 +33,7 @@ try {
     $dataset | Foreach-Object {
         Write-Host($_)
         Write-Host($.id)
-        $origin($_.id) = @{}
+        $origin[$_.id] = @{}
     }
     Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
