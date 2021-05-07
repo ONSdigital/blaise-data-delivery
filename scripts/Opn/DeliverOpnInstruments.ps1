@@ -80,6 +80,8 @@ try {
         }
     } | Wait-Job | Receive-Job
 
+    Write-Host("Instrument explosion:")
+    Write-Host($instrumentExploded)
     if ($instrumentExploded) {
         $explosions = $true
     }
@@ -90,6 +92,8 @@ catch {
     exit 1
 }
 
+Write-Host("Explosions:")
+Write-Host($explosions)
 if ($explosions) {
     exit 1
 }
