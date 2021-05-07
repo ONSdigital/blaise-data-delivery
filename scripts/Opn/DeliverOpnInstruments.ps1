@@ -23,9 +23,12 @@ try {
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
-    $dataset = $instruments | ForEach-Object { $origin.($_) = @{} }
+    $dataset = $()
+    $instruments | ForEach-Object { $dataset + @{Id = $_} }
+    $dataset | Foreach-Object {$origin.($_.id) = @{}}
     Write-Host("Dataset")
     Write-Host($dataset)
+    Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
     # Deliver the instrument package with data for each active instrument
