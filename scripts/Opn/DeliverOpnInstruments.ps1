@@ -64,8 +64,7 @@ try {
             AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name 
         
             # Upload instrument package to NIFI
-            #UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET -deliveryFileName $deliveryFileName
-            & cmd.exe /c gsutil -D cp $($deliveryFile) $($env:ENV_BLAISE_NIFI_BUCKET) 
+            UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"

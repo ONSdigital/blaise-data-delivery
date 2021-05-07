@@ -19,7 +19,7 @@ function UploadFileToBucket {
 
     LogInfo("Copying '$filePath' to '$bucketName'")
     try {
-        & 'C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil.cmd' cp $filePath gs://$bucketName/$deliveryFileName | Out-String
+        gsutil -D cp C:\blaise\temp\datadelivery\opn\dd_OPN2101A_07052021_124259.zip gs://ons-blaise-v2-dev-sam8-nifi-staging
         LogInfo("Copied '$filePath' to '$bucketName'")
     }
     catch {
