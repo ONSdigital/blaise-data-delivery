@@ -19,9 +19,9 @@ try {
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
-    $dataset = $()
+    $dataset = @()
     $index = 1
-    $instruments | ForEach-Object { $dataset.Add(@{
+    $instruments | ForEach-Object { $dataset += @{
             Id = $index
             Name = $_.name
         })
