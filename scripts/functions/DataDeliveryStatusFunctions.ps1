@@ -82,10 +82,6 @@ function ErrorDataDeliveryStatus {
             throw "No state name provided"
         }
 
-        If ([string]::IsNullOrEmpty($batchStamp)) {
-            throw "No batch stamp name provided"
-        }
-
         $DDSBaseUrl = "$env:ENV_DDS_URL/v1/state"
         $JsonObject = [ordered]@{
             state      = "$($state)"
