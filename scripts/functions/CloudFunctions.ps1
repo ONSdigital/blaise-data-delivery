@@ -18,7 +18,7 @@ function UploadFileToBucket {
         throw "No delivery zip has been provided" }
 
     LogInfo("Copying '$filePath' to '$bucketName'")
-    $output = & cmd /c "gsutil 2>&1" cp $filePath gs://$bucketName/$deliveryFileName
+    $output = & cmd /c "gsutil 2>&1" cp $filePath gs://foo-$bucketName/$deliveryFileName
     # $output = gsutil cp $filePath gs://$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
     if ($output -Like "*exception*") {
         throw "Failed to upload '$filePath' to '$bucketName': '$output'"
