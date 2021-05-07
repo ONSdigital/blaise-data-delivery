@@ -9,10 +9,6 @@
 # Create a hashtable for process.
 # Keys should be ID's of the processes
 $origin = @{}
-$dataset | Foreach-Object {$origin.($_.id) = @{}}
-
-# Create synced hashtable
-$sync = [System.Collections.Hashtable]::Synchronized($origin)
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
@@ -26,6 +22,11 @@ try {
 
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
+
+    $dataset = $instruments | ForEach-Object { $origin.($_) = @{} }
+    Write-Host("Dataset")
+    Write-Host($dataset)
+    $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
     # Deliver the instrument package with data for each active instrument
     $job = $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
