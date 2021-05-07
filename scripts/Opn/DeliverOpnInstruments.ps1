@@ -6,7 +6,13 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
-$explosions = $false
+# Create a hashtable for process.
+# Keys should be ID's of the processes
+$origin = @{}
+$dataset | Foreach-Object {$origin.($_.id) = @{}}
+
+# Create synced hashtable
+$sync = [System.Collections.Hashtable]::Synchronized($origin)
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
@@ -22,7 +28,10 @@ try {
     $batchStamp = GenerateBatchFileName
 
     # Deliver the instrument package with data for each active instrument
-    $instrumentExploded = $instruments | ForEach-Object -AsJob -ThrottleLimit 3 -Parallel {
+    $job = $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
+        $syncCopy = $using:sync
+        $process = $syncCopy.$($PSItem.Id)
+
         try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
             . "$using:PSScriptRoot\..\functions\FileFunctions.ps1"
@@ -70,20 +79,14 @@ try {
 
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
-            $false
+            $process.Status = "Completed"
         }
         catch {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
             Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
-            $true
+            $process.Status = "Errored"
         }
-    } | Wait-Job | Receive-Job
-
-    Write-Host("Instrument explosion:")
-    Write-Host($instrumentExploded)
-    if ($instrumentExploded) {
-        $explosions = $true
     }
 }
 catch {
@@ -92,8 +95,12 @@ catch {
     exit 1
 }
 
-Write-Host("Explosions:")
-Write-Host($explosions)
-if ($explosions) {
-    exit 1
+$syn.Keys | ForEach-Object {
+    if(![string]::IsNullOrEmpty($sync.$_.keys))
+    {
+        # Create parameter hashtable to splat
+        $param = $sync.$_
+
+        Write-Host($param)
+    }
 }
