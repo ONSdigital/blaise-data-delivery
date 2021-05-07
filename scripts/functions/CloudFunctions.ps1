@@ -19,7 +19,7 @@ function UploadFileToBucket {
 
     LogInfo("Copying '$filePath' to '$bucketName'")
     try {
-        & 'C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil.cmd' rsync $filePath gs://$bucketName/$deliveryFileName
+        & 'C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil.cmd' cp $filePath gs://$bucketName/$deliveryFileName
         LogInfo("Copied '$filePath' to '$bucketName'")
     }
     catch {
