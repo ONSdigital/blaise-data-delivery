@@ -64,7 +64,6 @@ stages:
                inputs:
                 filePath: '$(Agent.BuildDirectory)/s/scripts/opn/DeliverOpnInstruments.ps1'
                 pwsh: true
-                errorActionPreference: 'continue'
                 failOnStderr: false
 
              - task: PowerShell@2
