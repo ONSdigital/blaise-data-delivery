@@ -25,9 +25,9 @@ try {
 
     $dataset = $()
     $instruments | ForEach-Object { $dataset + @{Id = $_.name} }
-    $dataset | Foreach-Object {$origin.($_.Id) = @{}}
     Write-Host("Dataset")
     Write-Host($dataset)
+    $dataset | Foreach-Object {$origin.($_.Id) = @{}}
     Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
