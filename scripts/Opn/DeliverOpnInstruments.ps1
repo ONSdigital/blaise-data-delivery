@@ -30,7 +30,11 @@ try {
     Write-Host("Dataset")
     Write-Host($dataset)
     $origin = @{}
-    $dataset | Foreach-Object {$origin.($_.id) = @{}}
+    $dataset | Foreach-Object {
+        Write-Host($_)
+        Write-Host($.id)
+        $origin($_.id) = @{}
+    }
     Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
@@ -102,7 +106,7 @@ catch {
     exit 1
 }
 
-$syn.Keys | ForEach-Object {
+$sync.Keys | ForEach-Object {
     if(![string]::IsNullOrEmpty($sync.$_.keys))
     {
         # Create parameter hashtable to splat
