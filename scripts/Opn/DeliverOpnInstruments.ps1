@@ -6,7 +6,7 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
-$global:error = $false
+$global:explosions = $false
 
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
@@ -75,7 +75,7 @@ try {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
             Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
-            $global:error = $true
+            $global:explosions = $true
         }
     }
 }
@@ -85,6 +85,6 @@ catch {
     exit 1
 }
 
-if ($global:error) {
+if ($global:explosions) {
     exit 1
 }
