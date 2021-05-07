@@ -6,7 +6,6 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
-try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
@@ -14,8 +13,8 @@ try {
     If ($instruments.Count -eq 0) {
         LogWarning("No instruments found for '$env:SurveyType'")
         exit
-    }    
-
+    }  
+    
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
@@ -70,29 +69,9 @@ try {
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated"
         }
         catch {
-            $e = $_.Exception
-            $msg = $e.Message
-            while ($e.InnerException) {
-            $e = $e.InnerException
-            $msg += "`n" + $e.Message
-            }
-            $msg
-            LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace) another error type: $($msg)")
+            LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+            LogError("Error InvocationInfo: $($error[0].InvocationInfo)")
+            LogError("Error InvocationInfo line: $($error[0].InvocationInfo.Line)")
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     } 
-} 
-catch {
-    $e = $_.Exception
-            $msg = $e.Message
-            while ($e.InnerException) {
-            $e = $e.InnerException
-            $msg += "`n" + $e.Message
-            }
-            $msg
-    LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace) another error type: $($msg)")
-    LogError("Error Exception Message: $($error[0].Exception.Message)")
-    LogError("Error on its own: $($error[0])")
-    LogError("Error Exception: $($error[0].Exception)")
-    exit 0
-}
