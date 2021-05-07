@@ -20,7 +20,9 @@ function UploadFileToBucket {
     LogInfo("Copying '$filePath' to '$bucketName'")
     $output = gsutil cp $filePath gs://$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
     if ($output -Like "*exception*") {
-        throw "Failed to upload '$filePath' to '$bucketName': '$output'"
+        if ($output -NotLike "*completed*") {
+            throw "Failed to upload '$filePath' to '$bucketName': '$output'"
+        }
     }
     LogInfo("Copied '$filePath' to '$bucketName'")
 }
