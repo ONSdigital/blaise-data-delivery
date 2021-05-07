@@ -20,24 +20,18 @@ try {
     $batchStamp = GenerateBatchFileName
 
     $dataset = @()
-    $index = 1
     $instruments | ForEach-Object { $dataset += @{
-            Id = $index
-            Name = $_.name
+            Id = $_.name
         }
-        $index++
     }
-    Write-Host("Dataset")
-    Write-Host($dataset)
     $origin = @{}
     $dataset | Foreach-Object {$origin.($_.id) = @{}}
-    Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
     # Deliver the instrument package with data for each active instrument
     $job = $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
         $syncCopy = $using:sync
-        $process = $syncCopy.$($PSItem.Id)
+        $process = $syncCopy.$($PSItem.name)
 
         try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
