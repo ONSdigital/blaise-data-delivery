@@ -18,5 +18,11 @@ function UploadFileToBucket {
         throw "No delivery zip has been provided" }
 
     LogInfo("Copying '$filePath' to '$bucketName'")
-    gsutil cp $filePath gs://$bucketName/$deliveryFileName
+    try {
+        & 'C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin\gsutil.cmd' rsync $filePath gs://$bucketName/$deliveryFileName
+        LogInfo("Copied '$filePath' to '$bucketName'")
+    }
+    catch {
+        LogError("Failed to upload '$filePath' to '$bucketName'")
+    }
 }
