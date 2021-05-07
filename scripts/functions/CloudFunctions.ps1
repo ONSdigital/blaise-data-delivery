@@ -18,14 +18,9 @@ function UploadFileToBucket {
         throw "No delivery zip has been provided" }
 
     LogInfo("Copying '$filePath' to '$bucketName'")
-    try {
-        $output = gsutil cp $filePath gs://foo-$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
-        if ($output -Like "*exception*") {
-            throw $output
-        }
-        LogInfo("Copied '$filePath' to '$bucketName'")
-    }
-    catch {
-        LogError("Failed to upload '$filePath' to '$bucketName'")
+    $output = gsutil cp $filePath gs://foo-$bucketName/$deliveryFileName 2>&1 | %{ "$_" }
+    if ($output -Like "*exception*") {
+        throw $output
+        LogError("Failed to upload '$filePath' to '$bucketName': '$output'")
     }
 }
