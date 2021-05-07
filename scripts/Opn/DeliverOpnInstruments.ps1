@@ -6,6 +6,7 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
+try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
@@ -71,9 +72,13 @@
         }
         catch {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
-            LogError("Error InvocationInfo: $($error[0].InvocationInfo)")
-            LogError("Error InvocationInfo line: $($error[0].InvocationInfo.Line)")
+            Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName"
         }
     } 
-
+} 
+catch {
+    LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
+    Get-Error
+    exit 0
+}
