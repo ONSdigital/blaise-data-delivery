@@ -6,10 +6,6 @@
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
 
-# Create a hashtable for process.
-# Keys should be ID's of the processes
-$origin = @{}
-
 try {
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
@@ -25,10 +21,16 @@ try {
 
     $dataset = $()
     $index = 1
-    $instruments | ForEach-Object { $dataset + @{Id = $index, Name = $_.name}; $index++ }
+    $instruments | ForEach-Object { $dataset + @{
+            Id = $index
+            Name = $_.name
+        }
+        $index++
+    }
     Write-Host("Dataset")
     Write-Host($dataset)
-    $dataset | Foreach-Object {$origin.($_.Id) = @{}}
+    $origin = @{}
+    $dataset | Foreach-Object {$origin.($_.id) = @{}}
     Write-Host($origin)
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
