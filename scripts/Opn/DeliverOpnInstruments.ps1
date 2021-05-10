@@ -28,6 +28,8 @@ try {
 
     # Deliver the instrument package with data for each active instrument
     $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
+        . "$using:PSScriptRoot\..\functions\Threading.ps1"
+
         $process = GetProcess -instrument $PSItem -sync $sync
 
         try {
