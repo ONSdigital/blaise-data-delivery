@@ -12,6 +12,10 @@ try {
     LogInfo("DDS URL: $ddsUrl")
     $ddsClientID = $env:ENV_DDS_CLIENT
     LogInfo("DDS Client ID: $ddsClientID")
+    $tempPath = $env:TempPath
+    LogInfo("Temp path: $tempPath")
+    $nifiBucket = $env:ENV_BLAISE_NIFI_BUCKET
+    LogInfo("NiFi Bucket: $nifiBucket")
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
@@ -30,7 +34,7 @@ try {
     $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
         . "$using:PSScriptRoot\..\functions\Threading.ps1"
 
-        $process = GetProcess -instrument $_ -sync $sync
+        $process = GetProcess -instrument $_ -sync $using:sync
 
         try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
@@ -56,13 +60,13 @@ try {
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
             # Generate full file path for instrument
-            $deliveryFile = "$env:TempPath\$deliveryFileName"
+            $deliveryFile = "$using:tempPath\$deliveryFileName"
 
             # Download instrument package
             DownloadInstrumentPackage -serverParkName $_.serverParkName -instrumentName $_.name -fileName $deliveryFile
 
             # Create a temporary folder for processing instruments
-            $processingFolder = CreateANewFolder -folderPath $env:TempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
+            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             #Add manipula and instrument package to processing folder
             AddManipulaToProcessingFolder -processingFolder $processingFolder -deliveryFile $deliveryFile
@@ -74,7 +78,7 @@ try {
             AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name
 
             # Upload instrument package to NIFI
-            UploadFileToBucket -filePath $deliveryFile -bucketName $env:ENV_BLAISE_NIFI_BUCKET -deliveryFileName $deliveryFileName
+            UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
