@@ -16,6 +16,7 @@ try {
     LogInfo("Temp path: $tempPath")
     $nifiBucket = $env:ENV_BLAISE_NIFI_BUCKET
     LogInfo("NiFi Bucket: $nifiBucket")
+
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
