@@ -11,8 +11,8 @@ function CreateInstrumentSync {
 
 function GetProcess {
     param(
-        [hashtable] $instrument,
-        [hashtable] $sync
+        $instrument,
+        [System.Collections.Hashtable] $sync
     )
 
     $syncCopy = $sync
@@ -21,7 +21,7 @@ function GetProcess {
 
 function CheckSyncStatus {
     param(
-        [hashtable] $sync
+        [System.Collections.Hashtable] $sync
     )
 
     $sync.Keys | ForEach-Object {
