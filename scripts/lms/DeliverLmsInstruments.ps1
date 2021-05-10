@@ -84,7 +84,7 @@ try {
             $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
 
             #Add manipula and instrument package to processing folder
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile
+            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Generate and add SPSS files
             AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -subFolder $processingSubFolder -dqsBucket $using:dqsBucket -tempPath $using:tempPath
