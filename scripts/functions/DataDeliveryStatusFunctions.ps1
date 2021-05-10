@@ -36,6 +36,7 @@ function CreateDataDeliveryStatus {
     }
     catch {
         LogError("Creating Data Delivery Status failed: $($_.Exception.Message) at: $($_.ScriptStackTrace) $($_.ScriptStackTrace) StatusCode: $($_.Exception.Response.StatusCode.value__) StatusDescription: $($_.Exception.Response.StatusDescription)")
+        Get-Error
     }
 }
 
@@ -64,6 +65,7 @@ function UpdateDataDeliveryStatus {
     }
     catch {
         LogError("Creating Data Delivery Status failed: $($_.Exception.Message) at: $($_.ScriptStackTrace) StatusCode: $($_.Exception.Response.StatusCode.value__) StatusDescription: $($_.Exception.Response.StatusDescription)")
+        Get-Error
     }
 }
 
@@ -94,5 +96,6 @@ function ErrorDataDeliveryStatus {
     }
     catch {
         LogError("Creating Data Delivery Status failed: $($_.Exception.Message) at: $($_.ScriptStackTrace) StatusCode: $($_.Exception.Response.StatusCode.value__) StatusDescription: $($_.Exception.Response.StatusDescription)")
+        Get-Error
     }
 }
