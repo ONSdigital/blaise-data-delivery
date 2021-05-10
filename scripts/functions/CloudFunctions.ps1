@@ -16,7 +16,7 @@ function UploadFileToBucket {
     }
 
     If ([string]::IsNullOrEmpty($deliveryFileName)) {
-        throw "No delivery zip has been provided"
+        throw "No delivery file name has been provided"
     }
 
     LogInfo("Copying '$filePath' to '$bucketName'")

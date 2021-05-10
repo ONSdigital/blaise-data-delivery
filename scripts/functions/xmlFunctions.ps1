@@ -1,27 +1,31 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\FileFunctions.ps1"
-function AddXMLFileForDeliveryPackage{
+function AddXMLFileForDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
         [string] $instrumentName,
-        [string] $subFolder
+        [string] $subFolder,
+        [string] $tempPath
     )
 
     If (-not (Test-Path $processingFolder)) {
-        throw "$processingFolder not found" }
+        throw "$processingFolder not found" 
+    }
 
     If (-not (Test-Path $deliveryZip)) {
-        throw "$deliveryZip not found" }
+        throw "$deliveryZip not found" 
+    }
 
     If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name provided" }
+        throw "No instrument name provided" 
+    }
 
     # Copy Manipula xml files to the processing folder
     Copy-Item -Path "$PSScriptRoot\..\manipula\xml\GenerateXML.msux" -Destination $processingFolder
 
     try {
-        # Generate XML file, Export function no longer works in Blaise 5 
+        # Generate XML file, Export function no longer works in Blaise 5
         & cmd.exe /c $processingFolder/MetaViewer.exe -F:$processingFolder/$instrumentName.bmix -Export
         LogInfo("Generated .XML File for $deliveryZip")
     }
@@ -29,17 +33,16 @@ function AddXMLFileForDeliveryPackage{
         LogWarning("Generating XML Failed: $($_.Exception.Message)")
     }
     try {
-        if ([string]::IsNullOrEmpty($subFolder))
-        {      
+        if ([string]::IsNullOrEmpty($subFolder)) {
             # Add the SPS, ASC & FPS files to the instrument package
-            AddFilesToZip -pathTo7zip $env:TempPath -files "$processingFolder\*.xml" -zipFilePath $deliveryZip
+            AddFilesToZip -pathTo7zip $tempPath -files "$processingFolder\*.xml" -zipFilePath $deliveryZip
             LogInfo("Added .XML File to $deliveryZip")
         }
         else {
             Copy-Item -Path "$processingFolder/$($instrumentName)_meta.xml" -Destination $subFolder/$instrumentName.xml
             LogInfo("Copied .XML File to $subFolder")
 
-            AddFolderToZip -pathTo7zip $env:TempPath -folder $subFolder -zipFilePath $deliveryZip
+            AddFolderToZip -pathTo7zip $tempPath -folder $subFolder -zipFilePath $deliveryZip
             LogInfo("Added '$subFolder' to '$deliveryZip'")
         }
     }

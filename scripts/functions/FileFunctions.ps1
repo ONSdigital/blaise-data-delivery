@@ -4,43 +4,47 @@ function GenerateDeliveryFilename {
         [string] $prefix,
         [string] $instrumentName,
         [datetime] $dateTime = (Get-Date),
-        [string] $fileExt = $env:PackageExtension
+        [string] $fileExt
     )
-    
+
     If ([string]::IsNullOrEmpty($prefix)) {
-        throw "No prefix provided" }
+        throw "No prefix provided"
+    }
 
     If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name argument provided" }
+        throw "No instrument name argument provided"
+    }
 
     If ([string]::IsNullOrEmpty($fileExt)) {
-        throw "No file extension argument provided" }        
+        throw "No file extension argument provided"
+    }
 
-    return "$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"            
+    return "$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"
 }
 
-function GenerateBatchFileName{
+function GenerateBatchFileName {
     param (
         [datetime] $dateTime = (Get-Date),
-        [string] $SurveyType = $env:SurveyType
+        [string] $SurveyType
     )
     If ([string]::IsNullOrEmpty($SurveyType)) {
-        throw "No Survey Type has been provided" }
+        throw "No Survey Type has been provided"
+    }
 
-    return "$($env:SurveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
+    return "$($SurveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
 }
 
 function ExtractZipFile {
     param (
-        [string] $pathTo7zip = $env:TempPath,
+        [string] $pathTo7zip,
         [string] $zipFilePath,
         [string] $destinationPath
     )
-    
+
     If (-not (Test-Path $zipFilePath)) {
         throw "$zipFilePath not found"
     }
-    
+
     # 7zip extract - x = extract and keep folder structure of zup - o = output file can't have a space between -o and folder
     & $pathTo7zip\7za x $zipFilePath -o"$destinationPath"
 
@@ -49,13 +53,13 @@ function ExtractZipFile {
 
 function AddFilesToZip {
     param (
-        [string] $pathTo7zip = $env:TempPath,
+        [string] $pathTo7zip,
         [string[]] $files,
         [string] $zipFilePath
     )
-    
+
     If ($files.count -eq 0) {
-        throw "No files provided" 
+        throw "No files provided"
     }
 
     If (-not (Test-Path $zipFilePath)) {
@@ -68,11 +72,11 @@ function AddFilesToZip {
 
 function AddFolderToZip {
     param (
-        [string] $pathTo7zip = $env:TempPath,
+        [string] $pathTo7zip,
         [string] $folder,
         [string] $zipFilePath
     )
-    
+
     If (-not (Test-Path $folder)) {
         throw "$zipFilePath not found"
     }
@@ -92,18 +96,17 @@ function CreateANewFolder {
         [string] $folderName
     )
     If ([string]::IsNullOrEmpty($folderPath)) {
-        throw "No Path to the new folder provided" 
+        throw "No Path to the new folder provided"
     }
     If ([string]::IsNullOrEmpty($folderName)) {
-        throw "No folder name provided" 
+        throw "No folder name provided"
     }
 
-    if (-not (Test-Path $folderPath\$folderName))
-    {
+    if (-not (Test-Path $folderPath\$folderName)) {
         Write-Host "creating new folder: $folderName in $folderPath"
         New-Item -Path $folderPath -Name $folderName -ItemType "directory" | Out-Null
     }
-    
+
     return "$folderPath\$folderName"
 }
 
@@ -112,7 +115,7 @@ function GetFolderNameFromAPath {
         [string] $folderPath
     )
     If ([string]::IsNullOrEmpty($folderPath)) {
-        throw "No Path to the new folder provided" 
+        throw "No Path to the new folder provided"
     }
     return Split-Path $processingFolder -Leaf
 }
