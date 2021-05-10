@@ -5,6 +5,7 @@
 . "$PSScriptRoot\..\functions\LoggingFunctions.ps1"
 . "$PSScriptRoot\..\functions\FileFunctions.ps1"
 . "$PSScriptRoot\..\functions\RestApiFunctions.ps1"
+. "$PSScriptRoot\..\functions\Threading.ps1"
 
 try {
     $ddsUrl = $env:ENV_DDS_URL
@@ -23,15 +24,11 @@ try {
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
-    # Create a sync group to capture statuses from each parallel process
-    $origin = @{}
-    $instruments | Foreach-Object { $origin.($_.name) = @{} }
-    $sync = [System.Collections.Hashtable]::Synchronized($origin)
+    $sync = CreateInstrumentSync -instruments $instruments
 
     # Deliver the instrument package with data for each active instrument
     $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
-        $syncCopy = $using:sync
-        $process = $syncCopy.$($PSItem.name)
+        $process = GetProcess -instrument $PSItem -sync $sync
 
         try {
             . "$using:PSScriptRoot\..\functions\LoggingFunctions.ps1"
@@ -95,14 +92,4 @@ catch {
     exit 1
 }
 
-# Check if any of the parallel processes returned an errored state and exit appropriately
-$sync.Keys | ForEach-Object {
-    if (![string]::IsNullOrEmpty($sync.$_.keys)) {
-        # Create parameter hashtable to splat
-        $param = $sync.$_
-
-        if ($param.Status -eq "Errored") {
-            exit 1
-        }
-    }
-}
+CheckSyncStatus -sync $sync
