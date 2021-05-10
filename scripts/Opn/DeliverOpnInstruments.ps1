@@ -19,17 +19,13 @@ try {
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName
 
-    $dataset = @()
-    $instruments | ForEach-Object { $dataset += @{
-            Id = $_.name
-        }
-    }
+    # Create a sync group to capture statuses from each parallel process
     $origin = @{}
-    $dataset | Foreach-Object {$origin.($_.id) = @{}}
+    $instruments | Foreach-Object { $origin.($_.name) = @{} }
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
 
     # Deliver the instrument package with data for each active instrument
-    $job = $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
+    $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
         $syncCopy = $using:sync
         $process = $syncCopy.$($PSItem.name)
 
@@ -48,8 +44,7 @@ try {
             # Generate unique data delivery filename for the instrument
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $_.name
 
-            if($_.DeliverData -eq $false)
-            {
+            if ($_.DeliverData -eq $false) {
                 CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "inactive"
                 continue
             }
@@ -96,9 +91,9 @@ catch {
     exit 1
 }
 
+# Check if any of the parallel processes returned an errored state and exit appropriately
 $sync.Keys | ForEach-Object {
-    if(![string]::IsNullOrEmpty($sync.$_.keys))
-    {
+    if (![string]::IsNullOrEmpty($sync.$_.keys)) {
         # Create parameter hashtable to splat
         $param = $sync.$_
 
