@@ -1,14 +1,23 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 
 function GetIDToken {
-    return Invoke-RestMethod -UseBasicParsing "http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=$env:ENV_DDS_CLIENT&format=full" -Headers @{'Metadata-Flavor' = 'Google' }
+    param(
+        [string] $ddsClientID
+    )
+    if ([string]::IsNullOrEmpty($ddsClientID)) {
+        throw "No DDS Client ID provided"
+    }
+
+    return Invoke-RestMethod -UseBasicParsing "http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=$ddsClientID&format=full" -Headers @{'Metadata-Flavor' = 'Google' }
 }
 
 function CreateDataDeliveryStatus {
     param(
         [string] $fileName,
         [string] $batchStamp,
-        [string] $state
+        [string] $state,
+        [string] $ddsUrl,
+        [string] $ddsClientID
     )
     try {
         If ([string]::IsNullOrEmpty($fileName)) {
@@ -23,7 +32,15 @@ function CreateDataDeliveryStatus {
             throw "No state name provided"
         }
 
-        $DDSBaseUrl = "$env:ENV_DDS_URL/v1/state"
+        if ([string]::IsNullOrEmpty($ddsUrl)) {
+            throw "No DDS URL provided"
+        }
+
+        if ([string]::IsNullOrEmpty($ddsClientID)) {
+            throw "No DDS Client ID provided"
+        }
+
+        $DDSBaseUrl = "$ddsUrl/v1/state"
         $JsonObject = [ordered]@{
             state = "$($state)"
             batch = "$($batchStamp)"
@@ -31,7 +48,7 @@ function CreateDataDeliveryStatus {
 
         $url = "$DDSBaseUrl/$fileName"
         $body = $JsonObject | ConvertTo-Json
-        $idToken = GetIDToken
+        $idToken = GetIDToken -ddsClientID $ddsClientID
         Invoke-RestMethod -UseBasicParsing $url -ContentType "application/json" -Method POST -Body $body -Headers @{ 'Authorization' = "Bearer $idToken" }
     }
     catch {
@@ -43,7 +60,9 @@ function CreateDataDeliveryStatus {
 function UpdateDataDeliveryStatus {
     param(
         [string] $fileName,
-        [string] $state
+        [string] $state,
+        [string] $ddsUrl,
+        [string] $ddsClientID
     )
     try {
         If ([string]::IsNullOrEmpty($fileName)) {
@@ -54,13 +73,22 @@ function UpdateDataDeliveryStatus {
             throw "No state name provided"
         }
 
-        $DDSBaseUrl = "$env:ENV_DDS_URL/v1/state"
+        if ([string]::IsNullOrEmpty($ddsUrl)) {
+            throw "No DDS URL provided"
+        }
+
+        if ([string]::IsNullOrEmpty($ddsClientID)) {
+            throw "No DDS Client ID provided"
+        }
+
+        $DDSBaseUrl = "$ddsUrl/v1/state"
         $JsonObject = [ordered]@{
             state = "$($state)"
         }
         $url = "$DDSBaseUrl/$fileName"
         $body = $JsonObject | ConvertTo-Json
         $idToken = GetIDToken
+        $idToken = GetIDToken -ddsClientID $ddsClientID
         Invoke-RestMethod -UseBasicParsing $url -ContentType "application/json" -Method PATCH -Body $body -Headers @{ 'Authorization' = "Bearer $idToken" }
     }
     catch {
@@ -73,7 +101,9 @@ function ErrorDataDeliveryStatus {
     param(
         [string] $fileName,
         [string] $state,
-        [string] $error_info
+        [string] $error_info,
+        [string] $ddsUrl,
+        [string] $ddsClientID
     )
     try {
         If ([string]::IsNullOrEmpty($fileName)) {
@@ -84,14 +114,22 @@ function ErrorDataDeliveryStatus {
             throw "No state name provided"
         }
 
-        $DDSBaseUrl = "$env:ENV_DDS_URL/v1/state"
+        if ([string]::IsNullOrEmpty($ddsUrl)) {
+            throw "No DDS URL provided"
+        }
+
+        if ([string]::IsNullOrEmpty($ddsClientID)) {
+            throw "No DDS Client ID provided"
+        }
+
+        $DDSBaseUrl = "$ddsUrl/v1/state"
         $JsonObject = [ordered]@{
             state      = "$($state)"
             error_info = "$($error_info)"
         }
         $url = "$DDSBaseUrl/$fileName"
         $body = $JsonObject | ConvertTo-Json
-        $idToken = GetIDToken
+        $idToken = GetIDToken -ddsClientID $ddsClientID
         Invoke-RestMethod -UseBasicParsing $url -ContentType "application/json" -Method PATCH -Body $body -Headers @{ 'Authorization' = "Bearer $idToken" }
     }
     catch {
