@@ -47,7 +47,7 @@ function AddSpssFilesToDeliveryPackage {
         }
     }
     else {
-        Copy-Item -Path "$processingFolder/spss/*" -Destination $processingFolder
+        Copy-Item -Path "$processingFolder/spss/*" -Destination $processingFolder -verbose
     }
 
     if ([string]::IsNullOrEmpty($subFolder)) {

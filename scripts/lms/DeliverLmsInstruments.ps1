@@ -104,6 +104,9 @@ try {
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Completed"
+
+            Remove-Item -Recurse -Force $processingFolder
+
         }
         catch {
             LogError($_.Exception.Message)

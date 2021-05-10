@@ -65,6 +65,7 @@ stages:
                   targetType: 'inline'
                   script: |
                     New-Item -ItemType Directory -Force -Path $env:TempPath
+                    Add-MpPreference -ExclusionProcess c:\dev\agent
 
                - task: PowerShell@2
                  displayName: Deliver LMS Instruments
@@ -78,4 +79,5 @@ stages:
                    targetType: 'inline'
                    script: |
                     Remove-Item -Recurse -Force $env:TempPath
+                    Remove-MpPreference -ExclusionProcess c:\dev\agent
 
