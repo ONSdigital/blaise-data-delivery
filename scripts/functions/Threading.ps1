@@ -11,8 +11,8 @@ function CreateInstrumentSync {
 
 function GetProcess {
     param(
-        [hastable] $instrument,
-        [hastable] $sync
+        [hashtable] $instrument,
+        [hashtable] $sync
     )
 
     $syncCopy = $sync
