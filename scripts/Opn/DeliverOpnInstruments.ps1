@@ -8,7 +8,9 @@
 
 try {
     $ddsUrl = $env.ENV_DDS_URL
+    LogInfo("DDS URL: $ddsUrl")
     $ddsClientID = $env.ENV_DDS_CLIENT
+    LogInfo("DDS Client ID: $ddsClientID")
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType
 
