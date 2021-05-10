@@ -87,7 +87,6 @@ function UpdateDataDeliveryStatus {
         }
         $url = "$DDSBaseUrl/$fileName"
         $body = $JsonObject | ConvertTo-Json
-        $idToken = GetIDToken
         $idToken = GetIDToken -ddsClientID $ddsClientID
         Invoke-RestMethod -UseBasicParsing $url -ContentType "application/json" -Method PATCH -Body $body -Headers @{ 'Authorization' = "Bearer $idToken" }
     }
