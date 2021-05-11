@@ -1,5 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 
+Set-Variable tokenHeaders -Option Constant -Value @{ "Metadata-Flavor" = "Google" }
 function GetIDToken {
     param(
         [string] $ddsClientID
@@ -8,7 +9,7 @@ function GetIDToken {
         throw "No DDS Client ID provided"
     }
 
-    return Invoke-RestMethod -UseBasicParsing "http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=$ddsClientID&format=full" -Headers @{'Metadata-Flavor' = 'Google' }
+    return Invoke-RestMethod "http://metadata/computeMetadata/v1/instance/service-accounts/default/identity?audience=$ddsClientID&format=full" -Headers $tokenHeaders
 }
 
 function CreateDataDeliveryStatus {
