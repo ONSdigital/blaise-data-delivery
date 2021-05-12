@@ -59,6 +59,8 @@ stages:
                         Write-Host "GCP Login with compute service account"
                         gcloud auth login $env:ENV_VM_SERVICEACCOUNT
 
+                        Add-MpPreference -ExclusionProcess c:\dev\agent
+
              - task: PowerShell@2
                displayName: Deliver OPN Instruments
                inputs:
@@ -72,3 +74,4 @@ stages:
                 targetType: 'inline'
                 script: |
                   Remove-Item -Recurse -Force $env:TempPath
+                  Remove-MpPreference -ExclusionProcess c:\dev\agent
