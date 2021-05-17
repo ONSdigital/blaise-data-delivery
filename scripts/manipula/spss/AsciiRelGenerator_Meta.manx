@@ -1,0 +1,2025 @@
+﻿{*************************************************}
+{                                                 }
+{  Blaise 5. A Survey Processing System           }
+{  Copyright (c) 2021 Statistics Netherlands      }
+{                                                 }
+{*************************************************}
+
+PROCESS AsciiRelGenerator_Meta
+
+//
+//Version: 1.01 
+//Date: October 3, 2020
+//
+//This setup can be used to generate the datamodel that describe the relational output files
+//Per block type all instances of that type are be written to a separate file.
+//
+//The setup creates the datamodel description in separate .blax files.
+//In the generated datamodel are reference to a block are replaced
+//by 1..99999 to represent the instance number of the block.
+//  For instance: MyBlock: BMyBlock is replaced by MyBlock: 1..99999 {instance of BMyBlock
+//References to OPEN type questions are replaced by 1..99999 to represent
+//the instance number of the OPEN field. 
+//References to BLOBTYPE type questions are replaced by 1..99999 to represent
+//the instance number of the BLOBTYPE field. 
+//
+//Command-line parameters for this script:
+// -K:Meta=<filename>  The bmix (prepared meta) of the data to process. 
+// -N:iData=<bdix-file> (optional) Name of data file used for export  
+// -N:oScript=<script-name>  (optional)                                                       
+//                           Base name for the statistical script to produce. 
+//                           When not specified then the datamodel path+name will be used         
+//
+// -P:<parameters>                                                                            
+//  parameter  1: Add Offroute en Unprocessed special attribute (optional). 
+//                Use Y' to activate this
+//  parameter  2: Language ID (optional) = the language identifier to use. If not present     
+//                the default / first language will be used.                                  
+//  parameter  3: Role ID (optional) = the Role identifier to use. If not present             
+//                the default will be used.                                                   
+//  parameter  4: Mode ID (optional) = the Mode identifier to use. If not present             
+//                the default.
+//  To support the automatic generation of the matching statistic script a number
+//  of optional parameters are available. They are a subset of the parameters available
+//  for the GenerateStatisticaScript.manx setup
+//  parameter  5: Package. Must be SPSS, SAS or Stata using the correct casing                
+//                (optional). The trigger to generate the scripts.                                                                  
+//  parameter 6 and further correspond to parameter 5 and further of the statistical 
+//               script generator
+//
+//The setup produces the following files for meta x.bmix:
+//   x.$main.blax  = main block of datamodel x. 
+//   For each block definition a separate .blax with name: x.<block_type_name>.blax
+//   For OPEN types a separate .blax is produced with name x.$open.blax
+//   For BLOBTYPE types a separate .blax is produced with name x.$blob.blax
+//All the .blax file are prepared to .bmix file. To be able to do this
+//the setup produces a solution and a project file for each .blax file.
+//For each .bmix file a corresponding statistical script can be produced by
+//running the StatisticalScriptGenerator.manx setup.
+//
+//The setup produces a data file that contains information about the
+//blocks in the datamodel. The name of the file produced 
+//for meta x.bmix is x.names.xml. 
+//
+//The setup also produces a data file that contains additional information about the
+//blocks in the datamodel required to produce offroute/unprocessed information in
+//the data files. The name of the file produced  for meta x.bmix is x.blockmeta.xml. 
+//To produce this file the processed the .bmix files that are created for the 
+//individual blocks.  
+//
+
+{.$DEFINE DEBUG}       
+{.$DEFINE NOPREPARE}   //disable the prepare of the generated solution. 
+
+SETTINGS
+  AUTOREAD=NO 
+  {$IFDEF DEBUG}
+  DAYFILE = 'asciirelgenerator_meta_day.txt'
+  MESSAGEFILE = 'asciirelgenerator_meta_message.txt'
+  {$ENDIF}
+
+USES
+  Meta (VAR) 
+  MetaBlockType (var)
+  
+  DATAMODEL BlockInfo
+  PRIMARY BlockFieldName
+  SECONDARY
+    BlockTypeName, Number
+  FIELDS
+    BlockTypeName: STRING[150]
+    Number: INTEGER[5]
+    BlockFieldName: STRING[180]
+    BlockTypeText: STRING
+    ArrayMin: INTEGER[3]
+    ArrayMax: INTEGER[3]
+    Instance: INTEGER[5]
+    OwnerTypeName: STRING[150] //for $open & $fps & $blob
+    LocalName: STRING[80]  //for $open & $fps $blob
+    Level: INTEGER[2]
+    VarCount: INTEGER[5]
+    VarLength: INTEGER[7]
+  ENDMODEL
+  
+  DATAMODEL BlockType
+  PRIMARY Name
+  FIELDS
+    Name: STRING[150]
+  ENDMODEL   
+
+  DATAMODEL Text
+  FIELDS
+    line: STRING[2000]
+  ENDMODEL  
+  
+  DATAMODEL BlockTypeMeta
+  PRIMARY
+    BlockTypeName, FieldName, Property
+  FIELDS
+    BlockTypeName: STRING
+    FIndex: INTEGER
+    FPosition: INTEGER
+    FText: STRING
+    FieldName: STRING
+    FType: STRING
+    FMax: INTEGER
+    FMin: INTEGER
+    FDecimals: INTEGER
+    FSetSize: INTEGER
+    FArrayLen: INTEGER
+    Property: STRING[20] //value of property 
+    Value: STRING
+  ENDMODEL   
+  
+//  DATAMODEL EnumTypeMeta
+//  FIELDS
+  
+//  ENDMODEL
+  
+  DATAMODEL SettingsUsedForScript
+  FIELDS
+    _Package : (SAS, SPSS, Stata)
+    _strMetaName : STRING
+    _strOutputPath: STRING
+    _strInputPath: STRING
+    _strInputName: STRING
+    _BlaiseDataFileName: STRING
+    _ScriptName: STRING
+    _FieldSelectionFileName: STRING
+    _FieldSelectionDateTime: STRING
+    _DoSetConversion: (yes)
+    _DoMaintainSetOrder: (yes)
+    _DoLowercase: (yes)
+    _DoTreatDKRFasValues: (yes)
+    _DoProduceANSI: (Yes)
+    _DoAddZeroToIndex: (Yes)
+    _DoConvertDateTime: (Yes)
+    _DoDKRFConversionForNonNumeric: (Yes)
+    _DoRecodeEmpty: (Yes)
+    _DoGenerateFormats: (Yes)
+    _DoAsciiRelational: (yes)
+    _DoGenerateExtraAttributes: (Yes)
+    _DoRunExport: (yes)
+    _UniqueNameBasedOn: (fullname,localname,localname_indexed)
+    _varlength: 8..64
+    _LangStr: STRING[40]
+    _ModeStr: STRING[40]
+    _RoleStr: STRING[40]
+    _sepchar: STRING[3]
+  ENDMODEL
+  
+INPUTFILE Data:Meta (BDIX) 
+SETTINGS
+  CONNECT=NO
+  OPEN=NO
+  
+INPUTFILE iData: Meta (BDIX) //only used to get the name of the datafile for the statistical script
+SETTINGS
+  OPEN=NO 
+  
+INPUTFILE oScript: Text (ASCII)
+SETTINGS
+   OPEN = NO   
+   
+INPUTFILE MyBlocksGenI: BlockInfo (XML)
+SETTINGS
+  OPEN=NO
+
+INPUTFILE iSettingsUsed:SettingsUsedForScript (XML)  
+SETTINGS
+  OPEN=NO
+
+TEMPORARYFILE MyBlocks: BlockInfo  
+
+TEMPORARYFILE MyBlockTypes: BlockType //all blocks types with only end fields!!!
+
+OUTPUTFILE MyBlocksGenO: BlockInfo (XML)
+SETTINGS
+  OPEN=NO
+  CREATEBDIX = YES
+
+OUTPUTFILE GenBlax:text (ASCII)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  CREATEBDIX = NO
+
+OUTPUTFILE BlaiseSol:text (ASCII)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  CREATEBDIX = NO
+
+OUTPUTFILE BlaiseProj:text (ASCII)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  CREATEBDIX = NO
+  
+OUTPUTFILE BlockMetaData: BlockTypeMeta (XML)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  CREATEBDIX = YES
+  
+OUTPUTFILE BMIX_List: text (ASCII)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  CREATEBDIX = NO
+
+AUXFIELDS 
+  auxCurrentBlockTypeName: STRING  
+  MaxBlockTypeLen: INTEGER
+  MaxBlockNameLen: INTEGER
+  MaxLocalNameLen: INTEGER
+  MaxFieldPropertyLen: INTEGER
+  MaxFieldPropertyValueLen: INTEGER
+  MaxFieldNameLen: INTEGER
+  LongestBlockFieldName: STRING
+  LongestEndFieldName: STRING
+  SepChar: STRING[1]
+  DelimChar: STRING[1]
+  MetaCreated: (yes,no)
+  MaxModeLen: INTEGER
+  AlsoExportOpen: INTEGER 
+  AlsoExportBlob: INTEGER   
+  LangID: STRING
+  RoleID: STRING
+  ModeID: STRING
+  RequestedLanguage: STRING
+  ProjectCount: INTEGER
+  BlockName: STRING
+  auxBlockTypeName: STRING
+  tmp: STRING
+  res: INTEGER
+  FixedField: (yes,no)
+  ExtraAttributes: (Yes),EMPTY
+  Package: STRING
+  StatisticalScriptPath: STRING
+  DoCreate: (Yes),EMPTY
+  
+INCLUDE "fileutils.incx"
+
+//start of general meta routines
+FUNCTION GetFieldTextDef: OPEN
+PARAMETERS 
+  pMeta: TYPEOF('meta')
+  pFieldName: STRING
+  pMode: STRING
+  pRole: STRING
+  pLan: STRING
+AUXFIELDS
+  ti: INTEGER
+  tmp: OPEN
+INSTRUCTIONS
+  tmp:= ''
+  IF pMode<>'' THEN
+    IF [[pMeta.GetField(pFieldName).ModeRoleTexts.Contains(pMode)]]='True' THEN
+      IF [[pMeta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[pMeta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[pMeta.GetField(pFieldName).ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF
+      ENDIF   
+    ENDIF 
+  ENDIF
+  IF tmp='' THEN
+    IF [[pMeta.GetField(pFieldName).RoleTexts.Contains(pRole)]]='True' THEN
+      IF [[pMeta.GetField(pFieldName).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+        tmp:= [[pMeta.GetField(pFieldName).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+      ENDIF
+    ENDIF
+    tmp:= REPLACE(tmp, CHAR(13)+CHAR(10),' ')
+  ENDIF 
+  RESULT:= tmp
+ENDFUNCTION
+
+FUNCTION GetCategoryTextDef: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+  pIndex: INTEGER
+  pMode: STRING
+  pRole: STRING
+  pLan: STRING
+AUXFIELDS
+  tmp: string
+INSTRUCTIONS
+  tmp:= ''
+  IF VAL([[pMeta.GetField(pFieldName).CategoryTexts.Count]])>0 THEN //there are fill's present in one of the categories in one of the modes
+    IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+      IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF
+      ENDIF
+    ENDIF      
+    IF tmp='' THEN
+      IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF    
+      ENDIF  
+    ENDIF
+    IF tmp='' THEN
+      IF [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].Texts.Contains(pLan)]]='True' THEN
+        tmp:= [[pMeta.GetField(pFieldName).CategoryTexts[pIndex].Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+      ENDIF    
+    ENDIF  
+  ENDIF //with fill's
+  IF tmp='' THEN
+    IF [[pMeta.GetField(pFieldName).Type.Structure]]='Set' or [[pMeta.GetField(pFieldName).Type.Structure]]='Array' THEN
+      IF pMode<>'' THEN
+        IF [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+          IF [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF      
+      ENDIF
+      IF tmp='' THEN  
+        IF [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+          IF [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+            tmp:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+          ENDIF    
+        ENDIF  
+      ENDIF  
+    ELSEIF [[pMeta.GetField(pFieldName).Type.Structure]]='Enumeration' THEN
+      IF pMode<>'' THEN
+        IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.Contains(pMode)]]='True' THEN
+          IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[pMeta.GetField(pFieldName).Type.Categories[pIndex].ModeRoleTexts.GetItem(pMode).RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF
+        IF tmp='' THEN
+          IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+            IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+              tmp:= [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+            ENDIF
+          ENDIF
+        ENDIF      
+      ELSEIF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.Contains(pRole)]]='True' THEN
+        IF [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.Contains(pLan)]]='True' THEN
+          tmp:= [[pMeta.GetField(pFieldName).Type.Categories[pIndex].RoleTexts.GetItem(pRole).Texts.GetItem(pLan).ToFormattedString(SourceCode)]]
+        ENDIF    
+      ENDIF  
+    ENDIF 
+  ENDIF 
+  RESULT:= tmp
+ENDFUNCTION 
+
+FUNCTION GetDefinedDictionaryText: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+AUXFIELDS Title: STRING
+INSTRUCTIONS
+  Title:= ''
+  IF [[pMeta.RoleTexts.Contains('Title')]]='True' THEN
+    IF [[pMeta.Languages.count]]='0' THEN
+      Title:= [[pMeta.RoleTexts.GetItem('Title').Texts.GetItem('')]]
+    ELSEIF [[pMeta.RoleTexts.GetItem('Title').Texts.Contains(LangID)]]='True' THEN
+     Title:= [[pMeta.RoleTexts.GetItem('Title').Texts.GetItem(LangID)]]
+    ENDIF
+  ENDIF
+  RESULT:= REPLACE(Title,'^','$')
+ENDFUNCTION  
+
+FUNCTION GetDefinedBlockTypeText: STRING
+PARAMETERS 
+  pMeta: TYPEOF('meta') 
+  pBlockTypeName: STRING
+AUXFIELDS Title: STRING
+INSTRUCTIONS
+  Title:= ''
+  IF [[pMeta.Languages.count]]='0' THEN
+    IF [[pMeta.Types.GetCollection(blockname).GetItem(pBlockTypeName).BlockTexts.Count]]<>'0' THEN
+      Title:= [[pMeta.Types.GetCollection(blockname).GetItem(pBlockTypeName).BlockTexts[0].Text]]
+    ENDIF  
+  ELSE
+    IF [[pMeta.Types.GetCollection(blockname).GetItem(pBlockTypeName).BlockTexts.Contains(LangID)]]='True' then
+      Title:= [[pMeta.Types.GetCollection(blockname).GetItem(pBlockTypeName).BlockTexts.GetItem(LangID).Text]]
+    endif
+  ENDIF
+  RESULT:= REPLACE(Title,'^','$')
+ENDFUNCTION  
+
+FUNCTION GetSetSize: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  IF [[pMeta.GetField(pFieldName).Type.Structure]]='Set' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.Cardinality]]
+    IF s='' THEN 
+      s:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories.Count]]
+    ENDIF
+  ELSE 
+    s:= ''
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetDecimals: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  IF [[pMeta.GetField(pFieldName).Type.Structure]]='Real' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.Decimals]]
+  ELSE s:= '' ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION MinCategory: INTEGER
+PARAMETERS 
+  pMeta2: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS    
+  index,cc, code: INTEGER
+INSTRUCTIONS
+  cc:= VAL(GetCategoriesCount([[pMeta2]],pFieldName))
+  RESULT:= VAL(GetCategoryCode([[pMeta2]],pFieldName,0))
+  FOR index:= 1 TO cc-1 DO
+    code:= VAL(GetCategoryCode([[pMeta2]],pFieldName,index))
+    IF code<RESULT then RESULT:= Code ENDIF 
+  ENDDO  
+ENDFUNCTION  
+
+FUNCTION MaxCategory: INTEGER
+PARAMETERS 
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS    
+  index,cc, code: INTEGER
+INSTRUCTIONS
+  cc:= VAL(GetCategoriesCount([[pMeta]],pFieldName))
+  RESULT:= VAL(GetCategoryCode([[pMeta]],pFieldName,0))
+  FOR index:= 1 TO cc-1 DO
+    code:= VAL(GetCategoryCode([[pMeta]],pFieldName,index))
+    IF code>RESULT then RESULT:= Code ENDIF 
+  ENDDO  
+ENDFUNCTION  
+
+FUNCTION GetMinValue: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= [[pMeta.GetField(pFieldName).Type.Structure]]
+  IF s='Real' or S='Integer' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.MinValue]]
+    IF s='' THEN s:= '-'+fill('9',17) ENDIF
+  ELSEIF S='Enumeration' or S='Set' THEN
+    s:= STR(MinCategory([[pMeta]],pFieldName))  
+  ELSE 
+    s:= '' 
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetMaxValue: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= [[pMeta.GetField(pFieldName).Type.Structure]]
+  IF s='Real' or S='Integer' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.MaxValue]]
+    IF s='' THEN s:= fill('9',18) ENDIF
+  ELSEIF S='Enumeration' or S='Set' THEN
+    s:= STR(MaxCategory([[pMeta]],pFieldName))  
+  ELSE 
+    s:= '' 
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetLocalFieldTypeName: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= [[pMeta.GetField(pFieldName).Type.WrappedType]]
+  IF s='' THEN
+    IF [[pMeta.GetField(pFieldName).Type.Structure]]='Set' THEN
+      s:= [[pMeta.GetField(pFieldName).Type.MemberType.Name]]
+    ELSE
+      s:= [[pMeta.GetField(pFieldName).Type.Name]]   
+    ENDIF  
+  ENDIF
+  Result:= s
+ENDFUNCTION  
+
+FUNCTION GetCategoriesCount: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s, mt: STRING
+INSTRUCTIONS
+  mt:= [[pMeta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories.Count]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.Categories.Count]]
+  ELSE 
+    s:= ''
+  ENDIF
+  RESULT:= s
+ENDFUNCTION  
+
+FUNCTION GetBaseFieldTypeName: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+AUXFIELDS s, mt: STRING
+INSTRUCTIONS
+  //Result is: STRING, INTEGER, REAL, DATETYPE, TIMETYPE, OPEN, ENUMERATION, SET, CLASSIFICATION, BLOBTYPE or BLOCK, all in UPPERCASE
+  s:= UPPERCASE([[pMeta.GetField(pFieldName).Type.Structure]])
+  CASE s OF
+  'DATE': s:= 'DATETYPE'
+  'TIME': s:= 'TIMETYPE'
+  'BLOCKNAME': s:= 'BLOCK' 
+  'STRING': IF [[pMeta.GetField(pFieldName).Type.MaxLength]]='' THEN s:= 'OPEN' ENDIF
+  'BLOB': s:= 'BLOBTYPE'
+  ENDCASE
+  Result:= s
+ENDFUNCTION  
+
+function GetCategoryCode: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+  index: INTEGER
+AUXFIELDS mt, s: STRING
+INSTRUCTIONS
+  mt:= [[pMeta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories[index].Code]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.Categories[index].Code]]
+  ELSE 
+    s:= ''
+  ENDIF 
+  RESULT:= s
+ENDFUNCTION
+
+FUNCTION GetCategoryLabel: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+  pIndex: INTEGER
+AUXFIELDS mt, s: STRING
+INSTRUCTIONS
+  mt:= [[pMeta.GetField(pFieldName).Type.Structure]]
+  IF mt='Set' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.MemberType.Categories[pIndex].Name]]
+  ELSEIF mt='Enumeration' THEN
+    s:= [[pMeta.GetField(pFieldName).Type.Categories[pIndex].Name]]
+  ELSE 
+    s:= ''
+  ENDIF 
+  RESULT:= s
+ENDFUNCTION
+
+FUNCTION GetCategoryText: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+  pIndex: INTEGER
+  pRole, pMode, pLang: STRING
+AUXFIELDS s: STRING
+INSTRUCTIONS
+  s:= '' 
+  IF pRole<>'' THEN
+    s:= GetCategoryTextDef([[pMeta]],pFieldName,pIndex,pMode,pRole,pLang)
+  ENDIF
+  IF s='' THEN
+    s:= GetCategoryTextDef([[pMeta]],pFieldName,pIndex,pMode,'Category',pLang)
+  ENDIF  
+  IF s=''  THEN
+    s:= GetCategoryLabel([[pMeta]],pFieldName,pindex)
+  ENDIF
+  RESULT:= s  
+ENDFUNCTION
+
+FUNCTION GetFieldText: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pFieldName: STRING
+  pText: STRING
+  pRole, pMode, pLang: STRING
+AUXFIELDS s: STRING  
+INSTRUCTIONS
+  s:= ''
+  IF pRole<>'' THEN
+    s:= GetFieldTextDef([[pMeta]],pFieldName,pMode,pRole,pLang)
+  ENDIF
+  IF s='' THEN   
+    s:= GetFieldTextDef([[pMeta]],pFieldName,pMode,'Description',pLang)
+  ENDIF  
+  IF s='' THEN 
+    s:= GetFieldTextDef([[pMeta]],pFieldName,pMode,'Question',pLang) 
+  ENDIF
+  IF s='' THEN s:= pText ENDIF
+  RESULT:= s
+ENDFUNCTION  
+//end general meta routines
+
+FUNCTION StripText: OPEN
+PARAMETERS pText: OPEN
+AUXFIELDS  
+  tmp, tmp1,tmp2: OPEN
+  p1,p2: INTEGER
+INSTRUCTIONS
+  tmp:= pText
+  tmp:= REPLACE(tmp,'\<','#1')
+  tmp:= REPLACE(tmp,'\>','#2')
+  tmp:= REPLACE(tmp,'<newline>','@/',TRUE)
+  p1:= POSITION('<',tmp)
+  p2:= POSITION('>',tmp)
+  WHILE (p1>0) AND (p2>0) AND (p2>p1)  DO
+     tmp1:=  SUBSTRING(tmp,1,p1-1)
+     tmp2:=  SUBSTRING(tmp,p2+1,LEN(tmp))
+     tmp:= tmp1+tmp2
+     p1:= POSITION('<',tmp)
+     p2:= POSITION('>',tmp)
+  ENDWHILE
+  tmp:= REPLACE(tmp,'#1','\<')
+  tmp:= REPLACE(tmp,'#2','\>')
+  tmp:= REPLACE(tmp,CHAR(9),' ')
+  tmp:= REPLACE(tmp,'  ',' ')
+  RESULT:= tmp
+ENDFUNCTION
+
+PROCEDURE SplitName
+PARAMETERS
+  pFieldName: STRING
+  TRANSIT pBlockFieldName: STRING
+  TRANSIT pEndFieldName: STRING
+AUXFIELDS 
+  p: INTEGER
+INSTRUCTIONS
+  p:= LEN(pFieldName)
+  REPEAT
+    p:= p-1
+  UNTIL p=0 OR SUBSTRING(pFieldName,p,1)='.'
+  pBlockFieldName:= SUBSTRING(pFieldName,1,p-1)
+  pEndFieldName:= SUBSTRING(pFieldName,p+1,255) 
+ENDPROCEDURE
+
+PROCEDURE ListAllBlocks 
+PARAMETERS
+  IMPORT pFieldName: STRING
+  IMPORT pLevel: INTEGER  
+AUXFIELDS 
+  min_a, max_a: INTEGER
+  MyType, MyKind, MyBlockType: STRING
+  index, aindex: INTEGER
+  FN, FNA: STRING
+  BTN: STRING
+  FID: STRING
+  s: STRING
+  FP: INTEGER
+  DoSearch: INTEGER
+  X,Y: STRING
+INSTRUCTIONS
+  DISPLAY('Processing meta for block '+pFieldName,HOURGLASS)
+  FOR index:= 0 TO VAL([[Data.getfields(pFieldName).Count]])-1 DO
+    IF pFieldName<>'' THEN
+      FN:= pFieldName+'.'+[[Data.Getfields(pFieldName)[index].LocalName]]
+    ELSE
+      FN:= [[Data.Getfields(pFieldName)[index].LocalName]]
+    ENDIF  
+    MyBlocks.BlockTypeName:= [[Data.getfield(FN).Definition.Type.Name]]
+    MyType := [[Data.GetField(FN).Definition.Type.Structure]]
+    MyKind:= [[Data.GetField(FN).Definition.FieldKind]]
+    IF MyKind = 'DataField' THEN
+      IF MyType = 'BlockName' THEN
+        MyBlocks.BlockFieldName:= FN
+        MyBlockType:= [[Data.GetField(FN{BlockFieldName}).Definition.Type.HierarchicalName]]
+        MyBlocks.BlockTypeName:= MyBlockType
+        MyBlocks.BlockTypeText:= GetDefinedBlockTypeText([[meta]],MyBlockType)
+        MyBlocks.ArrayMin:= EMPTY
+        MyBlocks.ArrayMax:= EMPTY
+        MyBlocks.Number:= MyBlocks.FORMCOUNT+1 
+        MyBlocks.Level:= pLevel+1
+        MyBlocks.WRITE
+        IF NOT MyBlockTypes.SEARCH(MyBlockType) then //not only end fields or not yet known whether there are only end field...
+          FP:= MyBlocks.RECORDCOUNT
+          ListAllBlocks(FN,pLevel+1)
+          IF FP=MYBLOCKS.RECORDCOUNT THEN //no subblocks in Typename because no record added to MyBlocks...
+            MyBlockTypes.Name := MyBlockType
+            MyBlockTypes.WRITE
+          ENDIF
+        ENDIF 
+      ELSEIF MyType= 'Array' THEN
+        min_a:= VAL([[Data.GetField(FN).Definition.Type.IndexType.MinIndex]])
+        max_a:= VAL([[Data.GetField(FN).Definition.Type.IndexType.MaxIndex]])
+        FNA:= FN+'['+FORMAT(STR(min_a),LEN(STR(max_a)),RIGHT,'0')+']'
+        MyType := [[Data.GetField(FNA).Definition.Type.Structure]]
+        DoSearch:= 1
+        IF MyType = 'BlockName' THEN 
+          FOR aindex:= min_a TO max_a DO
+            FNA:= FN+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']'
+            MyBlocks.BlockFieldName:= FNA
+            MyBlockType:= [[Data.getfield(FNA).Definition.Type.HierarchicalName]]// .name]]
+            MyBlocks.BlockTypeName:= MyBlockType
+            MyBlocks.BlockTypeText:= GetDefinedBlockTypeText([[Meta]],MyBlockType)
+            MyBlocks.ArrayMin:= min_a
+            MyBlocks.ArrayMax:= max_a
+            MyBlocks.Number:= MyBlocks.FORMCOUNT+1
+            MyBlocks.Level:= pLevel+1
+            MyBlocks.WRITE
+            IF DoSearch=1 THEN
+              IF NOT MyBlockTypes.SEARCH(MyBlockType) THEN //not only end fields or not yet known whether there are only end field...
+                FP:= MyBlocks.RECORDCOUNT
+                ListAllBlocks(FNA,pLevel+1) 
+                IF FP=MyBlocks.RECORDCOUNT THEN //no subblocks in Typename because no record added to MyBlocks...
+                   MyBlockTypes.Name := MyBlockType
+                   MyBlockTypes.WRITE
+                   DoSearch:= 0
+                ENDIF
+              ELSE
+                IF LEN(LongestBlockFieldName)<LEN(FNA) THEN
+                  LongestBlockFieldName:= FNA  
+                ENDIF  
+              ENDIF
+            ENDIF
+          ENDDO  
+        ELSEIF IsOfTypeOpen(FNA)=1 THEN 
+          FOR aindex:= min_a TO max_a DO
+            FNA:= FN+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']' 
+            MyBlocks.BlockFieldName:= FNA
+            SplitName(FNA,X,Y)
+            IF LEN(LongestBlockFieldName)<LEN(X) THEN
+              LongestBlockFieldName:= X  
+            ENDIF  
+            IF LEN(LongestEndFieldName)<LEN(Y) THEN
+              LongestEndFieldName:= Y 
+            ENDIF  
+                      //message(LongestBlockFieldName+' '+longestendfieldname)
+
+            MyBlocks.BlockTypeName:= '$open'
+            MyBlocks.BlockTypeText:= 'OPEN question answers'
+            MyBlocks.ArrayMin:= min_a
+            MyBlocks.ArrayMax:= max_a
+            MyBlocks.Number:= MyBlocks.FORMCOUNT+1
+            MyBlocks.LocalName:= [[Data.GetField(FNA).LocalName]]
+            BTN:= [[Data.GetField(FNA).HierarchicalName]]
+            BTN:= SUBSTRING(BTN,1,LEN(BTN)-LEN(MyBlocks.LocalName)-1)
+            MyBlocks.OwnerTypeName:= BTN
+            MyBlocks.WRITE
+            MyBlocks.LocalName:= EMPTY
+            MyBlocks.OwnerTypeName:= EMPTY
+          ENDDO  
+        ELSEIF IsOfTypeBlob(FNA)=1 THEN 
+          FOR aindex:= min_a TO max_a DO
+            FNA:= FN+'['+FORMAT(STR(aindex),LEN(STR(max_a)),RIGHT, '0')+']' 
+            MyBlocks.BlockFieldName:= FNA
+            SplitName(FNA,X,Y)
+            IF LEN(LongestBlockFieldName)<LEN(X) THEN
+              LongestBlockFieldName:= X  
+            ENDIF  
+            IF LEN(LongestEndFieldName)<LEN(Y) THEN
+              LongestEndFieldName:= Y 
+            ENDIF  
+                      //message(LongestBlockFieldName+' '+longestendfieldname)
+
+            MyBlocks.BlockTypeName:= '$blob'
+            MyBlocks.BlockTypeText:= 'BLOBTYPE question answers'
+            MyBlocks.ArrayMin:= min_a
+            MyBlocks.ArrayMax:= max_a
+            MyBlocks.Number:= MyBlocks.FORMCOUNT+1
+            MyBlocks.LocalName:= [[Data.GetField(FNA).LocalName]]
+            BTN:= [[Data.GetField(FNA).HierarchicalName]]
+            BTN:= SUBSTRING(BTN,1,LEN(BTN)-LEN(MyBlocks.LocalName)-1)
+            MyBlocks.OwnerTypeName:= BTN
+            MyBlocks.WRITE
+            MyBlocks.LocalName:= EMPTY
+            MyBlocks.OwnerTypeName:= EMPTY
+          ENDDO  
+        ELSE   
+          FNA:= FN+'['+FORMAT(STR(max_a),LEN(STR(max_a)),RIGHT, '0')+']' 
+          SplitName(FNA,X,Y)
+          IF LEN(LongestBlockFieldName)<LEN(X) THEN
+            LongestBlockFieldName:= X  
+          ENDIF  
+          IF LEN(LongestEndFieldName)<LEN(Y) THEN
+            LongestEndFieldName:= Y 
+          ENDIF  
+          //message(LongestBlockFieldName+' '+longestendfieldname)
+        ENDIF
+      ELSEIF IsOfTypeOpen(FN)=1 THEN
+        MyBlocks.BlockFieldName:= FN 
+        SplitName(FN,X,Y)
+        IF LEN(LongestBlockFieldName)<LEN(X) THEN
+          LongestBlockFieldName:= X  
+        ENDIF  
+        IF LEN(LongestEndFieldName)<LEN(Y) THEN
+          LongestEndFieldName:= Y 
+        ENDIF  
+                  //message(LongestBlockFieldName+' '+longestendfieldname)
+
+        MyBlocks.BlockTypeName:= '$open'
+        MyBlocks.BlockTypeText:= 'OPEN question answers'
+        MyBlocks.ArrayMin:= EMPTY
+        MyBlocks.ArrayMax:= EMPTY
+        MyBlocks.Number:= MyBlocks.FORMCOUNT+1
+        MyBlocks.LocalName:= [[Data.GetField(FN).LocalName]]  
+        BTN:= [[Data.GetField(FN).HierarchicalName]]
+        BTN:= SUBSTRING(BTN,1,LEN(BTN)-LEN(MyBlocks.LocalName)-1)
+        MyBlocks.OwnerTypeName:= BTN
+        MyBlocks.WRITE
+        MyBlocks.LocalName:= EMPTY
+        MyBlocks.OwnerTypeName:= EMPTY
+      ELSEIF IsOfTypeBlob(FN)=1 THEN
+        MyBlocks.BlockFieldName:= FN 
+        SplitName(FN,X,Y)
+        IF LEN(LongestBlockFieldName)<LEN(X) THEN
+          LongestBlockFieldName:= X  
+        ENDIF  
+        IF LEN(LongestEndFieldName)<LEN(Y) THEN
+          LongestEndFieldName:= Y 
+        ENDIF  
+                  //message(LongestBlockFieldName+' '+longestendfieldname)
+
+        MyBlocks.BlockTypeName:= '$blob'
+        MyBlocks.BlockTypeText:= 'BLOBTYPE question answers'
+        MyBlocks.ArrayMin:= EMPTY
+        MyBlocks.ArrayMax:= EMPTY
+        MyBlocks.Number:= MyBlocks.FORMCOUNT+1
+        MyBlocks.LocalName:= [[Data.GetField(FN).LocalName]]  
+        BTN:= [[Data.GetField(FN).HierarchicalName]]
+        BTN:= SUBSTRING(BTN,1,LEN(BTN)-LEN(MyBlocks.LocalName)-1)
+        MyBlocks.OwnerTypeName:= BTN
+        MyBlocks.WRITE
+        MyBlocks.LocalName:= EMPTY
+        MyBlocks.OwnerTypeName:= EMPTY
+      ELSE
+        SplitName(FN,X,Y)
+        IF LEN(LongestBlockFieldName)<LEN(X) THEN
+          LongestBlockFieldName:= X  
+        ENDIF  
+        IF LEN(LongestEndFieldName)<LEN(Y) THEN
+          LongestEndFieldName:= Y 
+        ENDIF  
+          //message(LongestBlockFieldName+' '+longestendfieldname)
+      ENDIF
+    ENDIF  
+  ENDDO
+ENDPROCEDURE{ ListAllBlocks }
+
+PROCEDURE WriteLn_BLAX
+PARAMETERS 
+  IMPORT pText: OPEN
+AUXFIELDS  
+  s: OPEN
+INSTRUCTIONS
+  IF POSITION('@/',pText)>0 THEN
+    s:= pText
+    REPEAT
+      WriteLn_BLAX(SUBSTRING(s,1,POSITION('@/',s)-1))
+      s:= ' '+SUBSTRING(s,POSITION('@/',s)+2,LEN(s))
+    UNTIL POSITION('@/',s)=0
+    WriteLn_BLAX(s)
+  ELSE
+    line:= pText
+    GenBlax.WRITE
+  ENDIF   
+ENDPROCEDURE
+
+FUNCTION PrimKeyLen: INTEGER
+AUXFIELDS 
+  FC, index, res: INTEGER
+  FN, MyType, ML: STRING
+  tmp1, tmp2: string
+INSTRUCTIONS
+  FC:= VAL([[Data.Keys.GetItem('Primary').Fields.Count]])
+  FOR index:= 0 TO FC-1 DO
+    FN:= [[Data.Keys.Getitem('Primary').Fields[index].FullName]]
+    MyType := [[Data.GetField(FN).Definition.Type.Structure]]
+    ML:= [[Data.GetField(FN).Definition.Type.MaxLength]]
+    CASE MyType OF
+      'Date': Res:= 8
+      'Time': Res:= 8
+      'Enumeration': tmp1:= [[Data.GetField(fn).Definition.Type.MaxValue]] Res:= LEN(tmp1) 
+      'String': Res:= VAL(ml)
+      'Real','Integer': 
+         tmp1:= [[Data.GetField(fn).Definition.Type.MinValue]]
+         tmp2:= [[Data.GetField(fn).Definition.Type.MaxValue]]
+         Res:= MAX(LEN(tmp1),LEN(tmp2))
+         IF res=0 THEN res:= 18 ENDIF        
+    ENDCASE
+    RESULT:= Result+Res
+  ENDDO  
+ENDFUNCTION
+
+FUNCTION DetermineAttributes: STRING
+PARAMETERS pFieldName: STRING
+AUXFIELDS 
+  Res: OPEN
+  SpecialA: STRING
+  index: INTEGER
+  EmptyStr: STRING
+  ModeName: STRING  
+INSTRUCTIONS
+  Res:= ''
+  IF [[Data.GetField(pFieldName).Definition.AllSpecialAnswers.IsAllowed('refusal')]] = 'True' THEN
+    Res:= Res +',rf'
+  ENDIF
+  IF [[Data.GetField(pFieldName).Definition.AllSpecialAnswers.IsAllowed('dontknow')]] = 'True' THEN
+    Res:= Res +',dk'
+  ENDIF
+  IF [[Data.Datamodel.Modes.Count]]='0' THEN
+    IF [[Data.GetField(pFieldName).Definition.IsRequired]] = 'False' THEN
+      Res:= Res +',empty'
+    ENDIF
+  ELSE     
+    EmptyStr:= ''
+    FOR index:= 0 TO VAL([[Data.Datamodel.Modes.Count]])-1 DO
+       ModeName:= [[Data.Datamodel.Modes[index].name]]
+       IF [[Data.Datamodel.GetModeDatamodel(ModeName).GetField(pFieldName).IsRequired]]='False' THEN
+         EmptyStr:= ',empty'
+      ENDIF
+    ENDDO
+    Res:= Res+EmptyStr
+  ENDIF     
+  FOR index:=  0 TO  VAL([[Data.Datamodel.SpecialAnswers.Count]])-1 DO
+    SpecialA:= UPPERCASE([[Data.Datamodel.SpecialAnswers[index].Name]])
+    IF NOT (SpecialA in ['DONTKNOW','REFUSAL']) THEN //excluded because they can be redefined... 
+      IF [[Data.GetField(pFieldName).Definition.AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+        Res:= Res +','+SpecialA
+      ENDIF
+    ENDIF  
+  ENDDO    
+  IF ExtraAttributes=Yes THEN
+    Res:= Res+',Offroute,Unprocessed'
+  ENDIF
+  RESULT:= Res
+ENDFUNCTION  
+
+FUNCTION GetCategoryTextForSource: STRING
+PARAMETERS
+  pMeta: TYPEOF('meta')
+  pFieldName: STRING
+  pIndex: INTEGER
+  pMode,pRole,pLang: STRING
+AUXFIELDS
+  tmp: STRING
+INSTRUCTIONS
+  tmp:= GetCategoryText([[pMeta]],pFieldName,pIndex,pMode,pRole,pLang)
+  tmp:= REPLACE(tmp,'^','$') //to make sure it prepares no references to other fields are allowed. They could be outside the generated block...
+  tmp:= StripText(tmp)
+  tmp:= REPLACE(tmp,'"','\"')
+  tmp:= REPLACE(tmp, CHAR(13)+CHAR(10),' ')
+  tmp:= REPLACE(tmp,CHAR(9),' ')
+  tmp:= REPLACE(tmp,'  ',' ')
+  RESULT:= tmp
+ENDFUNCTION
+
+
+FUNCTION ListCategories: OPEN
+PARAMETERS 
+  pMeta: TYPEOF('meta')
+  pFieldName: STRING
+  pIndent: STRING
+  pMode,pRole,PLang: STRING
+AUXFIELDS    
+  res: OPEN
+  index,cc, ti: INTEGER
+  tmp: OPEN
+  rt: STRING
+  text,
+  text2: OPEN
+INSTRUCTIONS
+  cc:= VAL(GetCategoriesCount([[pMeta]],pFieldName))
+  FOR index:= 0 TO cc-1 DO
+    Text:= GetCategoryLabel([[pMeta]],pFieldName,index)+ ' ('+ GetCategoryCode([[pMeta]],pFieldName,index)+')'
+    Text2:= GetCategoryTextForSource([[pMeta]],pFieldName,Index,pMode,pRole,pLang)
+    IF Text2<>'' THEN
+      Text:= Text+' "'+text2+'"'
+    ENDIF
+    IF index<>0 THEN Text:= pIndent+Text ENDIF  
+    Res:= Res+Text
+    IF index<>cc-1 THEN 
+      Res:= Res+', @/'+pIndent 
+    ENDIF
+  ENDDO  
+  Res:= StripText(Res)
+  RESULT:= '@/'+pIndent+'('+Res+')'  
+ENDFUNCTION  
+
+FUNCTION DatamodelType: OPEN
+PARAMETERS pFieldName, pIndent: STRING
+AUXFIELDS 
+  MyTypeName, MyType: STRING
+  ML: STRING
+  Res: OPEN
+  Dec, MinV, MaxV: STRING
+  MyWrappedType, MySize: STRING
+  tmp: OPEN
+INSTRUCTIONS
+   MyTypeName:= [[Data.GetField(pFieldName).Definition.Type.Name]]
+   MyType := [[Data.GetField(pFieldName).Definition.Type.Structure]]
+   IF MyType='Set' THEN
+      MyTypeName:= [[Data.getfield(pFieldName).Definition.Type.MemberType.Name]]
+   ELSE
+      MyTypeName:= [[Data.getfield(pFieldName).Definition.Type.Name]]
+   ENDIF
+   MyWrappedType:= [[Data.GetField(pFieldName).Definition.Type.WrappedType]]
+   ML:= [[Data.GetField(pFieldName).Definition.Type.MaxLength]]
+  CASE MyType OF
+  'Date': Res:= 'datetype'
+  'Time': Res:= 'timetype'
+  'Blob': Res:= 'blobtype'
+  'String': 
+     IF ML='' THEN
+       Res:= 'OPEN'
+     ELSE
+       Res:= 'STRING'
+       IF ML<>'255'THEN
+         Res:= Res+'['+[[Data.GetField(pFieldName).Definition.Type.MaxLength]]+']'
+       ENDIF
+     ENDIF  
+  'Real','Integer': 
+     Dec:= [[Data.GetField(pFieldName).Definition.Type.Decimals]]
+     MinV:= [[Data.GetField(pFieldName).Definition.Type.MinValue]]
+     MinV:=REPLACE(MinV,',','.')
+     MaxV:= [[Data.GetField(pFieldName).Definition.Type.MaxValue]]
+     MaxV:= REPLACE(MaxV,',','.')
+     IF ML='' AND Dec='' AND MinV='' AND MaxV='' THEN Res:= UPPERCASE(MyType) 
+     ELSEIF ML<>'' THEN
+       Res:= MyType+ '['+ML
+       IF Dec<>'' THEN Res:= Res+','+Dec ENDIF
+       Res:= Res+']'
+     ELSEIF MINV<>'' AND MAXV<>'' THEN RES:= MINV+'..'+MAXV ENDIF  
+  'Enumeration':
+     IF MyWrappedType<>'' THEN
+       Res:= REPLACE(REPLACE(MyWrappedType,'.','_'),':','_') 
+     ELSEIF MyTypeName<>'' THEN
+       Res:= REPLACE(REPLACE(MyTypeName,'.','_'),':','_')
+     ELSE    
+       Res:=  ListCategories([[meta]],pFieldName,pIndent,ModeID,RoleID,LangID)  
+     ENDIF   
+  'Set':
+     IF [[Data.GetField(pFieldName).Definition.Type.Cardinality]]<>'' THEN
+       Res:= 'SET['+[[Data.GetField(pFieldName).Definition.Type.Cardinality]]+']'
+     ELSE 
+       Res:= 'SET['+[[Data.GetField(pFieldName).Definition.Type.MemberType.Categories.Count]]+']'
+     ENDIF
+     //MinV:= REPLACE([[Data.GetField(FN).Definition.Type.MemberType.MinValue]],',','.')
+     //MaxV:= REPLACE([[Data.GetField(FN).Definition.Type.MemberType.MaxValue]],',','.')
+     Res:= Res+' OF '
+     IF MyWrappedType<>'' THEN
+       Res:= Res+REPLACE(REPLACE(MyWrappedType,'.','_'),':','_')
+     ELSEIF MyTypeName<>'' THEN
+       Res:= Res+REPLACE(REPLACE(MyTypeName,'.','_'),':','_')
+     ELSE    
+       tmp:= ListCategories([[meta]],pFieldName,pIndent,ModeID,RoleID,LangID)
+       Res:= Res+tmp
+     ENDIF
+  ENDCASE
+  tmp:= DetermineAttributes(pFieldName)       
+  Result:= Res+tmp
+ENDFUNCTION
+
+PROCEDURE AddPrimaryKeyToBlax
+AUXFIELDS 
+  tmp: STRING
+INSTRUCTIONS
+  tmp:= 'PRIMARY '
+  IF [[Data.Keys.Contains('primary')]]= 'True' THEN 
+    tmp:= tmp+ '_PrimaryKey'
+  ELSE
+    tmp:= tmp+ '_FormNumber'
+  ENDIF 
+  tmp:= tmp+ ',_InstanceNr'
+  WriteLn_BLAX(tmp)  
+ENDPROCEDURE
+
+PROCEDURE GeneratemetaForOpen
+AUXFIELDS 
+  Indent: STRING
+  SpecialA: OPEN
+  Index: INTEGER
+  tmp: STRING
+  FPath: STRING
+INSTRUCTIONS
+  Indent:= '  '
+  FPath:= ExtractFilePath([[Data.Datamodel.FileName]])
+  GenBlax.OPEN(Fpath+[[Data.Datamodel.Name]]+'.$open.blax')
+  WriteLn_BLAX('DATAMODEL '+[[Data.Datamodel.Name]]+'_open')
+  WriteLn_BLAX('//Generated by AsciiRelGenerator.manx on '+DateToStr(SYSDATE,'yyyyMMdd')+ ' - '+TimeToStr(SYSTIME,'HH:mm:ss'))
+  AddPrimaryKeyToBlax
+  IF [[Data.Datamodel.SpecialAnswers.Count]]<>'0' THEN
+    SpecialA:= 'SPECIALANSWERS = '  
+    FOR index:=  0 TO  VAL([[Data.Datamodel.SpecialAnswers.Count]])-1 DO
+      IF Index<>0 THEN SpecialA:= SpecialA+', ' ENDIF
+      SpecialA:= SpecialA+[[Data.Datamodel.SpecialAnswers[index].Name ]]
+    ENDDO  
+    IF ExtraAttributes=Yes THEN
+      SpecialA:= SpecialA+',Offroute,Unprocessed'
+    ENDIF  
+    WriteLn_BLAX(SpecialA)
+  ELSEIF ExtraAttributes=Yes THEN
+    SpecialA:= 'SPECIALANSWERS = Offroute, Unprocessed'  
+    WriteLn_BLAX(SpecialA)
+  ENDIF
+  WriteLn_BLAX('FIELDS')
+  WriteLn_BLAX(Indent+'_BlockName: STRING['+STR(MaxBlockNameLen)+']')
+  IF [[Data.Keys.Contains('primary')]]= 'True' THEN 
+    WriteLn_BLAX(Indent+'_PrimaryKey: STRING['+str(primkeylen)+']')
+  ELSE
+    WriteLn_BLAX(Indent+'_FormNumber: INTEGER[8]')
+  ENDIF    
+  WriteLn_BLAX(Indent+'_InstanceNr: 1..99999')
+  IF MaxModeLen>0 THEN 
+    WriteLn_BLAX(Indent+'_CollectionMode: string['+str(maxmodelen)+']') 
+  ENDIF
+  WriteLn_BLAX(Indent+'_ParentBlockType: STRING['+STR(MaxBlockNameLen)+']')
+  WriteLn_BLAX(Indent+'_ParentInstanceNr: 1..9999')
+  WriteLn_BLAX(Indent+'_LocalName: STRING['+STR(MaxLocalNameLen)+']')
+  WriteLn_BLAX(Indent+'OpenAnswer: STRING[20000]')  //maximum length. Output will not have CR-LF. They will be replaced  
+  WriteLn_BLAX('ENDMODEL')
+  if Projectcount=0 then
+    StartSolution(FPath,[[Data.Datamodel.Name]]+'_AsciiRel',[[Data.Datamodel.Name]]+'.$open.blax')
+  else
+    AddProj2Solution([[Data.Datamodel.Name]]+'.$open.blax')	 
+  endif  
+  Projectcount:= Projectcount+1
+  WriteProject(FPath,[[Data.Datamodel.Name]]+'.$open.blax')
+ENDPROCEDURE
+
+PROCEDURE GeneratemetaForBlob
+AUXFIELDS 
+  Indent: STRING
+  SpecialA: OPEN
+  Index: INTEGER
+  tmp: STRING
+  FPath: STRING
+INSTRUCTIONS
+  Indent:= '  '
+  FPath:= ExtractFilePath([[Data.Datamodel.FileName]])
+  GenBlax.OPEN(Fpath+[[Data.Datamodel.Name]]+'.$blob.blax')
+  WriteLn_BLAX('DATAMODEL '+[[Data.Datamodel.Name]]+'_blobtype')
+  WriteLn_BLAX('//Generated by AsciiRelGenerator.manx on '+DateToStr(SYSDATE,'yyyyMMdd')+ ' - '+TimeToStr(SYSTIME,'HH:mm:ss'))
+  AddPrimaryKeyToBlax
+  IF [[Data.Datamodel.SpecialAnswers.Count]]<>'0' THEN
+    SpecialA:= 'SPECIALANSWERS = '  
+    FOR index:=  0 TO  VAL([[Data.Datamodel.SpecialAnswers.Count]])-1 DO
+      IF Index<>0 THEN SpecialA:= SpecialA+', ' ENDIF
+      SpecialA:= SpecialA+[[Data.Datamodel.SpecialAnswers[index].Name ]]
+    ENDDO  
+    IF ExtraAttributes=Yes THEN
+      SpecialA:= SpecialA+',Offroute,Unprocessed'
+    ENDIF  
+    WriteLn_BLAX(SpecialA)
+  ELSEIF ExtraAttributes=Yes THEN
+    SpecialA:= 'SPECIALANSWERS = Offroute, Unprocessed'  
+    WriteLn_BLAX(SpecialA)
+  ENDIF
+  WriteLn_BLAX('FIELDS')
+  WriteLn_BLAX(Indent+'_BlockName: STRING['+STR(MaxBlockNameLen)+']')
+  IF [[Data.Keys.Contains('primary')]]= 'True' THEN 
+    WriteLn_BLAX(Indent+'_PrimaryKey: STRING['+str(primkeylen)+']')
+  ELSE
+    WriteLn_BLAX(Indent+'_FormNumber: INTEGER[8]')
+  ENDIF    
+  WriteLn_BLAX(Indent+'_InstanceNr: 1..99999')
+  IF MaxModeLen>0 THEN 
+    WriteLn_BLAX(Indent+'_CollectionMode: string['+str(maxmodelen)+']') 
+  ENDIF
+  WriteLn_BLAX(Indent+'_ParentBlockType: STRING['+STR(MaxBlockNameLen)+']')
+  WriteLn_BLAX(Indent+'_ParentInstanceNr: 1..9999')
+  WriteLn_BLAX(Indent+'_LocalName: STRING['+STR(MaxLocalNameLen)+']')
+  WriteLn_BLAX(Indent+'BlobFileName: STRING[100]')  //reference to a blob file name
+  WriteLn_BLAX('ENDMODEL')
+  if Projectcount=0 then
+    StartSolution(FPath,[[Data.Datamodel.Name]]+'_AsciiRel',[[Data.Datamodel.Name]]+'.$blob.blax')
+  else
+    AddProj2Solution([[Data.Datamodel.Name]]+'.$blob.blax')	 
+  endif  
+  Projectcount:= Projectcount+1
+  WriteProject(FPath,[[Data.Datamodel.Name]]+'.$blob.blax')
+ENDPROCEDURE
+
+
+FUNCTION EnumSpecifedAtField: INTEGER
+PARAMETERS pFieldName: STRING
+AUXFIELDS
+  MyTypeName, MyWrappedType, MyType: STRING
+  LocalField: string
+INSTRUCTIONS
+   LocalField:= [[Data.GetField(pFieldName).LocalName]]
+   IF POSITION('[',LocalField)>0 THEN
+     LocalField:= SUBSTRING(localfield,1,POSITION('[',LocalField)-1) //remove the array index from the local field name
+   ENDIF  
+   MyType := [[Data.GetField(pFieldName).Definition.Type.Structure]]
+   MyWrappedType:= [[Data.GetField(pFieldName).Definition.Type.WrappedType]]
+   RESULT:= 0
+   IF MyType='Set' OR MyType='Enumeration' THEN
+     IF MyType='Set' THEN
+        MyTypeName:= [[Data.GetField(pFieldName).Definition.Type.MemberType.Name]]
+     ELSE
+        MyTypeName:= [[Data.GetField(pFieldName).Definition.Type.Name]]
+     ENDIF
+     IF (pFieldName=MyTypeName) OR 
+        (POSITION('.'+LocalField,MyTypeName)=LEN(MyTypeName)-LEN(LocalField)) OR
+        ((POSITION(LocalField,MyTypeName)=LEN(MyTypeName)-LEN(LocalField)-LEN(':Member')+1) AND 
+         (POSITION(':Member',MyTypeName)=LEN(MyTypeName)-LEN(':Member')+1))
+     THEN
+       RESULT:= 1
+     ENDIF    
+   ENDIF 
+ENDFUNCTION
+
+FUNCTION GetFieldTextForSource: OPEN
+PARAMETERS 
+  pMeta: TypeOf('meta')
+  pFieldName: STRING
+AUXFIELDS 
+  ti: INTEGER
+  tmp: open
+  txt: open
+  s: open
+INSTRUCTIONS
+  tmp:= GetFieldText([[pMeta]],pFieldName,'',ModeID,RoleID,LangID)
+  tmp:= REPLACE(tmp,'^','$') //to make sure it prepares no references to other fields are allowed. They could be outside the generated block...
+  tmp:= StripText(tmp)
+  IF tmp<>'' THEN
+    tmp:= ' "'+REPLACE(tmp,'"','\"')+'"'
+    tmp:= REPLACE(tmp, CHAR(13)+CHAR(10),'@/')
+  ENDIF  
+  REPEAT
+    tmp:= REPLACE(tmp,'  ',' ')
+  UNTIL POSITION('  ',tmp)=0  
+  RESULT:= tmp
+ENDFUNCTION
+  
+PROCEDURE GenerateMetaForBlock
+PARAMETERS 
+  IMPORT pBlockFieldName: STRING
+  IMPORT pBlockText: STRING
+AUXFIELDS  
+  FieldCount,index: INTEGER
+  s: STRING  
+  mytype, mytype2,mykind: STRING
+  min_a, max_a: INTEGER
+  fn: STRING
+  DT: STRING
+  mysize: STRING
+  mywrappedtype: STRING
+  mytypename: STRING
+  typegenerated: INTEGER
+  res, tmp: OPEN
+  GeneratedType: OPEN
+  typetoadd: STRING
+  Indent: STRING
+  SpecialA: OPEN
+  MyText: OPEN
+  RunRes: integer
+  FPath: STRING
+INSTRUCTIONS  
+  DISPLAY('Generating meta for block '+pBlockFieldName,HOURGLASS)
+  Indent:= '  '
+  FPath:= ExtractFilePath([[Data.Datamodel.FileName]])
+  IF pBlockFieldName<>'' THEN
+    GenBlax.OPEN(FPath+[[Data.Datamodel.Name]]+'.'+
+                     [[Data.GetField(pBlockFieldName).Definition.Type.HierarchicalName]]+'.blax')
+    WriteLn_BLAX('DATAMODEL '+[[Data.Datamodel.Name]]+
+                 REPLACE([[Data.GetField(pBlockFieldName).Definition.Type.HierarchicalName]],'.','_'))
+    IF pBlockText<>'' THEN
+      WriteLn_BLAX(' "'+pBlockText+'"') 
+    ENDIF             
+  ELSE
+    GenBlax.OPEN(FPath+[[Data.Datamodel.Name]]+'.$main.blax')
+    WriteLn_BLAX('DATAMODEL '+[[Data.Datamodel.Name]]+'_main')
+  ENDIF
+  WriteLn_BLAX('//Generated by AsciiRelGenerator.manx on '+DateToStr(SYSDATE,'yyyyMMdd')+ ' - '+TimeToStr(SYSTIME,'HH:mm:ss'))
+  FieldCount:= VAL([[Data.GetFields(pBlockFieldName).Count]])
+  AddPrimaryKeyToBlax
+  typegenerated:= 0
+  GeneratedType:= ''
+  IF [[Data.Datamodel.SpecialAnswers.Count]]<>'0' THEN
+    SpecialA:= 'SPECIALANSWERS = '  
+    FOR index:=  0 TO  VAL([[Data.Datamodel.SpecialAnswers.Count]])-1 DO
+      IF Index<>0 THEN SpecialA:= SpecialA+', ' ENDIF
+      SpecialA:= SpecialA+[[Data.Datamodel.SpecialAnswers[index].Name]]
+    ENDDO  
+    IF ExtraAttributes=Yes THEN
+      SpecialA:= SpecialA+', Offroute, Unprocessed'
+    ENDIF  
+    WriteLn_BLAX(SpecialA)
+  ELSEIF ExtraAttributes=Yes THEN
+    SpecialA:= 'SPECIALANSWERS = Offroute, Unprocessed'  
+    WriteLn_BLAX(SpecialA)
+  ENDIF
+  //Now loop over all field to find out what types are being used. Put those types in a types section
+  FOR index:= 0 TO FieldCount-1 DO
+    IF pBlockFieldName<>'' THEN
+      FN:= pBlockFieldName+'.'+[[Data.Getfields(pBlockFieldName)[index].LocalName]]
+    ELSE
+      FN:= [[Data.Getfields(pBlockFieldName)[index].LocalName]]
+    ENDIF  
+    MyKind:= [[Data.GetField(FN).Definition.FieldKind]]
+    IF MyKind = 'DataField' THEN
+      mywrappedtype:= [[Data.GetField(FN).Definition.Type.WrappedType]]
+      mytypename:= [[Data.GetField(FN).Definition.Type.Name]]
+      MyType:= [[Data.GetField(FN).Definition.Type.Structure]]
+      IF MyType='Set' THEN
+        mytypename:= [[Data.GetField(FN).Definition.Type.MemberType.Name]]
+      ELSEIF MyType = 'Array' THEN
+        min_a:= VAL([[Data.GetField(FN). Definition.Type.IndexType.MinIndex]])
+        max_a:= VAL([[Data.GetField(FN).Definition.Type.IndexType.MaxIndex]])
+        s:=FN+'['+FORMAT(STR(min_a),LEN(STR(max_a)),RIGHT,'0')+']'
+        MyType := [[Data.GetField(s).Definition.Type.Structure]]
+        mytypename:= [[Data.GetField(s).Definition.Type.Name]]
+		    mywrappedtype:= [[Data.GetField(s).Definition.Type.WrappedType]]
+        FN:= S
+      ENDIF
+		IF ((MyType='Set') OR (mytype='Enumeration')) AND EnumSpecifedAtField(FN)=0 AND
+          ((MyWrappedType<>'') OR (MyTypeName<>'')) THEN
+        IF typegenerated=0 THEN
+          typegenerated:= 1
+          WriteLn_BLAX('TYPE') 
+        ENDIF 
+        IF MyWrappedType<>'' THEN
+          Res:= MyWrappedType
+        ELSE
+          Res:= MyTypeName
+        ENDIF
+        IF FN=Res THEN 
+          Res:= '_localtype_'+Res
+        ENDIF
+        typetoadd:= REPLACE(Replace(Res,'.','_'),':','_') 
+        IF POSITION('#'+LOWERCASE(typetoadd)+'#',GeneratedType)=0 THEN //type not already listed...
+          tmp:= ListCategories([[meta]],FN,Indent,ModeID,RoleID,LangID)
+          Res:= typetoadd+' = '+ tmp   
+          WriteLn_BLAX(Indent+Res)      
+          GeneratedType:= GeneratedType+'#'+LOWERCASE(typetoadd)+'#'
+        ENDIF  
+      ENDIF  
+    ENDIF
+  ENDDO
+  WriteLn_BLAX('FIELDS')
+  IF pBlockFieldName<>'' THEN //not the main block
+    WriteLn_BLAX(Indent+'_BlockName: STRING['+STR(MaxBlockNameLen)+']')
+  ENDIF
+  IF [[Data.Keys.Contains('primary')]]= 'True' THEN 
+    WriteLn_BLAX(Indent+'_PrimaryKey: STRING['+str(primkeylen)+']')
+  ELSE
+    WriteLn_BLAX(Indent+'_FormNumber: INTEGER[8]')
+  ENDIF    
+  WriteLn_BLAX(Indent+'_InstanceNr: 1..99999')
+  IF MaxModeLen>0 THEN 
+    WriteLn_BLAX(Indent+'_CollectionMode: STRING['+str(MaxModeLen)+']') 
+  ENDIF
+  IF pBlockFieldName<>'' THEN  
+    WriteLn_BLAX(Indent+'_ParentBlockType: STRING['+STR(MaxBlockTypeLen)+']')
+    WriteLn_BLAX(Indent+'_ParentInstanceNr: 1..9999')
+  ENDIF  
+  FOR index:= 0 TO FieldCount-1 DO
+    IF pBlockFieldName<>'' THEN
+      FN:= pBlockFieldName+'.'+[[Data.Getfields(pBlockFieldName)[index].LocalName]]
+    ELSE
+      FN:= [[Data.Getfields(pBlockFieldName)[index].LocalName]]
+    ENDIF  
+    MyType:= [[Data.GetField(FN).Definition.Type.Structure]]
+    MyKind:= [[Data.GetField(FN).Definition.FieldKind]]
+    IF MyKind = 'DataField' THEN
+      MyText:= GetFieldTextForSource([[meta]],FN) 
+      IF MyType = 'BlockName' THEN
+        WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+' "Instance of '+[[Data.getfield(FN).definition.type.HierarchicalName]]+'": 1..99999')
+      ELSEIF MyType = 'Array' THEN
+        min_a:= VAL([[Data.GetField(FN). Definition.Type.IndexType.MinIndex]])
+        max_a:= VAL([[Data.GetField(FN).Definition.Type.IndexType.MaxIndex]])
+        s:=FN+'['+FORMAT(STR(min_a),LEN(STR(max_a)),RIGHT,'0')+']'
+        MyType := [[Data.GetField(s).Definition.Type.Structure]]
+        IF MyType='BlockName' THEN
+          WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+' "Instance of '+[[Data.getfield(S).definition.type.HierarchicalName]]+'": ARRAY['+STR(min_a)+'..'+STR(max_a)+'] OF 1..99999')
+        ELSE
+          IF IsOfTypeOpen(s)=0 THEN
+            IF EnumSpecifedAtField(s)=1 THEN //can never be a SET question...
+              tmp:= ListCategories([[meta]],s,Indent,ModeID,RoleID,LangID)+DetermineAttributes(s)
+            ELSE
+              tmp:= DatamodelType(s,Indent)
+            ENDIF  
+            WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+': ARRAY['+STR(min_a)+'..'+STR(max_a)+'] of '+tmp)
+          ELSE  
+            tmp:= DatamodelType(s,Indent)
+            IF AlsoExportOpen=1 THEN
+              WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+' "Instance of OPEN": ARRAY['+STR(min_a)+'..'+STR(max_a)+'] OF 1..99999')
+            ELSE
+              WriteLn_BLAX(Indent+'//OPEN Skipped: '+[[Data.GetField(FN).LocalName]]+': ARRAY['+STR(min_a)+'..'+STR(max_a)+'] OF '+tmp)
+            ENDIF         
+          ENDIF  
+        ENDIF   
+      ELSE
+        mysize:= [[Data.GetField(FN).Definition.Size(true,'')]]
+        IF IsOfTypeOpen(FN)=0 AND IsOfTypeBlob(FN)=0 THEN
+          if EnumSpecifedAtField(FN)=1 then
+            tmp:= ''
+            IF MyType='Set' then
+              IF [[Data.GetField(FN).Definition.Type.Cardinality]]<>'' THEN
+                tmp:= 'SET['+[[Data.GetField(FN).Definition.Type.Cardinality]]+'] OF '
+              ELSE 
+                tmp:= 'SET['+[[Data.GetField(FN).Definition.Type.MemberType.Categories.Count]]+'] OF '
+              ENDIF
+            ENDIF  
+            tmp:= tmp+ListCategories([[Meta]],FN,Indent,ModeID,RoleID,LangID)+DetermineAttributes(FN)
+          ELSE
+            tmp:= DatamodelType(FN,Indent)
+          ENDIF  
+          WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+MyText+': '+tmp+ ' {size='+MySize+'}') 
+        ELSEIF IsOfTypeOpen(FN)=1 THEN
+          IF AlsoExportOpen=1 THEN
+            WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+' "Instance of OPEN": 1..99999')
+          ELSE
+            WriteLn_BLAX(Indent+'//OPEN Skipped: '+[[Data.GetField(FN).LocalName]]+': OPEN') 
+          ENDIF  
+        ELSEIF IsOfTypeBlob(FN)=1 THEN
+          IF AlsoExportBlob=1 THEN
+            WriteLn_BLAX(Indent+[[Data.GetField(FN).LocalName]]+' "Instance of BLOB": 1..99999')
+          ELSE
+            WriteLn_BLAX(Indent+'//BLOBTYPE Skipped: '+[[Data.GetField(FN).LocalName]]+': BLOBTYPE') 
+          ENDIF  
+        ENDIF  
+      ENDIF
+    ENDIF //datafield 
+  ENDDO
+  WriteLn_BLAX('ENDMODEL')
+  GenBlax.RELEASE
+  IF Projectcount=0 THEN
+    StartSolution(FPath,[[Data.Datamodel.Name]]+'_AsciiRel',GenBlax.FILENAME)
+  ELSE
+    AddProj2Solution(GenBlax.FILENAME)	 
+  ENDIF  
+  Projectcount:= Projectcount+1
+  WriteProject(GenBlax.PATHNAME,GenBlax.FILENAME)
+ENDPROCEDURE
+
+PROCEDURE WriteProjLine
+PARAMETERS pLine: STRING
+INSTRUCTIONS
+  BlaiseProj.line:= pLine
+  BlaiseProj.WRITE
+ENDPROCEDURE  
+
+PROCEDURE WriteSolLine
+PARAMETERS pline: STRING
+INSTRUCTIONS
+  BlaiseSol.line:= pLine
+  BlaiseSol.WRITE
+ENDPROCEDURE  
+
+PROCEDURE WriteProject
+PARAMETERS
+  pPath: STRING 
+  pProjName: STRING
+INSTRUCTIONS
+  BlaiseProj.OPEN(pPath+pProjName+'.bproj')
+  WriteProjLine('<?xml version="1.0" encoding="utf-8"?>')
+  WriteProjLine('<Project Name="'+pProjName+'" ProjectType="DatamodelProject">')
+  WriteProjLine('<MainFile RelativePath="true">'+pProjName+'</MainFile>')
+  WriteProjLine('<FileItems>')
+  WriteProjLine('  <File FileType="DatamodelFileType" RelativePath="true">'+pProjName+'</File>')
+  WriteProjLine('</FileItems>')
+  WriteProjLine('<Properties>')
+  WriteProjLine('<IsRunnableSurvey>False</IsRunnableSurvey>')
+  WriteProjLine('</Properties>')
+  WriteProjLine('</Project>')
+  BlaiseProj.RELEASE
+ENDPROCEDURE
+
+PROCEDURE StartSolution
+PARAMETERS 
+  pPath: STRING
+  pSolName: STRING
+  pProjName: STRING
+INSTRUCTIONS
+  BlaiseSol.OPEN(pPath+pSolName+'.bsol')
+  WriteSolLine('<?xml version="1.0" encoding="utf-8"?>')
+  WriteSolLine('<Solution Name="'+pSolName+'">')
+  WriteSolLine('<StartupProject RelativePath="true">'+pProjName+'.bproj</StartupProject>')
+  WriteSolLine('<ProjectItems>')
+  WriteSolLine('  <Project RelativePath="true" BuildSequence="'+STR(ProjectCount+1)+'">'+pProjName+'.bproj</Project>')
+ENDPROCEDURE
+
+PROCEDURE AddProj2Solution
+PARAMETERS pProjName: STRING
+INSTRUCTIONS
+  WriteSolLine('  <Project RelativePath="true" BuildSequence="'+STR(ProjectCount+1)+'">'+pProjName+'.bproj</Project>')
+ENDPROCEDURE
+
+PROCEDURE CloseSolution
+INSTRUCTIONS
+  WriteSolLine('  </ProjectItems>')
+  WriteSolLine('</Solution>')
+  Blaisesol.RELEASE
+ENDPROCEDURE
+
+PROCEDURE PrepareSolution
+AUXFIELDS 
+  RunRes: INTEGER
+INSTRUCTIONS
+{$IFNDEF NOPREPARE}
+  DISPLAY('Preparing solution '+[[Data.Datamodel.Name]]+'_AsciiRel.bsol (#Projects='+STR(ProjectCount)+')',HOURGLASS)
+  RunRes:= RUN('"'+ExtractFilePath(PARAMETER(0))+'\InstrumentBuilder.exe" -F:"'+BlaiseSol.PATHNAME+BlaiseSol.FILENAME+'" -FP:+ -P:- -VERBOSE:+ -BP:- -L:-',HIDE,WAIT)
+  IF RunRes<>0 or RunResult<>0 THEN 
+    CLEARDISPLAY 
+    DISPLAY('Error '+STR(RunResult)+' preparing solution', WAIT) 
+	  HALT(999)
+  ENDIF
+{$ENDIF}
+  CLEARDISPLAY
+ENDPROCEDURE
+
+FUNCTION IsOfTypeOpen: INTEGER
+PARAMETERS pFieldName: STRING
+INSTRUCTIONS
+  IF [[Data.GetField(pFieldName).Definition.Type.Structure]]='String' AND  [[Data.GetField(pFieldName).Definition.Type.MaxLength]]='' THEN
+    RESULT:= 1
+  ELSE
+    RESULT:= 0
+  ENDIF        
+ENDFUNCTION
+
+FUNCTION IsOfTypeBlob: INTEGER
+PARAMETERS pFieldName: STRING
+INSTRUCTIONS
+  IF [[Data.GetField(pFieldName).Definition.Type.Structure]]='Blob' THEN
+    RESULT:= 1
+  ELSE
+    RESULT:= 0
+  ENDIF        
+ENDFUNCTION
+
+
+PROCEDURE WriteSpecialAttributes
+PARAMETERS pFieldName: STRING
+AUXFIELDS 
+  SpecialA: STRING
+  index: INTEGER
+INSTRUCTIONS
+  IF [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.IsAllowed('refusal')]] = 'True' THEN
+    blockmetadata.Property:= 'REFUSAL'
+    blockmetadata.value:= [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.GetSpecialAnswerTextFileValue('refusal')]]
+    blockmetadata.WRITE
+  ENDIF
+  IF [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.IsAllowed('dontknow')]] = 'True' THEN
+    blockmetadata.value:= [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.GetSpecialAnswerTextFileValue('dontknow')]]
+    blockmetadata.Property:= 'DONTKNOW'
+    blockmetadata.WRITE
+  ENDIF
+  FOR index:=  0 TO  VAL([[metablocktype.SpecialAnswers.Count]])-1 DO
+    SpecialA:= UPPERCASE([[metablocktype.SpecialAnswers[index].Name]])
+    IF NOT (SpecialA in ['DONTKNOW','REFUSAL']) THEN //excluded because they can be redefined... 
+      IF [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.IsAllowed(SpecialA)]] = 'True' THEN
+        //blockmetadata.INITRECORD
+        blockmetadata.value:= [[MetaBlockType.GetField(pFieldName).AllSpecialAnswers.GetSpecialAnswerTextFileValue(SpecialA)]]
+        blockmetadata.Property:= SpecialA
+        blockmetadata.WRITE
+      ENDIF
+    ENDIF  
+  ENDDO    
+ENDPROCEDURE
+
+function TotalRecSize: INTEGER
+PARAMETERS
+  pMeta: TYPEOF('meta') 
+  pBlockTypeName: STRING
+AUXFIELDS
+  j, ind: INTEGER
+  lname: STRING
+INSTRUCTIONS
+  RESULT:= 0
+  ind:= VAL([[pMeta.Fields.Count]])
+  FOR j:= 0 TO ind-1 DO
+    lname:= [[pMeta.Fields[j].LocalName]]
+    RESULT:= RESULT+VAL([[pMeta.getField(lname).TextSize('')]])
+  ENDDO
+ENDFUNCTION
+
+PROCEDURE WriteBlockTypeMeta
+PARAMETERS
+  //pMeta: TYPEOF('meta') 
+  pBlockTypeName: STRING
+AUXFIELDS
+  j, ind: INTEGER
+  lname: STRING
+  pos: INTEGER
+  arraylength: INTEGER
+INSTRUCTIONS
+  ind:= VAL([[MetaBlockType.Fields.Count]])
+  pos:= 1
+  FOR j:= 0 TO ind-1 DO
+    blockmetadata.INITRECORD
+    arraylength:= 1
+    lname:= [[MetaBlockType.Fields[j].LocalName]]
+    blockmetadata.BlockTypeName:= pBlockTypename
+    blockmetadata.FieldName:= lname
+    blockmetadata.FIndex:= j+1
+    blockmetadata.FPosition:= pos
+    blockmetadata.FType:= [[MetaBlockType.GetField(lname).Type.Structure]]
+    blockmetadata.FText:= GetFieldText([[MetaBlockType]],lname,'','','','')
+    IF blockmetadata.FType in ['Array'] THEN
+      blockmetadata.FArrayLen:= 
+        VAL([[MetaBlockType.GetField(lname).Type.IndexType.MaxIndex]])-
+        VAL([[MetaBlockType.GetField(lname).Type.IndexType.MinIndex]])+1
+      arrayLength:= blockmetadata.FArrayLen
+    ELSEIF blockmetadata.FType in ['Real','Integer', 'Set', 'Enumeration'] THEN
+      blockmetadata.FMin:= VAL(GetMinValue([[MetaBlockType]],lname))
+      blockmetadata.FMax:= VAL(GetMaxValue([[MetaBlockType]],lname))
+    ELSEIF blockmetadata.FType in ['Set'] THEN
+      blockmetadata.FSetSize:= VAL(GetSetSize([[MetaBlockType]],lname))
+    ELSEIF blockmetadata.FType in ['Real'] THEN
+      blockmetadata.FDecimals:= VAL(GetDecimals([[MetaBlockType]],lname))
+    ENDIF  
+    pos:= pos+VAL([[MetaBlockType.getField(lname).TextSize('')]])*arrayLength
+    blockmetadata.Property:= ':size'
+    blockmetadata.value:= [[MetaBlockType.getField(lname).TextSize('')]]
+    blockmetadata.WRITE
+    WriteSpecialAttributes(lname)
+  ENDDO
+ENDPROCEDURE
+
+PROCEDURE GenerateStatisticalScript
+PARAMETERS
+  pBlockTypeName: STRING
+AUXFIELDS 
+  FPath: STRING
+  FName: STRING
+  Res: INTEGER
+  CmdLine: STRING[1000]
+  Index: INTEGER
+  Param: STRING[1000]
+  tmp: STRING
+  ext: STRING
+  scriptname: STRING
+INSTRUCTIONS
+  FPath:= ExtractFilePath([[Data.Datamodel.FileName]])
+  IF pBlockTypeName<>'' THEN
+    FName:= FPath+[[Data.Datamodel.Name]]+'.'+pBlockTypeName+'.BMIX'
+  else
+    FName:= FPath+[[Data.Datamodel.Name]]+'.$main.BMIX'
+  ENDIF                   
+  CmdLine:= StatisticalScriptPath+'GenerateStatisticalScript.msux -K:meta="'+FName+'"'
+  scriptname:= oScript.PATHNAME+oScript.FILENAME
+  IF scriptname<>'' THEN
+    IF pBlockTypeName<>'' THEN
+      scriptname:= scriptname+'.'+pBlockTypeName
+    else
+      scriptname:= scriptname+'.$main'
+    ENDIF
+  ENDIF                     
+  CmdLine:= CmdLine+' -N:"iData='+iData.PATHNAME+iData.FILENAME+',oScript='+scriptname+'"'
+  Param:= Package+';'+parameter(2)+';'+parameter(3)+';'+parameter(4)
+  FOR Index:= 6 to 35 do //more than currently used...
+    Tmp:= PARAMETER(Index)
+    IF Index=8 THEN //= parameter 7 for the statistical script generator
+      IF Tmp<>'' THEN
+        ext:= ExtractFileExtension(Tmp)
+        Tmp:= SUBSTRING(Tmp,1,LEN(Tmp)-LEN(Ext))
+        IF Ext='' THEN Ext:= '.ASC' ENDIF
+        IF pBlockTypeName='' THEN 
+          Tmp:= Tmp+'.$main'+Ext
+        ELSE 
+          Tmp:= Tmp+'.'+pBlockTypeName+Ext
+        ENDIF  
+      ENDIF
+    ENDIF
+    Param:= Param+';'+Tmp
+  ENDDO
+  CmdLine:= CmdLine+' -P:'+Param+' -Q:True'
+  Display('Generating script for '+Package+' for block '+pBlockTypeName,HOURGLASS) 
+  //res:= CALL(CmdLine)
+  res:= RUN('"'+ExtractFilePath(PARAMETER(0))+'\Manipula.exe" '+cmdline,WAIT)
+ENDPROCEDURE  
+
+PROCEDURE GenerateStatisticalScripts
+AUXFIELDS 
+  Index: INTEGER
+  otypename: STRING
+INSTRUCTIONS
+  //produce for each .bmix file that has been create a corresponding statistical script
+  Index:= 0
+  MyBlocks.SETREADKEY(SECONDARY)
+  MyBlocks.RESET
+  GenerateStatisticalScript('') //main block
+  FOR Index:= 0 TO myblocks.FORMCOUNT-1 DO
+    myblocks.READNEXT
+    IF MyBlocks.BlockTypeName<>otypename THEN
+      IF MyBlocks.BlockTypeName='$open' THEN
+        GenerateStatisticalScript('$open')
+      ELSE 
+        GenerateStatisticalScript(MyBlocks.BlockTypeName)
+      ENDIF 
+    ENDIF
+    otypename:= MyBlocks.BlockTypeName
+  ENDDO
+  IF MaxFieldPropertyLen>0 THEN
+    GenerateStatisticalScript('$fps')
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE GenerateMetaForFieldProperties
+AUXFIELDS 
+  Indent: STRING
+  SpecialA: OPEN
+  Index: INTEGER
+  tmp: STRING
+  FPath: STRING
+INSTRUCTIONS
+  Indent:= '  '
+  FPath:= ExtractFilePath([[Data.Datamodel.FileName]])
+  GenBlax.OPEN(Fpath+[[Data.Datamodel.Name]]+'.$fps.blax')
+  WriteLn_BLAX('DATAMODEL '+[[Data.Datamodel.Name]]+'_fieldproperties')
+  WriteLn_BLAX('//Generated by AsciiRelGenerator.manx on '+DateToStr(SYSDATE,'yyyyMMdd')+ ' - '+TimeToStr(SYSTIME,'HH:mm:ss'))
+  AddPrimaryKeyToBlax
+  WriteLn_BLAX('FIELDS')
+  WriteLn_BLAX(Indent+'_BlockName: STRING['+STR(MaxBlockNameLen)+']')
+  IF [[Data.Keys.Contains('primary')]]= 'True' THEN 
+    WriteLn_BLAX(Indent+'_PrimaryKey: STRING['+str(primkeylen)+']')
+  ELSE
+    WriteLn_BLAX(Indent+'_FormNumber: INTEGER[8]')
+  ENDIF    
+  WriteLn_BLAX(Indent+'_InstanceNr: 1..99999')
+  IF MaxModeLen>0 THEN 
+    WriteLn_BLAX(Indent+'_CollectionMode: string['+str(maxmodelen)+']') 
+  ENDIF
+  WriteLn_BLAX(Indent+'_BlockTypeName: STRING['+STR(MaxBlockNameLen)+']')
+  WriteLn_BLAX(Indent+'_LocalName: STRING['+STR(MaxLocalNameLen)+']')
+  WriteLn_BLAX(Indent+'_FieldProperty: STRING['+STR(MaxFieldPropertyLen)+']')
+  
+  WriteLn_BLAX(Indent+'Value: STRING['+STR(MaxFieldPropertyValueLen)+']')  //maximum length. Output will not have CR-LF. They will be replaced  
+  WriteLn_BLAX('ENDMODEL')
+  IF Projectcount=0 THEN
+    StartSolution(FPath,[[Data.Datamodel.Name]]+'_AsciiRel',[[Data.Datamodel.Name]]+'.$fps.blax')
+  ELSE
+    AddProj2Solution([[Data.Datamodel.Name]]+'.$fps.blax')	 
+  ENDIF  
+  Projectcount:= Projectcount+1
+  WriteProject(FPath,[[Data.Datamodel.Name]]+'.$fps.blax')
+  GenBlax.RELEASE
+ENDPROCEDURE
+
+PROCEDURE GenerateAndPrepareMetas
+AUXFIELDS 
+  i,j: INTEGER
+  FName: STRING
+  oldtypename: STRING
+  PrevInstance: INTEGER
+  Res: INTEGER
+  bmix_name: STRING
+  FPT: STRING
+  FPT_Len: INTEGER
+  Card: INTEGER
+  //Ref: STRING
+INSTRUCTIONS
+  FName:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.names.xml'
+  IF DoCreate=Yes THEN
+    MyBlocksGenO.OPEN(FName)
+    ListAllBlocks('',1) // '' = Start at root of datamodel
+    IF VAL([[Data.Datamodel.FieldProperties.Count]])>0 THEN
+      FOR i:= 0 TO VAL([[Data.Datamodel.FieldProperties.Count]])-1 DO
+        //Ref:= CREATEREFLECTIONFIELD([[Data.Datamodel.FieldProperties[i].Type]])
+        IF [[Data.Datamodel.FieldProperties[i].DataKind]]='Persistent' THEN
+          MaxFieldPropertyLen:= MAX(MaxFieldPropertyLen,len([[Data.Datamodel.FieldProperties[i].Name]]))
+          FPT:= [[Data.Datamodel.FieldProperties[i].Type.Structure]]
+          CASE FPT OF
+          'Enumeration': FPT_Len:= LEN([[Data.Datamodel.FieldProperties[i].Type.MaxValue]])
+          'Set': Card:= VAL([[Data.Datamodel.FieldProperties[i].Type.Cardinality]]) 
+                 IF Card=0 THEN Card:= VAL([[Data.Datamodel.FieldProperties[i].Type.MemberType.Categories.Count]]) ENDIF
+                 FPT_Len:= Card*LEN([[Data.Datamodel.FieldProperties[i].Type.MemberType.MaxValue]])+(Card-1)
+          'String': FPT_Len:= VAL([[Data.Datamodel.FieldProperties[i].Type.MaxLength]]) 
+                    IF FPT_Len=0 THEN FPT_Len:= 2000 ENDIF
+          ELSE FPT_Len:= VAL([[Data.Datamodel.FieldProperties[i].Type.MaxLength]])
+          ENDCASE
+          MaxFieldPropertyValueLen:= MAX(MaxFieldPropertyValueLen,FPT_Len)
+        ENDIF  
+      ENDDO
+    ENDIF
+    IF MaxFieldPropertyLen>0 THEN
+      MyBlocks.INITRECORD
+      MyBlocks.BlockFieldName:= '$fps'
+      MyBlocks.LocalName:= LongestEndFieldName
+      MyBlocks.BlockTypeName:= '$fps'
+      MyBlocks.BlockTypeText:= 'FIELDPROPERTIES data'
+      MyBlocks.WRITE
+    ENDIF
+    MyBlocks.SETREADKEY(SECONDARY)
+    MyBlocks.RESET
+    FOR i:= 0 TO myblocks.FORMCOUNT-1 DO
+      myblocks.READNEXT
+      IF MyBlocks.BlockTypeName<>oldtypename THEN 
+         MyBlocks.Instance:= 1 
+      ELSE 
+         MyBlocks.Instance:= PrevInstance+1 
+      ENDIF
+      oldtypename:= MyBlocks.BlockTypeName
+      PrevInstance:= MyBlocks.Instance
+      MaxBlockTypeLen:= MAX(MaxBlockTypeLen,LEN(MyBlocks.BlockTypeName))
+      MaxBlockNameLen:= MAX(MaxBlockNameLen,LEN(MyBlocks.BlockFieldName))
+      MaxLocalNameLen:= MAX(MaxLocalNameLen,LEN(MyBlocks.LocalName))
+      MyBlocks.WRITE
+    ENDDO
+    oldtypename:= ''
+    MyBlocks.SETREADKEY(SECONDARY)
+    MyBlocks.RESET
+    GenerateMetaForBlock('','')
+    FOR i:= 0 TO myblocks.FORMCOUNT-1 DO
+      myblocks.READNEXT
+      IF (MyBlocks.BlockTypeName<>oldtypename) and (MyBlocks.BlockTypeName<>'$fps') THEN
+        IF MyBlocks.BlockTypeName='$open' THEN
+          GenerateMetaForOpen
+        ELSEIF MyBlocks.BlockTypeName='$blob' THEN
+          GenerateMetaForBlob
+        ELSE 
+          GenerateMetaForBlock(MyBlocks.BlockFieldName, MyBlocks.BlockTypeText)
+        ENDIF 
+      ENDIF
+      oldtypename:= MyBlocks.BlockTypeName
+    ENDDO
+    IF MaxFieldPropertyLen>0 THEN
+      GenerateMetaForFieldProperties
+    ENDIF  
+    //create the .bmix files
+    CloseSolution  
+    IF Package<>'' THEN
+      PrepareSolution
+      GenerateStatisticalScripts
+    ENDIF
+    //IF ExtraAttributes=Yes THEN //process all meta and prepare a file with information to be used during export of data
+    DISPLAY('Generating meta data XML files...', HOURGLASS)
+
+      BMIX_List.OPEN(ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'_BlockBMIX_List.txt')
+      oldtypename:= ''
+      MyBlocks.RESET
+      FName:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.blockmeta.xml'
+      BlockMetaData.open(fname)
+      bmix_name:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.'+'$main'+'.bmix'
+      res:= MetaBlockType.LOADDATAMODEL(bmix_name)
+      BMIX_List.line:= bmix_name
+      BMIX_List.WRITE
+      WriteBlockTypeMeta({[[MetaBlockType]],}'$main')             
+      FOR i:= 0 TO myblocks.FORMCOUNT-1 DO
+        myblocks.READNEXT
+        IF (MyBlocks.BlockTypeName<>oldtypename) {and (MyBlocks.BlockTypeName<>'$fps')} THEN
+          bmix_name:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.'+
+                       MyBlocks.BlockTypeName+'.bmix'
+          res:= MetaBlockType.LOADDATAMODEL(bmix_name)
+          BMIX_List.line:= bmix_name
+          BMIX_List.WRITE
+          WriteBlockTypeMeta({[[MetaBlockType]],}MyBlocks.BlockTypeName) 
+          myblocks.VarCount:= VAL([[MetaBlockType.Fields.Count]])
+          myblocks.VarLength:= TotalRecSize([[MetaBlockType]],MyBlocks.BlockTypeName)
+          message(MyBlocks.BlockTypeName+' '+ToString(MyBlocks.VarCount)+' '+ToString(MyBlocks.VarLength))
+          myblocks.WRITE
+        ENDIF
+        oldtypename:= MyBlocks.BlockTypeName
+      ENDDO
+      BMIX_List.RELEASE
+    //ENDIF
+        //write content of MyBlocks to MyBlocksGen
+    MyBlocks.RESET
+    FOR i:= 1 to MyBlocks.FORMCOUNT DO
+      MyBlocks.READNEXT
+      MyBlocksGenO.WRITE
+    ENDDO 
+    MyBlocksGenO.RELEASE
+
+  ELSE
+    MyBlocksGenI.OPEN(FName)
+    REPEAT
+      MyBlocksGenI.READNEXT
+      MyBlocks.WRITE
+    UNTIL MyBlocksGenI.LASTRECORD
+    MyBlocksGenI.RELEASE 
+    GenerateStatisticalScripts
+  ENDIF  
+ENDPROCEDURE
+
+PROCEDURE DetermineIfBlockMetaIsUp2Date
+AUXFIELDS
+  FileDate1, FileDate2: STRING
+  fname: STRING
+  mname: STRING
+  i, c: integer
+  HasExtraAttributes: (Yes)
+INSTRUCTIONS
+  DoCreate:= EMPTY
+  fname:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.names.xml'
+  IF FILEEXISTS(fname) THEN
+    FileDate1:= GETFILEDATETIME([[Data.Datamodel.FileName]])
+    FileDate2:= GETFILEDATETIME(fname)
+    IF FileDate2<FileDate1 THEN
+      DoCreate:= Yes
+    ELSE
+      mname:= ExtractFilePath([[Data.Datamodel.FileName]])+[[Data.Datamodel.Name]]+'.$main.bmix'
+      IF FILEEXISTS(mname) THEN
+        MetaBlockType.LOADDATAMODEL(mname)
+        c:= VAL([[MetaBlockType.SpecialAnswers.AllNames.Count]])
+        FOR i:= 0 TO c-1 DO
+          IF lowercase([[MetaBlockType.SpecialAnswers.AllNames[i] ]])='offroute'  THEN
+            HasExtraAttributes:= yes 
+            EXITFOR
+          ENDIF
+        ENDDO  
+        IF (ExtraAttributes=Yes AND HasExtraAttributes=EMPTY) OR (ExtraAttributes=EMPTY AND HasExtraAttributes=Yes) THEN
+          DoCreate:= Yes
+        ENDIF  
+      ELSE
+        DoCreate:=Yes  
+      ENDIF  
+    ENDIF   
+  ELSE
+    DoCreate:= Yes
+  ENDIF
+  IF DoCreate=EMPTY THEN
+    LoadSettings
+    IF LOWERCASE(iSettingsUsed._LangStr)<>LOWERCASE(LangID) OR  
+       LOWERCASE(iSettingsUsed._ModeStr)<>LOWERCASE(ModeID) OR
+       LOWERCASE(iSettingsUsed._RoleStr)<>LOWERCASE(RoleID)
+    THEN
+      DoCreate:= Yes
+    ENDIF     
+  ENDIF 
+  DoCreate:= Yes
+ENDPROCEDURE
+
+PROCEDURE LoadSettings
+AUXFIELDS index: INTEGER res: INTEGER
+INSTRUCTIONS
+  IF FILEEXISTS([[Meta.FileName]]+'_$exportsettings.xml') THEN
+    res:= iSettingsUsed.OPEN([[Meta.FileName]]+'_$exportsettings.xml')
+    IF res=0 THEN
+      iSettingsUsed.READNEXT
+      iSettingsUsed.RELEASE
+    ENDIF
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE Initialize
+AUXFIELDS 
+  i: INTEGER
+INSTRUCTIONS
+  SepChar:= ';' //for output data. For now: fixed. No delimitor yet.
+  DelimChar:= '"'
+  MetaCreated:= yes
+  IF [[Data.Datamodel.Modes.Count]]<>'0' THEN
+    FOR i:= 0 to VAL([[Data.Datamodel.Modes.Count]])-1 DO
+      MaxModeLen:= MAX(MaxModeLen,LEN([[Data.Datamodel.Modes[i].Name]]))
+    ENDDO
+  ENDIF  
+  IF PARAMETER(1)='Y' THEN
+    ExtraAttributes:= Yes
+  ENDIF  
+  LangID:= PARAMETER(2)
+  IF LangID='' THEN
+    LangID:= [[meta.Languages[0].Name]] //always at elast one language...
+  ELSEIF [[meta.Languages.Contains(LangID)]]='False' THEN
+    LangID:= [[meta.Languages[0].Name]]
+  ENDIF  
+  RoleID:= PARAMETER(3)
+  IF RoleID<>'' THEN
+    IF [[meta.Roles.Contains(RoleID)]]='False' THEN
+      RoleID:= ''
+    ENDIF  
+  ENDIF
+  ModeID:= PARAMETER(4)
+  IF ModeID<>'' THEN
+    IF [[meta.Modes.IndexOf(ModeID)]]='-1' THEN 
+      ModeID:= ''
+    ENDIF  
+  ENDIF
+  IF ModeID='' THEN
+    IF val([[meta.Modes.Count]])>0 THEN 
+      ModeID:= [[meta.Modes[0].Name]] 
+    ENDIF
+  ENDIF  
+  MaxBlockTypeLen:= LEN([[Data.Datamodel.Name]]) 
+  AlsoExportOpen:= 1 //also export the OPEN type questions
+  AlsoExportBlob:= 1 //also export the BLOBTYPE type questions
+  //for the statistical script:
+  Package:= UPPERCASE(PARAMETER(5))
+  IF Package<>'' AND NOT (Package IN ['SPSS','SAS','STATA']) THEN
+    DISPLAY('Package not specified correctly. Only SAS, SPSS and Stata are supported',WAIT)
+    HALT(1000)
+  ENDIF
+ENDPROCEDURE  
+
+MANIPULATE
+{$IFDEF Debug}
+  StatisticalScriptPath:= 'D:\\Blaise5\\DataExport\\'
+{$ENDIF}
+  Initialize
+  DetermineIfBlockMetaIsUp2Date
+  GenerateAndPrepareMetas

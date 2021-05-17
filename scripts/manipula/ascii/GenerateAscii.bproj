@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="GenerateAscii" Guid="6f4748df-41e4-4115-9e82-67680ff5b060" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">GenerateAscii.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">GenerateAscii.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ExternalSearchPath />
+    <ConditionalDefines />
+    <ResourceDB />
+    <SurveyRoot />
+    <AppSupport />
+    <IsAppMainUserInterface />
+  </Properties>
+</Project>

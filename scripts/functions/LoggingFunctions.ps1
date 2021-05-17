@@ -1,4 +1,5 @@
 $source = "DataDelivery"
+Import-Module Microsoft.PowerShell.Management -UseWindowsPowerShell -WarningAction SilentlyContinue
 
 function LogInfo {
     param (

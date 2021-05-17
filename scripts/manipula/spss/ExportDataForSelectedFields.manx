@@ -1,0 +1,464 @@
+﻿{*************************************************}
+{                                                 }
+{  Blaise 5. A Survey Processing System           }
+{  Copyright (c) 2021 Statistics Netherlands      }
+{                                                 }
+{*************************************************}
+
+SETUP ExportDataForSelectedFields
+//***************************************************************
+//                                                 
+// Version: 1.21 - October 3-2020                  
+//                                                 
+//***************************************************************
+// Generic script that exports a selection of   fields of a 
+// Blaise database to ASCII.           
+// The field selection needs to be defined in a text file. 
+// On each line in  the text file one field name.         
+// The field name can by the name of a block or and array. 
+// In that case a fields of the the block / array will be exported.                                    
+//
+// The script produces a file with the data of the selected fields 
+// that fits the data expected by the generated statistical script.
+                                                 
+// Restriction: the total length of the selected data may not 
+// exceed 1.000.000 characters per case                                            
+//
+// This script supports the following command line                                            
+// parameters:                                                                                
+//                                                                                           
+// -K:Meta=<bmix-file>      (required)                                                   
+//                          Prepared datamodel to be used                                    
+// -N:iFName=<fields-file>  (required)                                               
+//                          Text file that contains field names                              
+// -N:iData=<bdix-file>     (required)                                                       
+//                          Name of data file to process                               
+// -N:oData=<text-file>     (required)                                                       
+//                          Name of data file to write the data                               
+// -H:<meta-search-path>    (optional)                                                      
+// -P:<parameters>                      
+//  Parameter 1 - Separator Character (optional)
+//    Supported: TAB, COMMA, SEMICOLON or any single character 
+//  Parameter 2 - Date format (optional)
+//    Possible values: 1 = DDMMYYYY, 2 = MMDDYYYY, 3 = YYYYMMDD
+//    Default value: 1. This is also the expected representation
+//    in the SAS/SPSSS/Stata import scripts
+//  Parameter 3 - Decimal symbol (Optional)
+//    Possible value: C = Comma.
+//    Default is a period (International statistical)
+//  Parameter 4 - Y = Produce ANSI data. Default = No ANSI data (so UTF-8 data)
+// Change log                                      
+// 1.0 November-1-2017. First version                   
+// 1.01. December-6-2017. 
+//   - Dropped delimiter when separator=TAB. SPSS cannot handle
+//     that when DATA LIST FREE(TAB) is used
+//   - Option to produce data in ANSI encoding
+// 1.1 August-22-2018
+//   - Improved file handling ANSI/UTF-8
+//   - OPEN now skipped when using a SEPARATOR
+//   - Field selection can now contain multiple field on one line 
+//     with comma as separator
+// 1.2 June-21-2019
+//   - Adapted to handle set with negative value(s)
+// 1.3 October 3-2020
+//   - Adapted to skip BLOBTYPE field    
+//***************************************************************
+
+SETTINGS
+  AUTOREAD=NO
+  DESCRIPTION='Export data for field selection'
+
+USES
+  Meta (VAR) 
+
+  DATAMODEL fieldmeta
+  FIELDS
+    fieldname: STRING[10000]
+  ENDMODEL
+
+  DATAMODEL selmeta
+  FIELDS 
+    ExoportString: STRING[1000000]
+  ENDMODEL
+
+INPUTFILE iData:meta (BDIX)
+
+INPUTFILE iFNames:fieldmeta (ASCII)
+
+TEMPORARYFILE tmpnames:fieldmeta
+
+OUTPUTFILE oData:selmeta (ASCII)
+SETTINGS
+  TRAILINGSPACES=NO
+  OPEN=NO
+  
+AUXFIELDS
+  DateFormat: INTEGER //1=ddmmyy,2=mmddyy,3=yymmdd
+  DecimalSymbol: STRING
+  MyValue: OPEN
+  SepChar: STRING
+  DelimChar: STRING
+  FixedField: (Yes,No)
+  RepeatSpecialAnswerInSet: 0..1
+  First: 0..1
+  ProduceANSI: 0..1
+
+FUNCTION IsOfTypeOpen: INTEGER
+PARAMETERS 
+  pFieldName: STRING
+INSTRUCTIONS
+  IF [[iData.GetField(pFieldName).Definition.Type.Structure]]='String' AND  [[iData.GetField(pFieldName).Definition.Type.MaxLength]]='' THEN
+    RESULT:= 1
+  ELSE
+    RESULT:= 0
+  ENDIF        
+ENDFUNCTION
+
+FUNCTION IsOfTypeBlob: INTEGER
+PARAMETERS 
+  pFieldName: STRING
+INSTRUCTIONS
+  IF [[iData.GetField(pFieldName).Definition.Type.Structure]]='Blob' THEN
+    RESULT:= 1
+  ELSE
+    RESULT:= 0
+  ENDIF        
+ENDFUNCTION
+
+
+FUNCTION GetTextSize: STRING
+PARAMETERS
+  pFieldName: string
+INSTRUCTIONS
+  Result:= [[iData.GetField(pFieldName).Definition.TextSize('')]]
+ENDFUNCTION  
+
+FUNCTION ResponseAnswerOfEndField: OPEN
+PARAMETERS 
+  pFieldName: STRING
+AUXFIELDS
+  MyType: STRING
+  tmp: OPEN
+  SetValue: STRING
+  SetL, CC, J, P: INTEGER
+  Size: INTEGER
+  SetStr: STRING
+  aKey: STRING
+  date: DATETYPE
+INSTRUCTIONS
+  MyType:= [[iData.GetField(pFieldName).Definition.Type.Structure]]
+  IF FixedField=Yes THEN 
+    Size:= VAL(GetTextSize(pFieldName))
+  ENDIF
+  CASE MyType of
+  'Enumeration': 
+     RESULT:= [[iData.GetField(pFieldName).DataValue.EnumerationValue]] 
+     IF FixedField=Yes THEN RESULT:= FORMAT(RESULT,Size,RIGHT) ENDIF
+  'Integer': 
+     RESULT:= [[iData.GetField(pFieldName).DataValue.IntegerValue]]
+     IF FixedField=Yes THEN RESULT:= FORMAT(RESULT,Size,RIGHT) ENDIF
+  'Real': 
+     RESULT:= [[iData.GetField(pFieldName).DataValue.ValueAsText]] //not .RealValue because it has locale decimal symbol
+     IF FixedField=Yes THEN RESULT:= FORMAT(RESULT,Size,RIGHT) ENDIF
+     IF DecimalSymbol<>'.'THEN
+       RESULT:= REPLACE(RESULT,'.',DecimalSymbol)
+     ENDIF  
+  'String': 
+     RESULT:= [[iData.GetField(pFieldName).DataValue.StringValue]]
+     IF FixedField=No AND POSITION(SepChar,RESULT)>0 THEN
+       RESULT:= DelimChar+REPLACE(RESULT,DelimChar,DelimChar+DelimChar)+DelimChar 
+     ENDIF
+     IF FixedField=Yes THEN RESULT:= FORMAT(RESULT,Size,LEFT) ENDIF
+  'Time': RESULT:= [[iData.GetField(pFieldName).DataValue.ValueAsText]]
+  'Date': RESULT:= REPLACE([[iData.GetField(pFieldName).DataValue.ValueAsText]],'-','') //fixed format ddMMyyyy
+          IF DateFormat=2 THEN RESULT:= DATETOSTR(STRTODATE(result),'MMddyyyy')
+          ELSEIF DateFormat=3 THEN RESULT:= DATETOSTR(STRTODATE(result),'yyyMMdd') 
+          ENDIF
+  'Classification': 
+     RESULT:= [[iData.GetField(pFieldName).DataValue.ValueAsText]]
+     IF FixedField=Yes THEN RESULT:= FORMAT(RESULT,Size,RIGHT) ENDIF
+  'Set': 
+    IF [[iData.GetField(pFieldName).Definition.Type.Cardinality]]<>'' THEN
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.Cardinality]])
+    ELSE 
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.MemberType.Categories.Count]])
+    ENDIF
+    SetValue:= [[iData.GetField(pFieldName).DataValue.ValueAsText]]
+    IF POSITION('--',SetValue)>0 or SUBSTRING(SetValue,1,1)='-' THEN
+      SetValue:= REPLACE(SetValue,'--','-N')
+      IF SUBSTRING(SetValue,1,1)='-' THEN SetValue:= 'N'+SUBSTRING(SetValue,2,255) ENDIF
+    ENDIF
+    cc:= 0
+    FOR j:= 1 TO LEN(setvalue) DO 
+      IF SUBSTRING(SetValue,j,1)='-' THEN 
+        cc:= cc+1 
+      ENDIF 
+    ENDDO
+    IF FixedField=No THEN
+      SetValue:= REPLACE(SetValue,'-',SepChar) 
+      RESULT:= SetValue+FILL(SepChar,SetL-cc-1)
+    ELSE
+      SetStr:= ''
+      IF SetL=1 or CC=0 THEN 
+        SetStr:= FORMAT(setvalue,Size,RIGHT)
+      ELSE
+        P:= POSITION('-',SetValue)
+        REPEAT
+          SetStr:= SetStr+FORMAT(SUBSTRING(SetValue,1,P-1),Size,RIGHT)
+          SetValue:= SUBSTRING(SetValue,P+1,255)
+          P:= POSITION('-',SetValue)
+        UNTIL p=0     
+        SetStr:= SetStr+FORMAT(setvalue,Size,RIGHT)
+      ENDIF   
+      RESULT:= SetStr+FILL(' ',(SetL-cc-1)*Size)
+    ENDIF    
+    RESULT:= REPLACE(RESULT,'N','-')
+  ENDCASE
+ENDFUNCTION
+
+FUNCTION SpecialAnswerOfEndField: STRING
+PARAMETERS 
+  pFieldName: STRING
+AUXFIELDS
+  MyType: STRING
+  Tmp: STRING
+  SetValue: STRING
+  SetL, CC, J: INTEGER
+  SpecialA: STRING
+  SA: STRING
+  aKey: string
+INSTRUCTIONS
+  MyType:= [[iData.GetField(pFieldName).Definition.Type.Structure]]
+  IF MyType='Set' THEN
+    IF [[iData.GetField(pFieldName).Definition.Type.Cardinality]]<>'' THEN
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.Cardinality]])
+    ELSE 
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.MemberType.Categories.Count]])
+    ENDIF
+  ENDIF  
+  SpecialA:= [[iData.GetField(pFieldName).DataValue.SpecialAnswer]]
+  SA:= [[iData.datamodel.GetField(pFieldName).AllSpecialAnswers.GetSpecialAnswerTextFileValue(SpecialA)]]
+  IF MyType='Set' THEN
+    If FixedField=No then
+      IF RepeatSpecialAnswerInSet=1 THEN
+        RESULT:= FILL(SA+SepChar,SetL-1)+SA //add as many separator as needed
+      ELSE
+        RESULT:= SA+FILL(SepChar,SetL-1) //add as many separator as needed
+      ENDIF  
+    ELSE
+      IF RepeatSpecialAnswerInSet=1 THEN
+        RESULT:= FILL(SA,SetL) //only first element received the SA, rest of set filled with spaces
+      ELSE
+        RESULT:= SA+FILL(' ',(SetL-1)*LEN(SA)) //only first element received the SA, rest of set filled with spaces
+      ENDIF  
+    ENDIF  
+  ELSE
+    Result:= SA
+  ENDIF
+ENDFUNCTION  
+
+FUNCTION EmptyAnswerOfEndField: STRING
+PARAMETERS 
+  pFieldName: STRING
+AUXFIELDS
+  MyType: STRING
+  Tmp: STRING
+  SetValue: STRING
+  SetL, CC, J: INTEGER
+  Size: INTEGER
+  RouteStatus: STRING
+INSTRUCTIONS
+  MyType:= [[iData.GetField(pFieldName).Definition.Type.Structure]]
+  IF FixedField=Yes THEN 
+    Size:= VAL(GetTextSize(pFieldName))
+  ENDIF
+  IF MyType='Set' THEN
+    IF [[iData.GetField(pFieldName).Definition.Type.Cardinality]]<>'' THEN
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.Cardinality]])
+    ELSE 
+      SetL:= VAL([[iData.GetField(pFieldName).Definition.Type.MemberType.Categories.Count]])
+    ENDIF
+    If FixedField=No then
+      RESULT:= FILL(SepChar,SetL-1) //add as many separator as needed
+    ELSE
+      RESULT:= FILL(' ',SetL*Size) //only first element received the SA, rest of set filled with spaces
+    ENDIF  
+  ELSE
+    If FixedField=No then
+      RESULT:= ''
+    ELSE
+      RESULT:= FILL(' ',Size) 
+    ENDIF  
+  ENDIF   
+ENDFUNCTION  
+
+FUNCTION ValueOfEndField: STRING
+PARAMETERS 
+  pFieldName: STRING
+AUXFIELDS
+  MyType: STRING
+  Tmp: STRING
+  SetValue: STRING
+  SetL, CC, J: INTEGER
+INSTRUCTIONS
+  IF IsOfTypeOpen(pFieldName)=0 AND IsOfTypeBlob(pFieldName)=0 THEN
+    IF [[iData.GetField(pFieldName).DataValue.AnswerStatus]]='Response' THEN 
+      Result:= ResponseAnswerOfEndField(pFieldName)             
+    ELSEIF [[iData.GetField(pFieldName).DataValue.AnswerStatus]]='SpecialAnswer' THEN
+      Result:= SpecialAnswerOfEndField(pFieldName)
+    ELSE
+      Result:= EmptyAnswerOfEndField(pFieldName)
+    ENDIF
+  ENDIF    
+ENDFUNCTION  
+
+PROCEDURE LoopBlocks 
+PARAMETERS
+  IMPORT pFieldName: STRING
+AUXFIELDS 
+  index: INTEGER
+  FN: STRING
+INSTRUCTIONS 
+  FOR index:= 0 TO VAL([[iData.getfields(pFieldName).Count]])-1 DO //loop all fields of the block
+    FN:= pFieldName+'.'+[[iData.Getfields(pFieldName)[Index].LocalName]]
+    HandleField(FN)
+  ENDDO
+ENDPROCEDURE{ loopBlocks }
+
+PROCEDURE HandleField
+PARAMETERS pFieldName: STRING
+AUXFIELDS 
+  min_a, max_a: INTEGER
+  aMyType: STRING
+  aindex: INTEGER
+  aName, aArrayName: STRING
+INSTRUCTIONS
+  IF [[iData.GetField(pFieldName).Definition.FieldKind]] = 'DataField' THEN //only process data fields
+    aMyType:= [[iData.GetField(pFieldName).Definition.Type.Structure]]
+    IF aMyType = 'BlockName' THEN 
+      LoopBlocks(pFieldName) //recursion
+    ELSEIF aMyType = 'Array' THEN
+      min_a:= VAL([[iData.GetField(pFieldName).Definition.Type.IndexType.MinIndex]])
+      max_a:= VAL([[iData.GetField(pFieldName).Definition.Type.IndexType.MaxIndex]])
+      aArrayName:= pFieldName+'['+FORMAT(STR(min_a),LEN(str(max_a)),right,'0')+']'
+      aMyType:= [[iData.GetField(aArrayName).Definition.Type.Structure]]
+      FOR aindex:= min_a TO max_a DO //loop all array elements
+        aName:= pFieldName+'['+FORMAT(str(aindex),LEN(STR(max_a)),RIGHT, '0')+']'
+        IF aMyType = 'BlockName' THEN //array field is a block
+          LoopBlocks(aName) //recursion
+        ELSE //array field is base field
+          MyValue:= MyValue+SepChar+ValueOfEndField(aName)
+        ENDIF
+      ENDDO
+    ELSEIF IsOfTypeOpen(pFieldName)=0 AND IsOfTypeBlob(pFieldName)=0 THEN //end field
+      IF First=1 THEN
+        MyValue:= ValueOfEndField(pFieldName)             
+        First:= 0
+      ELSE  
+        MyValue:= MyValue+SepChar+ValueOfEndField(pFieldName)             
+      ENDIF  
+    ENDIF  
+  ENDIF
+ENDPROCEDURE
+
+PROCEDURE MakeOutput
+AUXFIELDS
+  aFieldName: STRING
+  MyType, MyKind: STRING
+  RecI: integer
+  TotalLen: INTEGER
+  MaxL: INTEGER
+INSTRUCTIONS
+  tmpnames.RESET
+  TotalLen:= 0
+  MaxL:= 1000000 
+  First:= 1
+  REPEAT
+    tmpnames.READNEXT
+    aFieldName:= tmpnames.fieldname
+    IF aFieldName<>'' and substring(afieldname,1,1)<>';' THEN
+      HandleField(aFieldName)
+    ENDIF
+  UNTIL tmpnames.LASTRECORD
+  TotalLen:= LEN(MyValue)
+  IF TotalLen>MaxL THEN 
+    HALT //Record size is above allowed maximum length
+  ENDIF  
+  oData.ExoportString:= MyValue
+  oData.WRITE
+  oData.INITRECORD
+ENDPROCEDURE
+
+procedure Initialize
+auxfields
+  p: integer
+  tmp: STRING[10000]
+  fname: STRING
+instructions
+  DecimalSymbol:= '.'
+  DateFormat:= 1
+  RepeatSpecialAnswerInSet:= 1
+  SepChar:= UPPERCASE(PARAMETER(1))
+  IF SepChar<>'' THEN
+    DelimChar:= '"'
+    FixedField:= No
+    IF SepChar='TAB' THEN 
+      SepChar:= CHAR(9) 
+      DelimChar:='' //not needed
+    ELSEIF SepChar='COMMA' THEN
+      SepChar:= ','  
+    ELSEIF SepChar='SEMICOLON' THEN
+      SepChar:= ';'  
+    ENDIF
+    SepChar:= SUBSTRING(SepChar,1,1)
+  ELSE
+    FixedField:= Yes
+  ENDIF  
+  IF PARAMETER(2)<>'' THEN
+    DateFormat:= VAL(PARAMETER(1))
+  ENDIF
+  If (DateFormat<1) or (DateFormat>3) THEN
+    DateFormat:= 1
+  ENDIF
+  IF PARAMETER(3)='C' THEN
+    DecimalSymbol:= ','
+  ENDIF
+  IF PARAMETER(4)='Y' THEN
+    ProduceANSI:= 1
+  ENDIF
+  REPEAT
+    iFNames.READNEXT
+    p:= POSITION(',',iFNames.fieldname)
+    IF p>0 THEN
+      tmp:= iFNames.fieldname
+      REPEAT
+        fname:= SUBSTRING(tmp,1,p-1)
+        IF fname<>'' THEN
+          tmpnames.fieldname:= fname
+          tmpnames.WRITE
+        ENDIF
+        tmp:= SUBSTRING(tmp,p+1,len(tmp))
+        p:= POSITION(',',tmp)
+      UNTIL p=0  
+      IF tmp<>'' THEN
+        tmpnames.fieldname:= tmp
+        tmpnames.WRITE
+      ENDIF
+    ELSE
+      tmpnames.WRITE
+    ENDIF  
+  UNTIL iFNames.LASTRECORD
+  IF ProduceANSI=1 THEN
+    oData.SETCHARACTERSET(ANSI)
+  ENDIF  
+  oData.OPEN(oData.PATHNAME+oData.FILENAME) 
+ENDPROCEDURE
+
+MANIPULATE
+  Initialize
+  REPEAT
+    iData.READNEXT
+    MakeOutput
+  UNTIL iData.LASTRECORD
+
+  

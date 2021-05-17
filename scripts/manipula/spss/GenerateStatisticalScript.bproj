@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Name="GenerateStatisticalScript" Guid="4a5739ff-222a-4099-9224-fa589a095621" ProjectType="ManipulaProject">
+  <MainFile RelativePath="true">GenerateStatisticalScript.manx</MainFile>
+  <FileItems>
+    <File FileType="ManipulaFileType" RelativePath="true">GenerateStatisticalScript.manx</File>
+  </FileItems>
+  <Properties>
+    <IncludeSearchPath />
+    <LibrarySearchPath />
+    <DatamodelSearchPath />
+    <ConditionalDefines />
+  </Properties>
+</Project>
