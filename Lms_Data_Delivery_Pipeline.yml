@@ -62,7 +62,7 @@ stages:
                         gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file=$(gcpkey.secureFilePath)
                         
                         Write-Host "Downloading instrument"
-                        gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_8_10.zip $env:TempPath\Manipula.zip
+                        gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_9_3.zip $env:TempPath\Manipula.zip
 
                         Write-Host "Downloading 7zip cli"
                         gsutil cp gs://ons-blaise-v2-europe-west2-shared-data/7za.exe $env:TempPath\7za.exe
