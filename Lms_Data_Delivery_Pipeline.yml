@@ -15,11 +15,11 @@ variables:
   - name: ServerParkName
     value: gusty
   - name: SurveyType
-    value: LMS
+    value: LM
   - name: PackageExtension
     value: zip
   - name: TempPath
-    value: c:\blaise\temp\datadelivery\lms
+    value: c:\blaise\temp\datadelivery\lm
 
 stages:
  - stage: DataDelivery

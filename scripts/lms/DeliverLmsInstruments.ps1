@@ -21,7 +21,7 @@ try {
     $restAPIUrl = $env:ENV_RESTAPI_URL
     LogInfo("REST API URL: $restAPIUrl")
     $surveyType = $env:SurveyType
-    LogInfo("Survey type: $surveyType")
+    LogInfo("Survey type: LMS")
     $packageExtension = $env:PackageExtension
     LogInfo("Package Extension: $packageExtension")
 
@@ -30,7 +30,7 @@ try {
 
     # No active instruments found in CATI
     If ($instruments.Count -eq 0) {
-        LogWarning("No instruments found for '$env:SurveyType'")
+        LogWarning("No instruments found starting with '$env:SurveyType'")
         exit
     }
 
@@ -77,13 +77,13 @@ try {
             # Create a temporary folder for processing instruments
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
-            #Gets the folder name of the processing folder
+            # Gets the folder name of the processing folder
             $processingSubFolderName = GetFolderNameFromAPath -folderPath $processingFolder
 
             # Create a folder within the temporary folder for generating XML
             $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
 
-            #Add manipula and instrument package to processing folder
+            # Add manipula and instrument package to processing folder
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Generate and add SPSS files
@@ -92,10 +92,10 @@ try {
             # Generate and add Ascii files
             AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
 
-            #Generate XML Files
+            # Generate XML Files
             AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
 
-            #Generate Json Files
+            # Generate Json Files
             AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
 
             # Upload instrument package to NIFI
