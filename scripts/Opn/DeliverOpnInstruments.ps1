@@ -24,6 +24,8 @@ try {
     LogInfo("Survey type: $surveyType")
     $packageExtension = $env:PackageExtension
     LogInfo("Package Extension: $packageExtension")
+    $serverParkName = $env:ServerParkName
+    LogInfo("Server park name: $ServerParkName")
 
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType
@@ -72,7 +74,10 @@ try {
             $deliveryFile = "$using:tempPath\$deliveryFileName"
 
             # Download instrument package
-            DownloadInstrumentPackage -restApiBaseUrl $using:restAPIUrl -serverParkName $_.serverParkName -instrumentName $_.name -fileName $deliveryFile
+            DownloadFileFromBucket -instrumentFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
+
+            # Populate data
+            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -i $_.name -f $deliveryFile
 
             # Create a temporary folder for processing instruments
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"

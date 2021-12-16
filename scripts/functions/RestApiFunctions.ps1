@@ -25,31 +25,3 @@ function GetListOfInstrumentsBySurveyType {
 
     return $allInstruments | Where-Object { $_.name.StartsWith($surveyType) }
 }
-
-function DownloadInstrumentPackage {
-    param (
-        [string] $restApiBaseUrl,
-        [string] $serverParkName,
-        [string] $instrumentName,
-        [string] $fileName
-    )
-
-    If ([string]::IsNullOrEmpty($serverParkName)) {
-        throw "No server park name provided"
-    }
-
-    If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name provided"
-    }
-
-    If ([string]::IsNullOrEmpty($fileName)) {
-        throw "No file name provided"
-    }
-
-    # Build uri to retrive instrument package file with data
-    $InstrumentDataUri = "$restApiBaseUrl/api/v1/serverparks/$serverParkName/instruments/$instrumentName/data"
-
-    # Download instrument package
-    Invoke-WebRequest $InstrumentDataUri -outfile $fileName
-    LogInfo("Downloaded instrument '$fileName'")
-}
