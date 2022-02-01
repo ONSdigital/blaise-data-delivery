@@ -15,6 +15,7 @@ Meta (var)
 
   SETTINGS
     BUFFERSIZE = 1000
+    AddUTF8BOM = NO
    
   MANIPULATE
     MyOutputFile.WRITE
