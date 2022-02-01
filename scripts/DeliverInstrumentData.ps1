@@ -29,11 +29,11 @@ try {
     LogInfo("Server park name: $ServerParkName")
 
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
-    $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType
+    $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
 
-    # No active instruments found in CATI
+    # No instruments found
     If ($instruments.Count -eq 0) {
-        LogWarning("No instruments found for '$env:SurveyType'")
+        LogWarning("No instruments found for '$surveyType' on server park '$serverParkName'")
         exit
     }
 
@@ -65,11 +65,6 @@ try {
 
             # Generate unique data delivery filename for the instrument
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $_.name -fileExt $using:packageExtension
-
-            if ($_.DeliverData -eq $false) {
-                CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "inactive" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
-                continue
-            }
 
             # Set data delivery status to started
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
