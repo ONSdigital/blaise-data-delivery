@@ -41,6 +41,11 @@ try {
     #get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
     LogInfo("Config for '$surveyType': $config")
+    LogInfo("Config spss: $config.deliver.spss")
+    LogInfo("Config ascii: $config.deliver.ascii")
+    LogInfo("Config xml: $config.deliver.xml")
+    LogInfo("Config json: $config.deliver.json")
+    LogInfo("Config createSubFolder: $config.createSubFolder")
 
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName -surveyType $surveyType
@@ -84,7 +89,7 @@ try {
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
-            if($config.createSubFolder -eq $true) {
+            if($using:config.createSubFolder -eq $true) {
                 LogInfo("Creating subfolder for delivery")
 
                 # Gets the folder name of the processing folder
@@ -102,25 +107,25 @@ try {
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Generate and add SPSS files if configured
-            if($config.deliver.spss -eq $true) {
+            if($using:config.deliver.spss -eq $true) {
                 LogInfo("Adding SPSS files")
                 AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add Ascii files if configured
-            if($config.deliver.ascii -eq $true) {
+            if($using:config.deliver.ascii -eq $true) {
                 LogInfo("Adding ASCII files")
                 AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add XML Files if configured
-            if($config.deliver.xml -eq $true) {
+            if($using:config.deliver.xml -eq $true) {
                 LogInfo("Adding XML files")
                 AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add son Files if configured
-            if($config.deliver.json -eq $true) {
+            if($using:config.deliver.json -eq $true) {
                 LogInfo("Adding JSON files")
                 AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
