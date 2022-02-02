@@ -30,6 +30,7 @@ try {
 
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+    LogInfo("Retrieved list of instruments for survey type '$surveyType': $instruments")
 
     # No instruments found
     If ($instruments.Count -eq 0) {
