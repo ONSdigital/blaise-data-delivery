@@ -6,5 +6,5 @@
         "xml" : true
     },
 
-    "useSubFolder" : true
+    "createSubFolder" : true
 }
