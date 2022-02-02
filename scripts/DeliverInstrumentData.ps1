@@ -40,12 +40,6 @@ try {
 
     #get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
-    LogInfo("Config for '$surveyType': $config")
-    LogInfo("Config spss: $config.deliver.spss")
-    LogInfo("Config ascii: $config.deliver.ascii")
-    LogInfo("Config xml: $config.deliver.xml")
-    LogInfo("Config json: $config.deliver.json")
-    LogInfo("Config createSubFolder: $config.createSubFolder")
 
     # Generating batch stamp for all instruments in the current run to be grouped together
     $batchStamp = GenerateBatchFileName -surveyType $surveyType
