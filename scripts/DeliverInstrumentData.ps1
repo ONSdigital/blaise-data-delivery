@@ -39,11 +39,11 @@ try {
     }
 
     #get configuration for survey type
-    $config = GetConfigFromFile -SurveyType $surveyType
+    $config = GetConfigFromFile -surveyType $surveyType
     LogInfo("Config for '$surveyType': $config")
 
     # Generating batch stamp for all instruments in the current run to be grouped together
-    $batchStamp = GenerateBatchFileName -SurveyType $surveyType
+    $batchStamp = GenerateBatchFileName -surveyType $surveyType
 
     $sync = CreateInstrumentSync -instruments $instruments
 
