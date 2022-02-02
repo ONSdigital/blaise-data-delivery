@@ -7,8 +7,8 @@ function GetListOfInstrumentsBySurveyType {
         [string] $serverParkName
     )
 
-    $catiInstrumentsUri = "$restApiBaseUrl/api/v1/serverparks/$serverParkName/instruments"
+    $instrumentsUri = "$restApiBaseUrl/api/v1/serverparks/$($serverParkName)/instruments"
 
     # Retrieve a list of instruments for a particular survey type I.E OPN
-    return Invoke-RestMethod -Method Get -Uri $catiInstrumentsUri | Where-Object { $_.name.StartsWith($surveyType) }
+    return Invoke-RestMethod -Method Get -Uri $instrumentsUri | Where-Object { $_.name.StartsWith($surveyType) }
 }
