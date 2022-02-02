@@ -123,9 +123,6 @@ try {
             # Set data delivery status to generated
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Completed"
-
-            # TODO check if this happens in pipeline as it is not configured in the OPN script
-            Remove-Item -Recurse -Force $processingFolder
         }
         catch {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
