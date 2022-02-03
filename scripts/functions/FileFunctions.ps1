@@ -25,13 +25,13 @@ function GenerateDeliveryFilename {
 function GenerateBatchFileName {
     param (
         [datetime] $dateTime = (Get-Date),
-        [string] $SurveyType
+        [string] $surveyType
     )
-    If ([string]::IsNullOrEmpty($SurveyType)) {
+    If ([string]::IsNullOrEmpty($surveyType)) {
         throw "No Survey Type has been provided"
     }
 
-    return "$($SurveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
+    return "$($surveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
 }
 
 function ExtractZipFile {
