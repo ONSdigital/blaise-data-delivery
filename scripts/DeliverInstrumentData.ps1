@@ -115,13 +115,13 @@ try {
             # Generate and add XML Files if configured
             if($using:config.deliver.xml -eq $true) {
                 LogInfo("Adding XML files")
-                AddXMLFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add son Files if configured
             if($using:config.deliver.json -eq $true) {
                 LogInfo("Adding JSON files")
-                AddJSONFileForDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Upload instrument package to NIFI

@@ -1,6 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\FileFunctions.ps1"
-function AddXMLFileForDeliveryPackage {
+function AddXMLFiletoDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
