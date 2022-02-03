@@ -12,8 +12,6 @@ pr:
 
 variables:
   - group: ${{ parameters.VarGroup }}
-  - name: ServerParkName
-    value: gusty
   - name: SurveyType
     value: OPN
   - name: PackageExtension

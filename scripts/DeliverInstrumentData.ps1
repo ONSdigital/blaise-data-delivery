@@ -21,12 +21,12 @@ try {
     LogInfo("DQS Bucket: $dqsBucket")
     $restAPIUrl = $env:ENV_RESTAPI_URL
     LogInfo("REST API URL: $restAPIUrl")
+    $serverParkName = $env:ENV_BLAISE_SERVER_PARK_NAME
+    LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
     $packageExtension = $env:PackageExtension
     LogInfo("Package Extension: $packageExtension")
-    $serverParkName = $env:ServerParkName
-    LogInfo("Server park name: $ServerParkName")
 
     # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
     $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
