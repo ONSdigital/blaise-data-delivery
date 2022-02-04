@@ -5,5 +5,9 @@ function GetConfigFromFile {
 
     $configFile = "$PSScriptRoot\..\configuration\$surveyType.json"
 
-    return Get-Content -Path $configFile | ConvertFrom-Json
+    If (Test-Path $configFile) {
+        return Get-Content -Path $configFile | ConvertFrom-Json
+    }
+
+    return Get-Content -Path "$PSScriptRoot\..\configuration\default.json" | ConvertFrom-Json
 }
