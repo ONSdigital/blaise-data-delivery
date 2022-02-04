@@ -6,5 +6,6 @@
         "xml" : true
     },
 
-    "createSubFolder" : true
+    "createSubFolder" : true,
+    "packageExtension" : "zip"
 }
