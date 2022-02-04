@@ -46,7 +46,7 @@ try {
 
     # Deliver the instrument package with data for each active instrument
     $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
-        . "$using:PSScriptRoot\functions\Threading.ps1"
+        . "$using:PSScriptRoot\functions\ThreadingFunctions.ps1"
 
         $process = GetProcess -instrument $_ -sync $using:sync
 
@@ -57,7 +57,7 @@ try {
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
             . "$using:PSScriptRoot\functions\SpssFunctions.ps1"
-            . "$using:PSScriptRoot\functions\xmlFunctions.ps1"
+            . "$using:PSScriptRoot\functions\XmlFunctions.ps1"
             . "$using:PSScriptRoot\functions\JsonFunctions.ps1"
             . "$using:PSScriptRoot\functions\AsciiFunctions.ps1"
             . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
@@ -116,7 +116,7 @@ try {
                 AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
-            # Generate and add son Files if configured
+            # Generate and add json Files if configured
             if($using:config.deliver.json -eq $true) {
                 LogInfo("Adding JSON files")
                 AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
