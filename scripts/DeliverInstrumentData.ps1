@@ -5,7 +5,7 @@
 . "$PSScriptRoot\functions\LoggingFunctions.ps1"
 . "$PSScriptRoot\functions\FileFunctions.ps1"
 . "$PSScriptRoot\functions\RestApiFunctions.ps1"
-. "$PSScriptRoot\functions\Threading.ps1"
+. "$PSScriptRoot\functions\ThreadingFunctions.ps1"
 . "$PSScriptRoot\functions\ConfigFunctions.ps1"
 
 try {
