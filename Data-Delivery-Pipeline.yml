@@ -14,8 +14,6 @@ variables:
   - group: ${{ parameters.VarGroup }}
   - name: SurveyType
     value: OPN
-  - name: PackageExtension
-    value: zip
   - name: TempPath
     value: c:\blaise\temp\datadelivery\OPN
 
