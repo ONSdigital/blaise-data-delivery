@@ -1,3 +1,5 @@
+. "$PSScriptRoot\FileFunctions.ps1"
+
 function GetConfigFromFile {
     param (
         [string] $surveyType
@@ -11,12 +13,4 @@ function GetConfigFromFile {
     }
 
     return ConvertJsonFileToObject("$configFolder\default.json")
-}
-
-function ConvertJsonFileToObject {
-    param (
-        [string] $configFile
-    )  
-
-    return Get-Content -Path $configFile | ConvertFrom-Json
 }

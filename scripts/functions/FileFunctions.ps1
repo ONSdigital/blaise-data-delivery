@@ -119,3 +119,11 @@ function GetFolderNameFromAPath {
     }
     return Split-Path $processingFolder -Leaf
 }
+
+function ConvertJsonFileToObject {
+    param (
+        [string] $jsonFile
+    )  
+
+    return Get-Content -Path $jsonFile | ConvertFrom-Json
+}
