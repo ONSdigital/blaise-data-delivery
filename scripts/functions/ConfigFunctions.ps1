@@ -3,13 +3,14 @@ function GetConfigFromFile {
         [string] $surveyType
     )
 
-    $configFile = "$PSScriptRoot\..\configuration\$surveyType.json"
+    $configFolder = "$PSScriptRoot\..\configuration"
+    $configFile = "$configFolder\$surveyType.json"
 
     If (Test-Path $configFile) {
         return ConvertJsonFileToObject($configFile)
     }
 
-    return ConvertJsonFileToObject("$PSScriptRoot\..\configuration\default.json")
+    return ConvertJsonFileToObject("$configFolder\default.json")
 }
 
 function ConvertJsonFileToObject {
