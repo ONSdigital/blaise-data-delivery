@@ -20,7 +20,7 @@ function AddAsciiFilesToDeliveryPackage {
     }
 
     if ([string]::IsNullOrEmpty($subFolder)) {
-        # Add the SPS, ASC & FPS files to the instrument package
+        # Add the ASC & FPS files to the instrument package
         AddFilesToZip -pathTo7zip $tempPath -files "$processingFolder\*.asc", "$processingFolder\*.fps" -zipFilePath $deliveryZip
         LogInfo("Added .ASC File to $deliveryZip")
     }
