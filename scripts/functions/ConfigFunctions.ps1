@@ -5,7 +5,7 @@ function GetConfigFromFile {
         [string] $surveyType
     )
 
-    $configFolder = "$PSScriptRoot\..\configuration"
+    $configFolder = "$PSScriptRoot\..\..\configuration"
     $configFile = "$configFolder\$surveyType.json"
 
     If (Test-Path $configFile) {
