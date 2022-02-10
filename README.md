@@ -5,6 +5,10 @@ This repository consists of an Azure DevOps pipeline represented by the "data_de
 
 ## Concourse triggers
 
+## NIFI
+
+## Manipula
+
 ## Configuration settings
 The configuration of the delivery files and formats for an instrument is defined in a JSON file contained in the configurations folder. There are currently six options in the following format:
 
@@ -35,8 +39,4 @@ The other two options in the configuration file are:
 2. packageExtension => This determines the file extension of the package that is delivered
 
 ## Setting up a new instrument for delivery
-The default configuration for an instrument will deliver spss and ascii files only and will not use a subfolder. If you wish to use a custom cofiguration for your instrument that deviates from the default, then you simply need to create a new JSON configuration file in the configuration folder and name it <survey>.json where survey type is the acronym for the survey i.e. OPN, LM, NWO
-
-## NIFI
-
-## Manipula
+The default configuration for an instrument will deliver spss and ascii files only and will not use a subfolder. If you wish to use a custom cofiguration for your instrument that deviates from the default, then you simply need to create a new JSON configuration file in the configuration folder and name it <survey>.json where survey type is the acronym for the survey i.e. OPN, LM, NWO.
