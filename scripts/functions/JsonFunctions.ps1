@@ -1,6 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\FileFunctions.ps1"
-function AddJsonFileForDeliveryPackage {
+function AddJSONFileToDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
