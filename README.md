@@ -3,9 +3,12 @@
 ## usage 
 This repository consists of an Azure DevOps pipeline represented by the "data_delivery_pipeline.yml" yaml file, and a series of powershell scripts. The responsibility of the scripts is to take a survey type as a parameter and is then responsable for delivering all data for that survey based upon the configuartion set for the survey type.
 
+## Concourse triggers
+
 ## Configuration settings
 The configuration of the delivery files and formats for an instrument is defined in a JSON file contained in the configurations folder. There are currently six options in the following format:
 
+```
 {
     "deliver" : {
         "spss" : true,
@@ -17,6 +20,7 @@ The configuration of the delivery files and formats for an instrument is defined
     "createSubFolder" : false,
     "packageExtension" : "zip"
 }
+```
 
 The first four options are contained in the "deliver" section of the JSOn file. This section is responsable for determining what data formats are included in the delivered package. The file format options are:
 
