@@ -4,7 +4,7 @@ function AddAsciiFilesToDeliveryPackage {
     param (
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName,
+        [string] $questionnaireName,
         [string] $subFolder,
         [string] $tempPath
     )
@@ -12,15 +12,15 @@ function AddAsciiFilesToDeliveryPackage {
     Copy-Item -Path "$PSScriptRoot\..\manipula\ascii\GenerateAscii.msux" -Destination $processingFolder
     # Generate .ASC file
     try {
-        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateAscii.msux" -A:True -Q:True -K:Meta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$processingFolder/$instrumentName.asc
+        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateAscii.msux" -A:True -Q:True -K:Meta="$processingFolder/$questionnaireName.bmix" -I:$processingFolder/$questionnaireName.bdbx -O:$processingFolder/$questionnaireName.asc
         LogInfo("Generated the .ASC file")
     }
     catch {
-        LogWarning("Generating ASCII Failed for $instrumentName : $($_.Exception.Message)")
+        LogWarning("Generating ASCII Failed for $questionnaireName : $($_.Exception.Message)")
     }
 
     if ([string]::IsNullOrEmpty($subFolder)) {
-        # Add the ASC & FPS files to the instrument package
+        # Add the ASC & FPS files to the questionnaire package
         AddFilesToZip -pathTo7zip $tempPath -files "$processingFolder\*.asc", "$processingFolder\*.fps" -zipFilePath $deliveryZip
         LogInfo("Added .ASC File to $deliveryZip")
     }

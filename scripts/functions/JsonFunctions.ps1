@@ -4,7 +4,7 @@ function AddJSONFileToDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName,
+        [string] $questionnaireName,
         [string] $subFolder,
         [string] $tempPath
     )
@@ -17,8 +17,8 @@ function AddJSONFileToDeliveryPackage {
         throw "$deliveryZip not found" 
     }
 
-    If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name provided" 
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaire name provided" 
     }
 
     # Copy Manipula xml files to the processing folder
@@ -26,7 +26,7 @@ function AddJSONFileToDeliveryPackage {
 
     try {
         # Generate XML file
-        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateJSON.msux" -A:True -Q:True -K:Meta="$processingFolder/$instrumentName.bmix" -I:$processingFolder/$instrumentName.bdbx -O:$subFolder/$instrumentName.json
+        & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateJSON.msux" -A:True -Q:True -K:Meta="$processingFolder/$questionnaireName.bmix" -I:$processingFolder/$questionnaireName.bdbx -O:$subFolder/$questionnaireName.json
         LogInfo("Generated .Json File for $deliveryZip")
     }
     catch {

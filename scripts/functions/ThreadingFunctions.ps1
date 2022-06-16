@@ -1,22 +1,22 @@
-function CreateInstrumentSync {
+function CreateQuestionnaireSync {
     param(
-        [array] $instruments
+        [array] $questionnaires
     )
 
     $origin = @{}
-    $instruments | Foreach-Object { $origin.($_.name) = @{} }
+    $questionnaires | Foreach-Object { $origin.($_.name) = @{} }
     $sync = [System.Collections.Hashtable]::Synchronized($origin)
     return $sync
 }
 
 function GetProcess {
     param(
-        $instrument,
+        $questionnaire,
         [System.Collections.Hashtable] $sync
     )
 
     $syncCopy = $sync
-    return $syncCopy.$($instrument.name)
+    return $syncCopy.$($questionnaire.name)
 }
 
 function CheckSyncStatus {

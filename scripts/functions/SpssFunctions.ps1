@@ -6,7 +6,7 @@ function AddSpssFilesToDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName,
+        [string] $questionnaireName,
         [string] $subFolder,
         [string] $dqsBucket,
         [string] $tempPath
@@ -20,8 +20,8 @@ function AddSpssFilesToDeliveryPackage {
         throw "$deliveryZip file not found"
     }
 
-    If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name argument provided"
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaire name argument provided"
     }
 
     if (-not (Test-Path "$processingFolder\spss")) {
@@ -30,7 +30,7 @@ function AddSpssFilesToDeliveryPackage {
 
         # Generate SPS file
         try {
-            & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateStatisticalScript.msux" -K:meta="$instrumentName.bmix" -H:"" -L:"" -N:oScript="$instrumentName,iFNames=,iData=$instrumentName.bdix" -P:"SPSS;;;;;;$instrumentName.asc;;;2;;64;;Y" -Q:True
+            & cmd.exe /c $processingFolder\Manipula.exe "$processingFolder\GenerateStatisticalScript.msux" -K:meta="$questionnaireName.bmix" -H:"" -L:"" -N:oScript="$questionnaireName,iFNames=,iData=$questionnaireName.bdix" -P:"SPSS;;;;;;$questionnaireName.asc;;;2;;64;;Y" -Q:True
             LogInfo("Generated the .SPSS file")
             #create an sps folder
             CreateANewFolder -folderPath $processingFolder -folderName "spss"
@@ -39,10 +39,10 @@ function AddSpssFilesToDeliveryPackage {
             #adding the above files to the delivery zip
             AddFolderToZip -pathTo7zip $tempPath -folder "$processingFolder/spss" -zipFilePath $deliveryZip
             #uploading the delivery file back to the dqs bucket with the
-            UploadFileToBucket -filePath $deliveryZip -bucketName $dqsBucket -deliveryFileName "$($instrumentName).bpkg"
+            UploadFileToBucket -filePath $deliveryZip -bucketName $dqsBucket -deliveryFileName "$($questionnaireName).bpkg"
         }
         catch {
-            LogWarning("Generating SPS and FPS Failed for $instrumentName : $($_.Exception.Message)")
+            LogWarning("Generating SPS and FPS Failed for $questionnaireName : $($_.Exception.Message)")
             Get-Error
         }
     }
@@ -51,7 +51,7 @@ function AddSpssFilesToDeliveryPackage {
     }
 
     if ([string]::IsNullOrEmpty($subFolder)) {
-        # Add the SPS, ASC & FPS files to the instrument package
+        # Add the SPS, ASC & FPS files to the questionnaire package
         AddFilesToZip -pathTo7zip $tempPath -files "$processingFolder\*.sps" -zipFilePath $deliveryZip
         LogInfo("Added .SPS Files to $deliveryZip")
     }

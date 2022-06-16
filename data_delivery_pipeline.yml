@@ -58,7 +58,7 @@ stages:
                         Write-Host "Login to GCP"
                         gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file=$(gcpkey.secureFilePath)
                         
-                        Write-Host "Downloading instrument"
+                        Write-Host "Downloading questionnaire"
                         gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_9_3.zip $env:TempPath\Manipula.zip
                         Write-Host "Downloading 7zip cli"
                         gsutil cp gs://ons-blaise-v2-europe-west2-shared-data/7za.exe $env:TempPath\7za.exe
@@ -76,9 +76,9 @@ stages:
                     Add-MpPreference -ExclusionProcess InstrumentBuilder.exe
 
                - task: PowerShell@2
-                 displayName: Deliver Instruments
+                 displayName: Deliver Questionnaires
                  inputs:
-                  filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverInstrumentData.ps1'
+                  filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverQuestionnaireData.ps1'
                   pwsh: true
 
                - task: PowerShell@2

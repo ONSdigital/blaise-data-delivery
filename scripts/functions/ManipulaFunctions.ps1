@@ -22,6 +22,6 @@ function AddManipulaToProcessingFolder {
     # Extract Manipula files to the processing folder
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $manipulaPackage -destinationPath $processingFolder
 
-    # Extact Instrument Package
+    # Extact Questionnaire Package
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
 }

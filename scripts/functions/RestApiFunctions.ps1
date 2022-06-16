@@ -1,16 +1,16 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 
-function GetListOfInstrumentsBySurveyType {
+function GetListOfQuestionnairesBySurveyType {
     param (
         [string] $restApiBaseUrl,
         [string] $surveyType,
         [string] $serverParkName
     )
 
-    $instrumentsUri = "$restApiBaseUrl/api/v1/serverparks/$($serverParkName)/instruments"
-    $allInstruments = Invoke-RestMethod -Method Get -Uri $instrumentsUri
+    $questionnairesUri = "$restApiBaseUrl/api/v2/serverparks/$($serverParkName)/questionnaires"
+    $allQuestionnaires = Invoke-RestMethod -Method Get -Uri $questionnairesUri
 
-    LogInfo("Calling $instrumentsUri to get list of instruments")
-    # Return a list of instruments for a particular survey type I.E OPN
-    return $allInstruments | Where-Object { $_.name.StartsWith($surveyType) }
+    LogInfo("Calling $questionnairesUri to get list of questionnaires")
+    # Return a list of questionnaires for a particular survey type I.E OPN
+    return $allQuestionnaires | Where-Object { $_.name.StartsWith($surveyType) }
 }

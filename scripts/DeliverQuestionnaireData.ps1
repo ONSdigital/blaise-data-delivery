@@ -26,29 +26,29 @@ try {
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
 
-    # Retrieve a list of active instruments in CATI for a particular survey type I.E OPN
-    $instruments = GetListOfInstrumentsBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
-    LogInfo("Retrieved list of instruments for survey type '$surveyType': $instruments")
+    # Retrieve a list of active questionnaires in CATI for a particular survey type I.E OPN
+    $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+    LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
 
-    # No instruments found
-    If ($instruments.Count -eq 0) {
-        LogWarning("No instruments found for '$surveyType' on server park '$serverParkName'")
+    # No questionnaires found
+    If ($questionnaires.Count -eq 0) {
+        LogWarning("No questionnaires found for '$surveyType' on server park '$serverParkName'")
         exit
     }
 
     #get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
 
-    # Generating batch stamp for all instruments in the current run to be grouped together
+    # Generating batch stamp for all questionnaires in the current run to be grouped together
     $batchStamp = GenerateBatchFileName -surveyType $surveyType
 
-    $sync = CreateInstrumentSync -instruments $instruments
+    $sync = CreateQuestionnaireSync -questionnaires $questionnaires
 
-    # Deliver the instrument package with data for each active instrument
-    $instruments | ForEach-Object -ThrottleLimit 3 -Parallel {
+    # Deliver the questionnaire package with data for each active questionnaire
+    $questionnaires | ForEach-Object -ThrottleLimit 3 -Parallel {
         . "$using:PSScriptRoot\functions\ThreadingFunctions.ps1"
 
-        $process = GetProcess -instrument $_ -sync $using:sync
+        $process = GetProcess -questionnaire $_ -sync $using:sync
 
         try {
             . "$using:PSScriptRoot\functions\LoggingFunctions.ps1"
@@ -62,22 +62,22 @@ try {
             . "$using:PSScriptRoot\functions\AsciiFunctions.ps1"
             . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
 
-            # Generate unique data delivery filename for the instrument
-            $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -instrumentName $_.name -fileExt $using:config.packageExtension
+            # Generate unique data delivery filename for the questionnaire
+            $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
             # Set data delivery status to started
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
-            # Generate full file path for instrument
+            # Generate full file path for questionnaire
             $deliveryFile = "$using:tempPath\$deliveryFileName"
 
-            # Download instrument package
-            DownloadFileFromBucket -instrumentFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
+            # Download questionnaire package
+            DownloadFileFromBucket -questionnaireFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
 
             # Populate data
-            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -i $_.name -f $deliveryFile
+            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile
 
-            # Create a temporary folder for processing instruments
+            # Create a temporary folder for processing questionnaires
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
@@ -95,34 +95,34 @@ try {
                 $processingSubFolder = $NULL
             }
 
-            #Add manipula and instrument package to processing folder
+            #Add manipula and questionnaire package to processing folder
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Generate and add SPSS files if configured
             if($using:config.deliver.spss -eq $true) {
                 LogInfo("Adding SPSS files")
-                AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add Ascii files if configured
             if($using:config.deliver.ascii -eq $true) {
                 LogInfo("Adding ASCII files")
-                AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add XML Files if configured
             if($using:config.deliver.xml -eq $true) {
                 LogInfo("Adding XML files")
-                AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
             # Generate and add json Files if configured
             if($using:config.deliver.json -eq $true) {
                 LogInfo("Adding JSON files")
-                AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -instrumentName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+                AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
             }
 
-            # Upload instrument package to NIFI
+            # Upload questionnaire package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated

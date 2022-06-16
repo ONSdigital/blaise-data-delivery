@@ -2,7 +2,7 @@
 function GenerateDeliveryFilename {
     param (
         [string] $prefix,
-        [string] $instrumentName,
+        [string] $questionnaireName,
         [datetime] $dateTime = (Get-Date),
         [string] $fileExt
     )
@@ -11,15 +11,15 @@ function GenerateDeliveryFilename {
         throw "No prefix provided"
     }
 
-    If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name argument provided"
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaire name argument provided"
     }
 
     If ([string]::IsNullOrEmpty($fileExt)) {
         throw "No file extension argument provided"
     }
 
-    return "$($prefix)_$($instrumentName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"
+    return "$($prefix)_$($questionnaireName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"
 }
 
 function GenerateBatchFileName {

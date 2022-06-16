@@ -35,13 +35,13 @@ function UploadFileToBucket {
 
 function DownloadFileFromBucket {
     param (
-    [string] $instrumentFileName,
+    [string] $questionnaireFileName,
     [string] $bucketName,
     [string] $filePath
     )
 
-    If ([string]::IsNullOrEmpty($instrumentFileName)) {
-        throw "No instrument file name has been provided"
+    If ([string]::IsNullOrEmpty($questionnaireFileName)) {
+        throw "No questionnaire file name has been provided"
     }
 
     If ([string]::IsNullOrEmpty($bucketName)) {
@@ -52,13 +52,13 @@ function DownloadFileFromBucket {
         throw "No file path provided"
     }
 
-    LogInfo("Downloading '$instrumentFileName' from '$bucketName' to '$bucketName'")
+    LogInfo("Downloading '$questionnaireFileName' from '$bucketName' to '$bucketName'")
 
-    $output = & cmd /c "gsutil 2>&1" cp gs://$bucketName/$instrumentFileName $filePath
+    $output = & cmd /c "gsutil 2>&1" cp gs://$bucketName/$questionnaireFileName $filePath
 
     if ($output -Like "*exception*") {
-        throw "Failed to download '$instrumentFileName' from '$bucketName': '$output'"
+        throw "Failed to download '$questionnaireFileName' from '$bucketName': '$output'"
     }
 
-    LogInfo("Downloaded '$instrumentFileName' from '$bucketName' to '$bucketName'")
+    LogInfo("Downloaded '$questionnaireFileName' from '$bucketName' to '$bucketName'")
 }

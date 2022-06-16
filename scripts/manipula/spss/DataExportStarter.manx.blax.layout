@@ -1230,7 +1230,7 @@
     <LayoutSpecFieldReference Name="RespondentTimeZone" />
     <LayoutSpecFieldReference Name="RespondentTime" />
     <LayoutSpecFieldReference Name="MainSurveyName" />
-    <LayoutSpecFieldReference Name="InstrumentID" />
+    <LayoutSpecFieldReference Name="QuestionnaireID" />
     <LayoutSpecFieldReference Name="InterviewerID" />
     <LayoutSpecFieldReference Name="CaseID" />
   </LayoutSpecFieldReferences>

@@ -4,7 +4,7 @@ function AddXMLFiletoDeliveryPackage {
     param(
         [string] $processingFolder,
         [string] $deliveryZip,
-        [string] $instrumentName,
+        [string] $questionnaireName,
         [string] $subFolder,
         [string] $tempPath
     )
@@ -17,8 +17,8 @@ function AddXMLFiletoDeliveryPackage {
         throw "$deliveryZip not found" 
     }
 
-    If ([string]::IsNullOrEmpty($instrumentName)) {
-        throw "No instrument name provided" 
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaire name provided" 
     }
 
     # Copy Manipula xml files to the processing folder
@@ -26,7 +26,7 @@ function AddXMLFiletoDeliveryPackage {
 
     try {
         # Generate XML file, Export function no longer works in Blaise 5
-        & cmd.exe /c $processingFolder/MetaViewer.exe -F:$processingFolder/$instrumentName.bmix -Export
+        & cmd.exe /c $processingFolder/MetaViewer.exe -F:$processingFolder/$questionnaireName.bmix -Export
         LogInfo("Generated .XML File for $deliveryZip")
     }
     catch {
@@ -34,12 +34,12 @@ function AddXMLFiletoDeliveryPackage {
     }
     try {
         if ([string]::IsNullOrEmpty($subFolder)) {
-            # Add the SPS, ASC & FPS files to the instrument package
+            # Add the SPS, ASC & FPS files to the questionnaire package
             AddFilesToZip -pathTo7zip $tempPath -files "$processingFolder\*.xml" -zipFilePath $deliveryZip
             LogInfo("Added .XML File to $deliveryZip")
         }
         else {
-            Copy-Item -Path "$processingFolder/$($instrumentName)_meta.xml" -Destination $subFolder/$instrumentName.xml
+            Copy-Item -Path "$processingFolder/$($questionnaireName)_meta.xml" -Destination $subFolder/$questionnaireName.xml
             LogInfo("Copied .XML File to $subFolder")
 
             AddFolderToZip -pathTo7zip $tempPath -folder $subFolder -zipFilePath $deliveryZip
