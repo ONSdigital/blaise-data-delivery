@@ -1,6 +1,7 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 
 function GetListOfQuestionnairesBySurveyType {
+
     param (
         [string] $restApiBaseUrl,
         [string] $surveyType,
@@ -13,4 +14,5 @@ function GetListOfQuestionnairesBySurveyType {
     LogInfo("Calling $questionnairesUri to get list of questionnaires")
     # Return a list of questionnaires for a particular survey type I.E OPN
     return $allQuestionnaires | Where-Object { $_.name.StartsWith($surveyType) }
+
 }

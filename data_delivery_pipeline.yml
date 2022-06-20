@@ -57,7 +57,6 @@ stages:
                    script: |
                         Write-Host "Login to GCP"
                         gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file=$(gcpkey.secureFilePath)
-                        
                         Write-Host "Downloading questionnaire"
                         gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_9_3.zip $env:TempPath\Manipula.zip
                         Write-Host "Downloading 7zip cli"
