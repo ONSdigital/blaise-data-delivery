@@ -25,18 +25,22 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    
     $questionnaireList = $env:Questionnaires
+    LogInfo("Questionnaire list: $questionnaireList")
 
     If ([string]::IsNullOrEmpty($questionnaireList)) {
-        # Retrieve a list of active questionnaires in CATI for a particular survey type I.E OPN
+        # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
         $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
     }
     else {
-        # Usethe list of questionnaires passed through to the script
+        # Use the list of questionnaires passed through to the script
         $questionnaires = $questionnaireList.Split(",")
-        LogInfo("Retrieved list of questionnaires from pipeline '$questionnaires'")
+        LogInfo("Retrieved list of questionnaires from pipeline:")
+        
+        foreach ($questionnaire in $questionnaires) {
+            LogInfo("'$questionnaire'")
+        }
     }
 
     # No questionnaires found
