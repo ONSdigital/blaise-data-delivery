@@ -5,6 +5,8 @@ parameters:
     displayName: Environment to use
   - name: SurveyType
     displayName: Survey type
+  -name: Questionnaires
+    displayName: Questionnaires seperated by commas
 
 trigger:
 - none
