@@ -43,7 +43,7 @@ try {
         }
     }
 
-    # No questionnaires found
+    # No questionnaires found/supplied
     If ($questionnaires.Count -eq 0) {
         LogWarning("No questionnaires found for '$surveyType' on server park '$serverParkName' or supplied via the pipeline")
         exit
