@@ -28,7 +28,7 @@ try {
     $questionnaireList = $env:Questionnaires
     LogInfo("Questionnaire list: $questionnaireList")
 
-    If ([string]::IsNullOrEmpty($questionnaireList)) {
+    if ([string]::IsNullOrEmpty($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
         $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
