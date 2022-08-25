@@ -35,9 +35,10 @@ try {
     }
     else {
         # List of questionnaires provided so retrieve a list of questionnaires specified
-        LogInfo("Retrieved list of questionnaires from piepline '$questionnaireList'")
         $questionnaire_names = $questionnaireList.Split(",")
+        LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
         $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName -$questionnaires $questionnaire_names
+        LogInfo("Retrieved list of questionnaires specified $questionnaires")
     }
 
     # No questionnaires found/supplied
