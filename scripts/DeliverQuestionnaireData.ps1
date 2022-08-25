@@ -38,8 +38,6 @@ try {
         $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Retrieved list of questionnaires from pipeline:")
         
-        $questionnaires =@()
-
         foreach ($questionnaire_name in $questionnaire_names) {
             LogInfo("Call REST API to get questionnaire '$questionnaire_name' from REST API")
             $questionnaire = GetQuestionnaire -restApiBaseUrl $restAPIUrl -questionnaireName $questionnaire_name -serverParkName $serverParkName
