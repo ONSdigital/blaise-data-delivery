@@ -18,6 +18,8 @@ variables:
   - group: ${{ parameters.VarGroup }}
   - name: SurveyType
     value: ${{ parameters.SurveyType }}
+  - name: Questionnaires
+    value: ${{ parameters.Questionnaires }}
   - name: TempPath
     value: c:\blaise\temp\datadelivery\${{ parameters.SurveyType }}
 
