@@ -35,11 +35,16 @@ try {
     }
     else {
         # Use the list of questionnaires passed through to the script
-        $questionnaires = $questionnaireList.Split(",")
+        $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Retrieved list of questionnaires from pipeline:")
         
-        foreach ($questionnaire in $questionnaires) {
-            LogInfo("'$questionnaire'")
+        $questionnaires =@()
+
+        foreach ($questionnaire_name in $questionnaire_names) {
+            LogInfo("Call REST API to get questionnaire '$questionnaire_name' from REST API")
+            $questionnaire = GetQuestionnaire -restApiBaseUrl $restAPIUrl -questionnaireName $questionnaire_name -serverParkName $serverParkName
+            $questionnaires.Add($questionnaire)
+            LogInfo("Retrieved questionnaire '$questionnaire_name' from REST API")
         }
     }
 
