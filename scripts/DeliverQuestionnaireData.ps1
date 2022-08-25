@@ -30,20 +30,14 @@ try {
 
     if ([string]::IsNullOrEmpty($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
-        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName -$questionnaires $null
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
     }
     else {
-        # Use the list of questionnaires passed through to the script
+        # List of questionnaires provided so retrieve a list of questionnaires specified
+        LogInfo("Retrieved list of questionnaires from piepline '$questionnaireList'")
         $questionnaire_names = $questionnaireList.Split(",")
-        LogInfo("Retrieved list of questionnaires from pipeline:")
-        
-        foreach ($questionnaire_name in $questionnaire_names) {
-            LogInfo("Call REST API to get questionnaire '$questionnaire_name' from REST API")
-            $questionnaire = GetQuestionnaire -restApiBaseUrl $restAPIUrl -questionnaireName $questionnaire_name -serverParkName $serverParkName
-            $questionnaires.Add($questionnaire)
-            LogInfo("Retrieved questionnaire '$questionnaire_name' from REST API")
-        }
+        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName -$questionnaires $questionnaire_names
     }
 
     # No questionnaires found/supplied
