@@ -17,11 +17,11 @@ function GetListOfQuestionnairesBySurveyType {
 }
 
 
-function GetQuestionnaires {
+function GetListOfQuestionnairesByNames {
     param (
         [string] $restApiBaseUrl,
         [string] $serverParkName,
-        [string[]] $questionnaireList
+        [string[]] $questionnaire_names
     )
 
     if($null -eq $questionnaireList -or $questionnaireList.Length -eq 0) {
@@ -33,7 +33,6 @@ function GetQuestionnaires {
     $allQuestionnaires = Invoke-RestMethod -Method Get -Uri $questionnairesUri
 
     LogInfo("Calling $questionnairesUri to get list of questionnaires")
-    LogInfo("List $questionnaireList")
 
     return $allQuestionnaires | Where-Object { $_.name -in $questionnaireList }
 }
