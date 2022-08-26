@@ -5,10 +5,9 @@ parameters:
     displayName: Environment to use
   - name: SurveyType
     displayName: Survey type
-  - name: QuestionnaireList
-    displayName: Questionnaire list
-    type: object
-    default: []
+  - name: Questionnaires
+    displayName: Questionnaires seperated by commas
+    default: ''
 
 trigger:
 - none
@@ -20,8 +19,8 @@ variables:
   - group: ${{ parameters.VarGroup }}
   - name: SurveyType
     value: ${{ parameters.SurveyType }}
-  - name: QuestionnaireList
-    value: ${{ parameters.QuestionnaireList }}
+  - name: Questionnaires
+    value: ${{ parameters.Questionnaires }}
   - name: TempPath
     value: c:\blaise\temp\datadelivery\${{ parameters.SurveyType }}
 
