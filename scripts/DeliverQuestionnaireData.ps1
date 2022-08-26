@@ -25,7 +25,7 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:QuestionnaireList
+    $questionnaireList = $env:Questionnaires
     LogInfo("Questionnaire list: $questionnaireList")
 
 
