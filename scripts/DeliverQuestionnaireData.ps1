@@ -28,24 +28,17 @@ try {
     $questionnaireList = $env:QuestionnaireList
     LogInfo("Questionnaire list: $questionnaireList")
 
-    if ([string]::IsNullOrWhitespace($questionnaireList)) {
-        LogInfo("empty")
-    }
-    else {
-        LogInfo("not empty")
-    }
-    exit
 
     if ([string]::IsNullOrWhitespace($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
-        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName -$questionnaires $null
+        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
     }
     else {
         # List of questionnaires provided so retrieve a list of questionnaires specified
         $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
-        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName -$questionnaires $questionnaire_names
+        $questionnaires = GetQuestionnaires -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -$questionnaires $questionnaire_names
         LogInfo("Retrieved list of questionnaires specified $questionnaires")
     }
 
