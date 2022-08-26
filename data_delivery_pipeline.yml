@@ -7,7 +7,7 @@ parameters:
     displayName: Survey type
   - name: Questionnaires
     displayName: Questionnaires seperated by commas
-    default: ''
+    default: ' '
 
 trigger:
 - none
