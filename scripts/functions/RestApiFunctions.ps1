@@ -33,6 +33,7 @@ function GetQuestionnaires {
     $allQuestionnaires = Invoke-RestMethod -Method Get -Uri $questionnairesUri
 
     LogInfo("Calling $questionnairesUri to get list of questionnaires")
+    LogInfo("List $questionnaireList")
 
     return $allQuestionnaires | Where-Object { $_.name -in $questionnaireList }
 }
