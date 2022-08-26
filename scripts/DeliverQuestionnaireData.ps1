@@ -38,7 +38,7 @@ try {
         # List of questionnaires provided so retrieve a list of questionnaires specified
         $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
-        $questionnaires = GetQuestionnaires -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -$questionnaires $questionnaire_names
+        $questionnaires = GetQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -$questionnaire_names $questionnaire_names
         LogInfo("Retrieved list of questionnaires specified $questionnaires")
     }
 
