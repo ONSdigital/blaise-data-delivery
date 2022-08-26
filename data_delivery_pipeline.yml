@@ -7,6 +7,7 @@ parameters:
     displayName: Survey type
   - name: QuestionnaireList
     displayName: Questionnaire list
+    type: object
     default: []
 
 trigger:
@@ -19,7 +20,7 @@ variables:
   - group: ${{ parameters.VarGroup }}
   - name: SurveyType
     value: ${{ parameters.SurveyType }}
-  - name: Questionnaires
+  - name: QuestionnaireList
     value: ${{ parameters.QuestionnaireList }}
   - name: TempPath
     value: c:\blaise\temp\datadelivery\${{ parameters.SurveyType }}
