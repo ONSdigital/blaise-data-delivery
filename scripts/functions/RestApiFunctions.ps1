@@ -24,7 +24,7 @@ function GetListOfQuestionnairesByNames {
         [string[]] $questionnaire_names
     )
 
-    if($null -eq $questionnaireList -or $questionnaireList.Length -eq 0) {
+    if($null -eq $questionnaire_names -or $questionnaire_names.Length -eq 0) {
         LogInfo("No questionnaires provided to retrieve")
         exit
     }
@@ -34,5 +34,5 @@ function GetListOfQuestionnairesByNames {
 
     LogInfo("Calling $questionnairesUri to get list of questionnaires")
 
-    return $allQuestionnaires | Where-Object { $_.name -in $questionnaireList }
+    return $allQuestionnaires | Where-Object { $_.name -in $questionnaire_names }
 }
