@@ -25,8 +25,10 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:Questionnaires
+    $questionnaireList = $env:QuestionnaireList
     LogInfo("Questionnaire list: $questionnaireList")
+
+    exit
 
     if ([string]::IsNullOrEmpty($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
