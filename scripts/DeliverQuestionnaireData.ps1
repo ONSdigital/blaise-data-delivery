@@ -25,14 +25,26 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
+    $questionnaireList = $env:Questionnaires.Trim() #trim as we add a shitespace to make this field optional in Azure
+    LogInfo("Questionnaire list: $questionnaireList")
 
-    # Retrieve a list of active questionnaires in CATI for a particular survey type I.E OPN
-    $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
-    LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
 
-    # No questionnaires found
+    if ([string]::IsNullOrWhitespace($questionnaireList)) {
+        # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
+        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+        LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $questionnaires")
+    }
+    else {
+        # List of questionnaires provided so retrieve a list of questionnaires specified
+        $questionnaire_names = $questionnaireList.Split(",")
+        LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
+        $questionnaires = GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
+        LogInfo("Retrieved list of questionnaires specified $questionnaires")
+    }
+
+    # No questionnaires found/supplied
     If ($questionnaires.Count -eq 0) {
-        LogWarning("No questionnaires found for '$surveyType' on server park '$serverParkName'")
+        LogWarning("No questionnaires found for '$surveyType' on server park '$serverParkName' or supplied via the pipeline")
         exit
     }
 
