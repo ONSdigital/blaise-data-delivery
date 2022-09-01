@@ -25,7 +25,7 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:Questionnaires
+    $questionnaireList = $env:Questionnaires.Trim() #trim as we add a shitespace to make this field optional in Azure
     LogInfo("Questionnaire list: $questionnaireList")
 
 
