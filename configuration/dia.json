@@ -1,0 +1,11 @@
+{
+    "deliver" : {
+        "spss" : false,
+        "ascii": false,
+        "json" : false,
+        "xml" : false
+    },
+
+    "createSubFolder" : false,
+    "packageExtension" : "zip"
+}
