@@ -77,6 +77,9 @@ try {
             . "$using:PSScriptRoot\functions\AsciiFunctions.ps1"
             . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
 
+            #Make all errors terminating
+            $ErrorActionPreference = "Stop"
+
             # Generate unique data delivery filename for the questionnaire
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
@@ -150,6 +153,10 @@ try {
             Get-Error
             ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Errored"
+        }
+        finally{
+            #Reset the error action pref to default
+            $ErrorActionPreference = "Continue"
         }
     }
 }
