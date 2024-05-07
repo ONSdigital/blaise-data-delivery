@@ -44,7 +44,7 @@ try {
         LogInfo("Received a list of required questionnaires from pipeline '$questionnaire_names'")
         $questionnaires = GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
         # $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
-        LogInfo("Retrieved list of questionnaires specified $questionnaires")
+        LogInfo("Retrieved list of questionnaires specified $($questionnaires | select -ExpandProperty name)")
     }
 
     # No questionnaires found/supplied
