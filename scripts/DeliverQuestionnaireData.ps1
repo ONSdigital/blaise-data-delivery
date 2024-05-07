@@ -35,6 +35,7 @@ try {
     if ([string]::IsNullOrWhitespace($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
         $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" }
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $($questionnaires | select -ExpandProperty name)") 
     }
     else {
