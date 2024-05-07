@@ -42,7 +42,7 @@ try {
         $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
         $questionnaires = GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
-        $questionnaires = $questionnaires | Where-Object { $_.TESTING_RANDOM_DO_NOT_MERGE -ne "ContactInfo" }
+        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" }
         LogInfo("Retrieved list of questionnaires specified $questionnaires")
     }
 
