@@ -28,22 +28,22 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:Questionnaires.Trim() #trim as we add a shitespace to make this field optional in Azure
+    $questionnaireList = $env:Questionnaires.Trim() # Trim as we add a shitespace to make this field optional in Azure
     LogInfo("Questionnaire list: $questionnaireList")
 
 
     if ([string]::IsNullOrWhitespace($questionnaireList)) {
         # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
         $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
-        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" }
+        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
         LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $($questionnaires | select -ExpandProperty name)") 
     }
     else {
         # List of questionnaires provided so retrieve a list of questionnaires specified
         $questionnaire_names = $questionnaireList.Split(",")
-        LogInfo("Recieved a list of required questionnaires from piepline '$questionnaire_names'")
+        LogInfo("Received a list of required questionnaires from pipeline '$questionnaire_names'")
         $questionnaires = GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
-        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" }
+        # $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
         LogInfo("Retrieved list of questionnaires specified $questionnaires")
     }
 
