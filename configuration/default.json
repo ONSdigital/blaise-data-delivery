@@ -8,5 +8,6 @@
 
     "createSubFolder" : false,
     "packageExtension" : "zip",
-    "auditTrailData" : true
+    "auditTrailData" : true,
+    "batch": false
 }

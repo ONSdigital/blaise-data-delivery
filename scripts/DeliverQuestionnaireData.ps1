@@ -93,7 +93,13 @@ try {
 
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData 2>&1
+            if($using:config.batch -eq $true) {
+                # get data from sql db in batches
+                C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1
+            }
+            else {
+                C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData 2>&1
+            }            
             
             # Create a temporary folder for processing questionnaires
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
