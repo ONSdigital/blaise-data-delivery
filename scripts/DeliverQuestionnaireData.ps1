@@ -93,14 +93,11 @@ try {
 
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-            LogInfo("batch value - ", $using:config.batch)
             if($using:config.batch -eq $true) {
                 # get data from sql db in batches
-                LogInfo("Populating bdbx in batches")
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1
             }
             else {
-                LogInfo("Populating bdbx")
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData 2>&1
             }            
             
@@ -108,9 +105,7 @@ try {
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
-            LogInfo("createSubFolder")
-            LogInfo("createSubFolder value - ", $using:config.createSubFolder)
-            if($using:config.createSubFolder -eq $true) {
+<#             if($using:config.createSubFolder -eq $true) {
                 LogInfo("Creating subfolder for delivery")
 
                 # Gets the folder name of the processing folder
@@ -121,8 +116,9 @@ try {
             }
             else {
                 # This variable will be ignored in the fucntion called if passed - ugh
+                LogInfo("Did not create subfolder for delivery")
                 $processingSubFolder = $NULL
-            }
+            } #>
 
             #Add manipula and questionnaire package to processing folder
             LogInfo("Add manipula")
