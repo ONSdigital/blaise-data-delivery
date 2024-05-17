@@ -23,7 +23,9 @@ The configuration of the delivery files and formats for an questionnaire is defi
 
     "createSubFolder" : false,
     "packageExtension" : "zip",
-    "auditTrailData" : false
+    "auditTrailData" : false,
+    "batchSize" : 0,
+    "throttleLimit" : 3
 }
 ```
 
@@ -34,11 +36,13 @@ The first four options are contained in the "deliver" section of the JSOn file. 
 3. json => 
 4. xml =>
 
-The other three options in the configuration file are:
+The other five options in the configuration file are:
 
 5. createSubFolder => If this is set to true, then all the files configured within the "deliver" section will be contained in a subfolder of the package.
 6. packageExtension => This determines the file extension of the package that is delivered
 7. auditTrailData => If set to True this will add a CSV containing all audit trail information for that questionnaire
+8. batchSize => If you wish the delivery to get the data in batches then you can set the batch size. if it is set to 0 it will default to get all records
+9. throttleLimit => The max number of concurrent questionnaires that can be processed
 
 ## Setting up a new questionnaire for delivery
 The default configuration for an questionnaire will deliver spss and ascii files only and will not use a subfolder. If you wish to use a custom cofiguration for your questionnaire that deviates from the default, then you simply need to create a new JSON configuration file in the configuration folder and name it <survey>.json where survey type is the acronym for the survey i.e. OPN, LM, NWO.
