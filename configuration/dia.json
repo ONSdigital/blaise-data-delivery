@@ -9,6 +9,5 @@
     "createSubFolder" : false,
     "packageExtension" : "zip",
     "auditTrailData" : true,
-    "batch" : true,
     "batchSize" : 2 
 }
