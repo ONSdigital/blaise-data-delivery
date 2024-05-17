@@ -62,7 +62,7 @@ try {
     $sync = CreateQuestionnaireSync -questionnaires $questionnaires
 
     # Deliver the questionnaire package with data for each active questionnaire
-    $questionnaires | ForEach-Object -ThrottleLimit 3 -Parallel {
+    $questionnaires | ForEach-Object -ThrottleLimit $using:config.throttleLimit -Parallel {
         . "$using:PSScriptRoot\functions\ThreadingFunctions.ps1"
 
         $process = GetProcess -questionnaire $_ -sync $using:sync
