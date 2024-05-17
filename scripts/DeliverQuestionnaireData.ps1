@@ -108,6 +108,7 @@ try {
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
+            LogInfo("createSubFolder value - ", $using:config.createSubFolder)
             if($using:config.createSubFolder -eq $true) {
                 LogInfo("Creating subfolder for delivery")
 
@@ -123,6 +124,7 @@ try {
             }
 
             #Add manipula and questionnaire package to processing folder
+            LogInfo("Add manipula")
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Generate and add SPSS files if configured
