@@ -93,11 +93,14 @@ try {
 
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
+            LogInfo("batch value - ", $using:config.batch)
             if($using:config.batch -eq $true) {
                 # get data from sql db in batches
+                LogInfo("Populating bdbx in batches")
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1
             }
             else {
+                LogInfo("Populating bdbx")
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData 2>&1
             }            
             
