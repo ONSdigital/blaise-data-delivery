@@ -42,7 +42,7 @@ The other five options in the configuration file are:
 6. packageExtension => This determines the file extension of the package that is delivered
 7. auditTrailData => If set to True this will add a CSV containing all audit trail information for that questionnaire
 8. batchSize => If you wish the delivery to get the data in batches then you can set the batch size. if it is set to 0 it will default to get all records
-9. throttleLimit => The max number of concurrent questionnaires that can be processed
+9. throttleLimit => The number of questionnaires that can be processed concurrently
 
 ## Setting up a new questionnaire for delivery
 The default configuration for an questionnaire will deliver spss and ascii files only and will not use a subfolder. If you wish to use a custom cofiguration for your questionnaire that deviates from the default, then you simply need to create a new JSON configuration file in the configuration folder and name it <survey>.json where survey type is the acronym for the survey i.e. OPN, LM, NWO.
