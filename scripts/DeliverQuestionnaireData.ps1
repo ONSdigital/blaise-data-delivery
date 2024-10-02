@@ -122,10 +122,12 @@ try {
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Add additional file formats specified in the config i.e. JSON, ASCII
+            LogInfo("Add AddAdditionalFilesToDeliveryPackage")
             AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
 
             # If a questionnaire has editing enabled then add additional file formats specified in the config i.e. JSON, ASCII
             if($using:config.hasEditMode -eq $true) { 
+                LogInfo("Add AddAdditionalFilesToDeliveryPackage for unedited data")
                 AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName "$($_.name)_UNEDITED" -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
             }
           
