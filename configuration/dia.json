@@ -10,5 +10,6 @@
     "packageExtension" : "zip",
     "auditTrailData" : true,
     "batchSize" : 2, 
-    "throttleLimit" : 1
+    "throttleLimit" : 1,
+    "hasEditMode": false  
 }
