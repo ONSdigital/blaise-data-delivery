@@ -35,6 +35,7 @@ function AddAdditionalFilesToDeliveryPackage {
           
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
+    LogInfo("Add additional files config $($config)")
 
     # Generate and add SPSS files if configured
     if($config.deliver.spss -eq $true) {
