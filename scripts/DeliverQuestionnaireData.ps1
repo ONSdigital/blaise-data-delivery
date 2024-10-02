@@ -90,11 +90,7 @@ try {
 
             # Create a temporary folder for processing questionnaires
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-
-            
-            # Add manipula and questionnaire package to processing folder
-            LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
+        
             
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
@@ -121,6 +117,10 @@ try {
                 LogInfo("Did not create subfolder for delivery")
                 $processingSubFolder = $NULL
             }
+
+            # Add manipula and questionnaire package to processing folder
+            LogInfo("Add manipula")
+            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
             # Add additional file formats specified in the config i.e. JSON, ASCII
             LogInfo("Add AddAdditionalFilesToDeliveryPackage")

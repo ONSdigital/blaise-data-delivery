@@ -131,17 +131,12 @@ function ConvertJsonFileToObject {
 function CreateUneditedQuestionnaireFiles {
     param (
         [string] $tempPath,
-        [string] $processingFolder,
         [string] $deliveryZip,
         [string] $questionnaireName
     )
 
     If (-not (Test-Path $tempPath)) {
         throw "$tempPath not found" 
-    }
-
-    If (-not (Test-Path $processingFolder)) {
-        throw "$processingFolder not found" 
     }
 
     If (-not (Test-Path $deliveryZip)) {
@@ -153,6 +148,10 @@ function CreateUneditedQuestionnaireFiles {
     }
 
     try {
+        $processingFolder = "$tempPath\unedited"
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath "$($processingFolder)\unedited"
+        LogInfo("Extracted the delivery zip")
+
         Copy-Item "$($processingFolder)\$questionnaireName.bmix" -Destination  "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix"
         Copy-Item "$($processingFolder)\$questionnaireName.bdix" -Destination  "$($processingFolder)\$($questionnaireName)_UNEDITED.bdix"
 
