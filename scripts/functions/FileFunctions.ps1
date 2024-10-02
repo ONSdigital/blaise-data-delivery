@@ -130,14 +130,13 @@ function ConvertJsonFileToObject {
 
 function CreateUneditedQuestionnaireFiles {
     param (
-        [string] $pathTo7zip,
+        [string] $tempPath,
         [string] $deliveryZip,
-        [string] $processingFolder,
         [string] $questionnaireName
     )
 
-    If ([string]::IsNullOrEmpty($pathTo7zip)) {
-        throw "No Path to 7Zip provided"
+    If ([string]::IsNullOrEmpty($tempPath)) {
+        throw "No Path to temp path provided"
     }
 
     If ([string]::IsNullOrEmpty($deliveryZip)) {
@@ -145,13 +144,13 @@ function CreateUneditedQuestionnaireFiles {
     }
 
     try {
-        ExtractZipFile -pathTo7zip $pathTo7zip -zipFilePath $deliveryZip -destinationPath $processingFolder
+        ExtractZipFile -pathTo7zip $pathTo7zip -zipFilePath $deliveryZip -destinationPath $tempPath
         LogInfo("Extracted the delivery zip")
 
-        Rename-Item -Path "$processingFolder\$questionnaireName.bmix" -NewName "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix"
+        Rename-Item -Path "$processingFolder\$questionnaireName.bmix" -NewName "$($tempPath)\$($questionnaireName)_UNEDITED.bmix"
         LogInfo("Renamed bmix file")
 
-        AddFilesToZip -pathTo7zip $pathTo7zip -files "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $pathTo7zip -files "$($tempPath)\$($questionnaireName)_UNEDITED.bmix" -zipFilePath $deliveryZip
         LogInfo("Added bmix file to the delivery zip")
 
     }

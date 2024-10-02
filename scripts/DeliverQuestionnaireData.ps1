@@ -94,7 +94,7 @@ try {
             
             # if editing is enabled then generate the unedited data
             if($using:config.hasEditMode -eq $true) {
-                CreateUneditedQuestionnaireFiles -pathTo7zip $using:tempPath -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name
+                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -deliveryZip $deliveryFile -questionnaireName $_.name
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
             }
 
