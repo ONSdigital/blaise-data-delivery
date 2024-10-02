@@ -153,13 +153,13 @@ function CreateUneditedQuestionnaireFiles {
     }
 
     try {
-        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath $processingFolder
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath "$($processingFolder)\unedited"
         LogInfo("Extracted the delivery zip")
 
-        Rename-Item -Path "$processingFolder\$questionnaireName.bmix" -NewName "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix"
-        LogInfo("Renamed bmix file")
+        Rename-Item -Path "$($processingFolder)\unedited\$questionnaireName.bmix" -NewName "$($processingFolder)\unedited\$($questionnaireName)_UNEDITED.bmix"
+        Rename-Item -Path "$($processingFolder)\unedited\$questionnaireName.bdix" -NewName "$($processingFolder)\unedited\$($questionnaireName)_UNEDITED.bdix"
 
-        AddFilesToZip -pathTo7zip $tempPath -files "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $tempPath -files "$($processingFolder)\unedited\$($questionnaireName)_UNEDITED.bmix","$($processingFolder)\unedited\$($questionnaireName)_UNEDITED.bdix" -zipFilePath $deliveryZip
         LogInfo("Added bmix file to the delivery zip")
 
     }
