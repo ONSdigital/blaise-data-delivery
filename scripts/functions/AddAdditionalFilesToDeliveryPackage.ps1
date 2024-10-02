@@ -1,9 +1,9 @@
-﻿. "$PSScriptRoot\functions\LoggingFunctions.ps1"
-. "$PSScriptRoot\functions\ConfigFunctions.ps1"
-. "$PSScriptRoot\functions\SpssFunctions.ps1"
-. "$PSScriptRoot\functions\XmlFunctions.ps1"
-. "$PSScriptRoot\functions\JsonFunctions.ps1"
-. "$PSScriptRoot\functions\AsciiFunctions.ps1"
+﻿. "$PSScriptRoot\LoggingFunctions.ps1"
+. "$PSScriptRoot\ConfigFunctions.ps1"
+. "$PSScriptRoot\SpssFunctions.ps1"
+. "$PSScriptRoot\XmlFunctions.ps1"
+. "$PSScriptRoot\JsonFunctions.ps1"
+. "$PSScriptRoot\AsciiFunctions.ps1"
 
 
 function AddAdditionalFilesToDeliveryPackage {
