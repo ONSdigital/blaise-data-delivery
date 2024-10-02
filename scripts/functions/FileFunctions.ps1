@@ -127,3 +127,37 @@ function ConvertJsonFileToObject {
 
     return Get-Content -Path $jsonFile | ConvertFrom-Json
 }
+
+function CreateUneditedQuestionnaireFiles {
+    param (
+        [string] $pathTo7zip,
+        [string] $deliveryZip,
+        [string] $processingFolder,
+        [string] $questionnaireName
+    )
+
+    If ([string]::IsNullOrEmpty($pathTo7zip)) {
+        throw "No Path to 7Zip provided"
+    }
+
+    If ([string]::IsNullOrEmpty($deliveryZip)) {
+        throw "No Path to the delivery file provided"
+    }
+
+    try {
+        ExtractZipFile -pathTo7zip $pathTo7zip -zipFilePath $deliveryZip -destinationPath $processingFolder
+        LogInfo("Extracted the delivery zip")
+
+        Rename-Item -Path "$processingFolder\$questionnaireName.bmix" -NewName "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix"
+        LogInfo("Renamed bmix file")
+
+        AddFilesToZip -pathTo7zip $pathTo7zip -files "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix" -zipFilePath $deliveryZip
+        LogInfo("Added bmix file to the delivery zip")
+
+    }
+    catch {
+        LogWarning("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+    }
+
+   
+}
