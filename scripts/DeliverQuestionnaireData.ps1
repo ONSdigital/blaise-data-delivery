@@ -53,7 +53,7 @@ try {
         exit
     }
 
-    # Get configuration for survey type
+    #get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
 
     # Generating batch stamp for all questionnaires in the current run to be grouped together
@@ -73,8 +73,11 @@ try {
             . "$using:PSScriptRoot\functions\DataDeliveryStatusFunctions.ps1"
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
+            . "$using:PSScriptRoot\functions\SpssFunctions.ps1"
+            . "$using:PSScriptRoot\functions\XmlFunctions.ps1"
+            . "$using:PSScriptRoot\functions\JsonFunctions.ps1"
+            . "$using:PSScriptRoot\functions\AsciiFunctions.ps1"
             . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
-            . "$using:PSScriptRoot\functions\AddAdditionalFilesToDeliveryPackage.ps1"
 
             # Generate unique data delivery filename for the questionnaire
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
@@ -88,23 +91,16 @@ try {
             # Download questionnaire package
             DownloadFileFromBucket -questionnaireFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
 
-            # Create a temporary folder for processing questionnaires
-            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-
-            
-            # Add manipula and questionnaire package to processing folder
-            LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
-            
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
             C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
             
-            # if editing is enabled then generate the unedited data
             if($using:config.hasEditMode -eq $true) {
-                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
             }
+
+            # Create a temporary folder for processing questionnaires
+            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
             if($using:config.createSubFolder -eq $true) {
@@ -122,16 +118,34 @@ try {
                 $processingSubFolder = $NULL
             }
 
-            # Add additional file formats specified in the config i.e. JSON, ASCII
-            LogInfo("Add AddAdditionalFilesToDeliveryPackage")
-            AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+            #Add manipula and questionnaire package to processing folder
+            LogInfo("Add manipula")
+            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
 
-            # If a questionnaire has editing enabled then add additional file formats specified in the config i.e. JSON, ASCII
-            if($using:config.hasEditMode -eq $true) { 
-                LogInfo("Add AddAdditionalFilesToDeliveryPackage for unedited data")
-                AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName "$($_.name)_UNEDITED" -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+            # Generate and add SPSS files if configured
+            if($using:config.deliver.spss -eq $true) {
+                LogInfo("Adding SPSS files")
+                AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
             }
-          
+
+            # Generate and add Ascii files if configured
+            if($using:config.deliver.ascii -eq $true) {
+                LogInfo("Adding ASCII files")
+                AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+            }
+
+            # Generate and add XML Files if configured
+            if($using:config.deliver.xml -eq $true) {
+                LogInfo("Adding XML files")
+                AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+            }
+
+            # Generate and add json Files if configured
+            if($using:config.deliver.json -eq $true) {
+                LogInfo("Adding JSON files")
+                AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
+            }
+
             # Upload questionnaire package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
