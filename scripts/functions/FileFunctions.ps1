@@ -131,6 +131,7 @@ function ConvertJsonFileToObject {
 function CreateUneditedQuestionnaireFiles {
     param (
         [string] $tempPath,
+        [string] $processingFolder,
         [string] $deliveryZip,
         [string] $questionnaireName
     )
@@ -148,14 +149,14 @@ function CreateUneditedQuestionnaireFiles {
     }
 
     try {
-        $processingFolder = "$tempPath\unedited"
-        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath "$($processingFolder)\unedited"
+        $extractPath = "$($processingFolder)\unedited"
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath $extractPath
         LogInfo("Extracted the delivery zip")
 
-        Copy-Item "$($processingFolder)\$questionnaireName.bmix" -Destination  "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix"
-        Copy-Item "$($processingFolder)\$questionnaireName.bdix" -Destination  "$($processingFolder)\$($questionnaireName)_UNEDITED.bdix"
+        Copy-Item "$extractPath\$questionnaireName.bmix" -Destination  "$extractPath\$($questionnaireName)_UNEDITED.bmix"
+        Copy-Item "$extractPath\$questionnaireName.bdix" -Destination  "$extractPath\$($questionnaireName)_UNEDITED.bdix"
 
-        AddFilesToZip -pathTo7zip $tempPath -files "$($processingFolder)\$($questionnaireName)_UNEDITED.bmix","$($processingFolder)\$($questionnaireName)_UNEDITED.bdix" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$($questionnaireName)_UNEDITED.bmix","$extractPath\$($questionnaireName)_UNEDITED.bdix" -zipFilePath $deliveryZip
         LogInfo("Added bmix file to the delivery zip")
 
     }
