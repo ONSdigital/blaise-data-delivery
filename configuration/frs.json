@@ -11,5 +11,5 @@
     "auditTrailData" : true,
     "batchSize" : 0,
     "throttleLimit" : 3,
-    "hasEditMode": false  
+    "hasEditMode": true  
 }
