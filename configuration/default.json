@@ -1,9 +1,9 @@
 {
     "deliver" : {
-        "spss" : false,
+        "spss" : true,
         "ascii": true,
-        "json" : true,
-        "xml" : true
+        "json" : false,
+        "xml" : false
     },
 
     "createSubFolder" : false,
