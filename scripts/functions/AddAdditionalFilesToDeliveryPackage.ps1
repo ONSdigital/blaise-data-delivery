@@ -18,11 +18,19 @@ function AddAdditionalFilesToDeliveryPackage {
     )
           
     If ([string]::IsNullOrEmpty($surveyType)) {
-        throw "No survey type argument provided"
+        throw "No surveyType argument provided"
+    }
+
+    If ([string]::IsNullOrEmpty($processingFolder)) {
+        throw "No processingFolder argument provided"
     }
 
     If (-not (Test-Path $processingFolder)) {
         throw "$processingFolder file not found"
+    }
+
+    If ([string]::IsNullOrEmpty($deliveryZip)) {
+        throw "No deliveryZip argument provided"
     }
 
     If (-not (Test-Path $deliveryZip)) {
@@ -32,10 +40,22 @@ function AddAdditionalFilesToDeliveryPackage {
     If ([string]::IsNullOrEmpty($questionnaireName)) {
         throw "No questionnaire name argument provided"
     }
+
+    If ([string]::IsNullOrEmpty($subFolder)) {
+        throw "No subFolder argument provided"
+    }
+
+    If ([string]::IsNullOrEmpty($dqsBucket)) {
+        throw "No dqsBucket argument provided"
+    }
+
+    If ([string]::IsNullOrEmpty($tempPath)) {
+        throw "No tempPath argument provided"
+    }
           
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
-    LogInfo("Add additional files config $($config)")
+    LogInfo("Add additional files config $($config.deliver) $($config)")
 
     # Generate and add SPSS files if configured
     if($config.deliver.spss -eq $true) {
