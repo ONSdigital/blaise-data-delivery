@@ -88,18 +88,18 @@ try {
             # Download questionnaire package
             DownloadFileFromBucket -questionnaireFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
 
+            # Create a temporary folder for processing questionnaires
+            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
+
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
             C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
             
             # if editing is enabled then generate the unedited data
             if($using:config.hasEditMode -eq $true) {
-                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -deliveryZip $deliveryFile -questionnaireName $_.name
+                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
             }
-
-            # Create a temporary folder for processing questionnaires
-            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
 
             # If we need to use subfolders then create one and set variable
             if($using:config.createSubFolder -eq $true) {
