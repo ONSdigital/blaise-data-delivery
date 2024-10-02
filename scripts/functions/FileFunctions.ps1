@@ -147,7 +147,7 @@ function CreateUneditedQuestionnaireFiles {
         ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath $tempPath
         LogInfo("Extracted the delivery zip")
 
-        Rename-Item -Path "$processingFolder\$questionnaireName.bmix" -NewName "$($tempPath)\$($questionnaireName)_UNEDITED.bmix"
+        Rename-Item -Path "$tempPath\$questionnaireName.bmix" -NewName "$($tempPath)\$($questionnaireName)_UNEDITED.bmix"
         LogInfo("Renamed bmix file")
 
         AddFilesToZip -pathTo7zip $tempPath -files "$($tempPath)\$($questionnaireName)_UNEDITED.bmix" -zipFilePath $deliveryZip
