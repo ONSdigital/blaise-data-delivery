@@ -1,7 +1,7 @@
 {
     "deliver" : {
-        "spss" : false,
-        "ascii": false,
+        "spss" : true,
+        "ascii": true,
         "json" : true,
         "xml" : true
     },
