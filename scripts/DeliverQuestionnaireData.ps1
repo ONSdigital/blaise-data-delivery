@@ -74,7 +74,7 @@ try {
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
             . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
-            . "$using:PSScriptRoot\functions\AddAdditionalFilesToDeliveryPackage.ps1"
+            . "$using:PSScriptRoot\functions\PopulateDeliveryPackage.ps1"
 
             # Generate unique data delivery filename for the questionnaire
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
@@ -111,29 +111,9 @@ try {
             LogInfo("Add manipula")
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
 
-            # Populate data
-            # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
-            
-            # if editing is enabled then generate the unedited data
-            if($using:config.hasEditMode -eq $true) {
-                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
-                C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
-            }
-
-            # Extact Questionnaire Package to processing folder
-            ExtractZipFile -pathTo7zip $using:tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
-
-            # Add additional file formats specified in the config i.e. JSON, ASCII
-            LogInfo("Add AddAdditionalFilesToDeliveryPackage")
-            AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
-
-            # If a questionnaire has editing enabled then add additional file formats specified in the config i.e. JSON, ASCII
-            if($using:config.hasEditMode -eq $true) { 
-                LogInfo("Add AddAdditionalFilesToDeliveryPackage for unedited data")
-                AddAdditionalFilesToDeliveryPackage -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName "$($_.name)_UNEDITED" -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
-            }
-          
+            # Populate data files and formats
+            PopulateDeliveryPackage -serverParkName $using:serverParkName -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+                     
             # Upload questionnaire package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 

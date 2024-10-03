@@ -10,7 +10,7 @@ function AddAdditionalFilesToDeliveryPackage {
     param(
         [string] $surveyType,
         [string] $processingFolder,
-        [string] $deliveryZip,
+        [string] $deliveryFile,
         [string] $questionnaireName,
         [string] $subFolder,
         [string] $dqsBucket,
@@ -29,12 +29,12 @@ function AddAdditionalFilesToDeliveryPackage {
         throw "$processingFolder file not found"
     }
 
-    If ([string]::IsNullOrEmpty($deliveryZip)) {
-        throw "No deliveryZip argument provided"
+    If ([string]::IsNullOrEmpty($deliveryFile)) {
+        throw "No deliveryFile argument provided"
     }
 
-    If (-not (Test-Path $deliveryZip)) {
-        throw "$deliveryZip file not found"
+    If (-not (Test-Path $deliveryFile)) {
+        throw "$deliveryFile file not found"
     }
 
     If ([string]::IsNullOrEmpty($questionnaireName)) {
@@ -56,24 +56,24 @@ function AddAdditionalFilesToDeliveryPackage {
     # Generate and add SPSS files if configured
     if($config.deliver.spss -eq $true) {
         LogInfo("Adding SPSS files")
-        AddSpssFilesToDeliveryPackage -deliveryZip $deliveryZip -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath
+        AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath
     }
 
     # Generate and add Ascii files if configured
     if($config.deliver.ascii -eq $true) {
         LogInfo("Adding ASCII files")
-        AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryZip -processingFolder $processingFolder -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
+        AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
     }
 
     # Generate and add XML Files if configured
     if($config.deliver.xml -eq $true) {
         LogInfo("Adding XML files")
-        AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryZip -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
+        AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
     }
 
     # Generate and add json Files if configured
     if($config.deliver.json -eq $true) {
         LogInfo("Adding JSON files")
-        AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryZip -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
+        AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $questionnaireName -subFolder $processingSubFolder -tempPath $tempPath
     }
 }

@@ -90,6 +90,20 @@ function AddFolderToZip {
     LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
 }
 
+function DeleteFilesInZip {
+    param (
+        [string] $pathTo7zip,
+        [string] $zipFilePath
+    )
+
+    If (-not (Test-Path $zipFilePath)) {
+        throw "$zipFilePath not found"
+    }
+    #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
+    & $pathTo7zip\7za d $zipFilePath *.* -r
+    LogInfo("Deleted the file(s) in the zip file '$zipFilePath'")
+}
+
 function CreateANewFolder {
     param (
         [string] $folderPath,
@@ -128,41 +142,92 @@ function ConvertJsonFileToObject {
     return Get-Content -Path $jsonFile | ConvertFrom-Json
 }
 
-function CreateUneditedQuestionnaireFiles {
+function RenameQuestionnaireFiles {
     param (
         [string] $tempPath,
         [string] $processingFolder,
-        [string] $deliveryZip,
-        [string] $questionnaireName
+        [string] $deliveryFile,
+        [string] $questionnaireNameFrom,
+        [string] $questionnaireNameTo
     )
 
     If (-not (Test-Path $tempPath)) {
         throw "$tempPath not found" 
     }
 
-    If (-not (Test-Path $deliveryZip)) {
-        throw "$deliveryZip not found" 
+    If (-not (Test-Path $deliveryFile)) {
+        throw "$deliveryFile not found" 
     }
 
-    If ([string]::IsNullOrEmpty($questionnaireName)) {
-        throw "No questionnaire name provided" 
+    If ([string]::IsNullOrEmpty($questionnaireNameFrom)) {
+        throw "No questionnaireNameFrom provided" 
     }
+
+    If ([string]::IsNullOrEmpty($questionnaireNameTo)) {
+        throw "No questionnaireNameTo provided" 
+    }    
 
     try {
-        $extractPath = "$($processingFolder)\unedited"
+        $extractPath = "$($processingFolder)\{$(New-Guid)}\"
         ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryZip -destinationPath $extractPath
-        LogInfo("Extracted the delivery zip")
+        	
+        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bmix" -NewName "$extractPath\$questionnaireNameTo.bmix"
+        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdix" -NewName "$extractPath\$questionnaireNameTo.bdix"
+        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
 
-        Copy-Item "$extractPath\$questionnaireName.bmix" -Destination  "$extractPath\$($questionnaireName)_UNEDITED.bmix"
-        Copy-Item "$extractPath\$questionnaireName.bdix" -Destination  "$extractPath\$($questionnaireName)_UNEDITED.bdix"
-
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$($questionnaireName)_UNEDITED.bmix","$extractPath\$($questionnaireName)_UNEDITED.bdix" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$($questionnaireNameTo).bmix","$extractPath\$($questionnaireNameTo).bdix","$extractPath\$($questionnaireNameTo).bdbx" -zipFilePath $deliveryZip
         LogInfo("Added bmix file to the delivery zip")
 
     }
     catch {
-        LogWarning("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+        LogWarning("Renaming unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+    }   
+}
+
+function UpdateDeliveryPackageFiles {
+    param (
+        [string] $tempPath,
+        [string] $processingFolder,
+        [string] $deliveryFile,
+        [string] $editedDataFile,
+        [string] $uneditedDataFile
+    )
+
+    If (-not (Test-Path $tempPath)) {
+        throw "$tempPath not found" 
     }
 
-   
+    If (-not (Test-Path $deliveryFile)) {
+        throw "$deliveryFile not found" 
+    }
+
+    If (-not (Test-Path $editedDataFile)) {
+        throw "$editedDataFile not found" 
+    }
+
+    If (-not (Test-Path $uneditedDataFile)) {
+        throw "$uneditedDataFile not found" 
+    }
+
+
+    try {
+        $extractPath = "$($processingFolder)\{$(New-Guid)}\"
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
+
+        # Delete all files
+        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile
+
+        # Extract edited data to older
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $editedDataFile -destinationPath "$extractPath\EDITED"
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $uneditedDataFile -destinationPath "$extractPath\UNEDITED"
+        	
+        AddFilesToZip -pathTo7zip $tempPath -folder "$extractPath\EDITED" -zipFilePath $deliveryFile
+        AddFilesToZip -pathTo7zip $tempPath -folder "$extractPath\UNEDITED" -zipFilePath $deliveryFile
+
+        LogInfo("Added edited and unedited data to the delivery file")
+
+    }
+    catch {
+        LogWarning("Updating delivery file Failed for $questionnaireName : $($_.Exception.Message)")
+    }   
 }
