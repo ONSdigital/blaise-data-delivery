@@ -177,11 +177,15 @@ function RenameQuestionnaireFiles {
 
         LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bmix to $extractPath\$questionnaireNameTo.bmix")
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bmix" -NewName "$extractPath\$questionnaireNameTo.bmix"
+
+        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bdix to $extractPath\$questionnaireNameTo.bdix")
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdix" -NewName "$extractPath\$questionnaireNameTo.bdix"
+
+        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bdbx to $extractPath\$questionnaireNameTo.bdbx")
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
 
         LogInfo("RenameQuestionnaireFiles AddFilesToZip $extractPath\$($questionnaireNameTo).bmix to zip $deliveryZip")
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$($questionnaireNameTo).bmix","$extractPath\$($questionnaireNameTo).bdix","$extractPath\$($questionnaireNameTo).bdbx" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireNameTo.bmix","$extractPath\$questionnaireNameTo.bdix","$extractPath\$questionnaireNameTo.bdbx" -zipFilePath $deliveryZip
         LogInfo("Added bmix, bdix, bdbx files to the delivery zip")
 
     }
