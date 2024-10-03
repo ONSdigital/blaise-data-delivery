@@ -6,7 +6,7 @@
 
 function CreateDeliveryFile {
     param (
-        [string] $deliveryFileName,
+        [string] $deliveryFile,
         [string] $serverParkName,
         [string] $surveyType,
         [string] $questionnaireName,
@@ -16,8 +16,8 @@ function CreateDeliveryFile {
         [bool] $uneditedData=$false       
     )
 
-    If ([string]::IsNullOrEmpty($deliveryFileName)) {
-        throw "No deliveryFileName argument provided"
+    If ([string]::IsNullOrEmpty($deliveryFile)) {
+        throw "No deliveryFile argument provided"
     }
 
     If ([string]::IsNullOrEmpty($serverParkName)) {
@@ -46,12 +46,9 @@ function CreateDeliveryFile {
 
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
-
-    # Generate full file path for questionnaire
-    $deliveryFile = "$using:tempPath\$deliveryFileName"
     
     # Download questionnaire package
-    DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
+    DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $dqsBucket -filePath $deliveryFile
     
     # Create a temporary folder for processing questionnaires
     $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($questionnaireName)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"

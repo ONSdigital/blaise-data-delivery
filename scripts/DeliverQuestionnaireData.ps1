@@ -78,16 +78,22 @@ try {
             # Generate unique data delivery filename for the questionnaire
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
+            # Generate full file path for questionnaire
+            $deliveryFile = "$tempPath\$deliveryFileName"
+
             # Set data delivery status to started
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
             # Create delivery file
+            LogInfo("Create delivery file")
             CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData          
                      
             # Upload questionnaire package to NIFI
+            LogInfo("Upload questionnaire package to NIFI")
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated
+            LogInfo("Set data delivery status to generated")
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Completed"
         }
