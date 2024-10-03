@@ -79,7 +79,7 @@ try {
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
             # Generate full file path for questionnaire
-            $deliveryFile = "$tempPath\$deliveryFileName"
+            $deliveryFile = "$using:tempPath\$deliveryFileName"
 
             # Set data delivery status to started
             LogInfo("Set data delivery status to started for questionnaire $($_.name)")
