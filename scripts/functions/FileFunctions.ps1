@@ -185,11 +185,11 @@ function RenameQuestionnaireFiles {
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
 
         LogInfo("RenameQuestionnaireFiles AddFilesToZip $extractPath\$($questionnaireNameTo).bmix to zip $deliveryZip")
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireNameTo.bmix","$extractPath\$questionnaireNameTo.bdix","$extractPath\$questionnaireNameTo.bdbx" -zipFilePath $deliveryZip
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireNameTo.bmix","$extractPath\$questionnaireNameTo.bdix","$extractPath\$questionnaireNameTo.bdbx" -zipFilePath $deliveryFile
         LogInfo("Added bmix, bdix, bdbx files to the delivery zip")
 
     }
     catch {
-        LogWarning("Renaming unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+        LogError("Renaming unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
     }   
 }
