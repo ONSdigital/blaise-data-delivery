@@ -33,10 +33,6 @@ function CreateDeliveryFile {
         throw "No questionnaire name argument provided"
     }
 
-    If ([string]::IsNullOrEmpty($subFolder)) {
-        throw "No subFolder argument provided"
-    }
-
     If ([string]::IsNullOrEmpty($dqsBucket)) {
         throw "No dqsBucket argument provided"
     }
