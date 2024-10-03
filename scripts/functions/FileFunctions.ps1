@@ -103,7 +103,6 @@ function DeleteFilesInZip {
     }
     #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
     & $pathTo7zip\7za d $zipFilePath $fileName -r
-    LogInfo("Deleted the file(s) $fileName in the zip file '$zipFilePath'")
 }
 
 function CreateANewFolder {
