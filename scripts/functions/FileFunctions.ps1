@@ -169,10 +169,13 @@ function RenameQuestionnaireFiles {
     }    
 
     try {
-        $extractPath = "$($processingFolder)\{$(New-Guid)}\"
+        $extractPath = "$($processingFolder)\{$(New-Guid)}\jambo"
         LogInfo("RenameQuestionnaireFiles extractPath $extractPath")
         ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
         	
+        LogInfo("RenameQuestionnaireFiles extracted files to $extractPath")
+
+        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bmix to $extractPath\$questionnaireNameTo.bmix")
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bmix" -NewName "$extractPath\$questionnaireNameTo.bmix"
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdix" -NewName "$extractPath\$questionnaireNameTo.bdix"
         Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
