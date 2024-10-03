@@ -45,10 +45,11 @@ function CreateDeliveryFile {
     $config = GetConfigFromFile -surveyType $surveyType
     
     # Download questionnaire package
-    LogInfo("Download questionnaire package")
+    LogInfo("Download questionnaire package $($questionnaireName).bpkg as $deliveryFile")
     DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $dqsBucket -filePath $deliveryFile
     
     # Create a temporary folder for processing questionnaires
+    LogInfo("Create processing folder $processingFolder for $deliveryFile")
     $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($questionnaireName)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
      
     # If we need to use subfolders then create one and set variable
@@ -68,16 +69,16 @@ function CreateDeliveryFile {
     }
 
     # Add manipula and questionnaire package to processing folder
-    LogInfo("Add manipula")
+    LogInfo("Add manipula to $processingFolder")
     AddManipulaToProcessingFolder -manipulaPackage "$tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $tempPath
  
     # Populate data files and formats
     if($uneditedData -eq $false) {
-        LogInfo("PopulateDeliveryPackage")
+        LogInfo("PopulateDeliveryPackage $deliveryFile")
         PopulateDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
     }
     else {
-        LogInfo("PopulateUneditedDeliveryPackage")
+        LogInfo("PopulateUneditedDeliveryPackage $deliveryFile")
         PopulateUneditedDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
     }
 
