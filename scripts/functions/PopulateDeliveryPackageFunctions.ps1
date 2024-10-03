@@ -20,6 +20,7 @@ function PopulateDeliveryPackage {
 
     # Populate data
     # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
+    LogInfo("blaise.cli datadelivery $serverParkName $questionnaireName $deliveryFile $($config.auditTrailData) $($config.batchSize)")
     C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $questionnaireName -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1        
     
     # Extact Questionnaire Package to processing folder
