@@ -57,8 +57,8 @@ function PopulateUneditedDeliveryPackage {
     RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
     
     # Extact Questionnaire Package to processing folder
-    ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath "$processingFolder"       
+    #ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath "$processingFolder"       
 
     # Add additional file formats specified in the config i.e. JSON, ASCII    
-    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
+    #AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
 }
