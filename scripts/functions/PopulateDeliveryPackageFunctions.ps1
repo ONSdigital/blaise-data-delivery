@@ -45,16 +45,16 @@ function PopulateUneditedDeliveryPackage {
     $config = GetConfigFromFile -surveyType $surveyType
 
     # Rename bmix and bdix beeded to extract data from the unedited table
-    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom $questionnaireName -questionnaireNameTo "$($questionnaireName)_UNEDITED"
+    CreateUneditedQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom $questionnaireName -questionnaireNameTo "$($questionnaireName)_UNEDITED"
     LogInfo("Renamed questionnaire files")
 
     # Populate data
     # The use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up   
     LogInfo("Populate data")    
-    & C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q "$($questionnaireName)_UNEDITED" -f $deliveryFile -b $config.batchSize 2>&1    
+    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q "$($questionnaireName)_UNEDITED" -f $deliveryFile -b $config.batchSize 2>&1    
        
     # Rename bmix and bdix beeded to extract data from the unedited table
-    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
+    AddUneditedDataSet -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
     
     # Extact Questionnaire Package to processing folder
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder       

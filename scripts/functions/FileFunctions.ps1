@@ -143,13 +143,12 @@ function ConvertJsonFileToObject {
     return Get-Content -Path $jsonFile | ConvertFrom-Json
 }
 
-function RenameQuestionnaireFiles {
+function CreateUneditedQuestionnaireFiles {
     param (
         [string] $tempPath,
         [string] $processingFolder,
         [string] $deliveryFile,
-        [string] $questionnaireNameFrom,
-        [string] $questionnaireNameTo
+        [string] $questionnaireName
     )
 
     If (-not (Test-Path $tempPath)) {
@@ -160,26 +159,60 @@ function RenameQuestionnaireFiles {
         throw "$deliveryFile not found" 
     }
 
-    If ([string]::IsNullOrEmpty($questionnaireNameFrom)) {
-        throw "No questionnaireNameFrom provided" 
-    }
-
-    If ([string]::IsNullOrEmpty($questionnaireNameTo)) {
-        throw "No questionnaireNameTo provided" 
-    }    
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaireName provided" 
+    } 
 
     try {
         $extractPath = "$($processingFolder)\{$(New-Guid)}"
         ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
         
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bmix" -NewName "$extractPath\$questionnaireNameTo.bmix"
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdix" -NewName "$extractPath\$questionnaireNameTo.bdix"
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
+        $uneditedQuestionnaireName = "$($questionnaireName)_UNEDITED"
+        Rename-Item -Path "$extractPath\$questionnaireName.bmix" -NewName "$extractPath\$uneditedQuestionnaireName.bmix"
+        Rename-Item -Path "$extractPath\$questionnaireName.bdix" -NewName "$extractPath\$uneditedQuestionnaireName.bdix"
+        Rename-Item -Path "$extractPath\$questionnaireName.bdbx" -NewName "$extractPath\$uneditedQuestionnaireName.bdbx"
 
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireNameTo.bmix","$extractPath\$questionnaireNameTo.bdix","$extractPath\$questionnaireNameTo.bdbx" -zipFilePath $deliveryFile
-        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$questionnaireNameFrom.*"
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$uneditedQuestionnaireName.bmix","$extractPath\$uneditedQuestionnaireName.bdix","$extractPath\$uneditedQuestionnaireName.bdbx" -zipFilePath $deliveryFile
+        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$questionnaireName.bdbx"
     }
     catch {
-        LogError("Renaming unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+        LogError("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
     }   
 }
+
+
+function AddUneditedDataSet {
+    param (
+        [string] $tempPath,
+        [string] $processingFolder,
+        [string] $deliveryFile,
+        [string] $questionnaireName
+    )
+
+    If (-not (Test-Path $tempPath)) {
+        throw "$tempPath not found" 
+    }
+
+    If (-not (Test-Path $deliveryFile)) {
+        throw "$deliveryFile not found" 
+    }
+
+    If ([string]::IsNullOrEmpty($questionnaireName)) {
+        throw "No questionnaireName provided" 
+    }
+
+    try {
+        $extractPath = "$($processingFolder)\{$(New-Guid)}"
+        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
+        
+        $uneditedQuestionnaireName = "$($questionnaireName)_UNEDITED"
+        Rename-Item -Path "$extractPath\$uneditedQuestionnaireName.bdbx" -NewName "$extractPath\$questionnaireName.bdbx"
+
+        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireName.bdbx" -zipFilePath $deliveryFile
+        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$uneditedQuestionnaireName*"
+    }
+    catch {
+        LogError("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
+    }   
+}
+
