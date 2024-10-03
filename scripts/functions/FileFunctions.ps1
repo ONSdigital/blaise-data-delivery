@@ -117,6 +117,7 @@ function renameFileInZip {
         throw "$zipFilePath not found"
     }
 
+    LogInfo("rename file in the zip file '$zipFilePath' from $fromFileName to $toFileName")
     & $pathTo7zip\7za rn $zipFilePath $fromFileName $toFileName
     LogInfo("renamed the file(s) in the zip file '$zipFilePath'")
 }
