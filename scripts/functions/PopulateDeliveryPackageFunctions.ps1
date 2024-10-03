@@ -54,7 +54,7 @@ function PopulateUneditedDeliveryPackage {
     C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q "$($questionnaireName)_UNEDITED" -f $deliveryFile -b $config.batchSize 2>&1    
        
     # Rename bmix and bdix beeded to extract data from the unedited table
-    AddUneditedDataSet -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
+    #AddUneditedDataSet -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
     
     # Extact Questionnaire Package to processing folder
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder       

@@ -173,7 +173,7 @@ function CreateUneditedQuestionnaireFiles {
         Rename-Item -Path "$extractPath\$questionnaireName.bdbx" -NewName "$extractPath\$uneditedQuestionnaireName.bdbx"
 
         AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$uneditedQuestionnaireName.bmix","$extractPath\$uneditedQuestionnaireName.bdix","$extractPath\$uneditedQuestionnaireName.bdbx" -zipFilePath $deliveryFile
-        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$questionnaireName.bdbx"
+        #DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$questionnaireName.bdbx"
     }
     catch {
         LogError("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")

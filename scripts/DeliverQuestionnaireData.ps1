@@ -116,7 +116,7 @@ try {
 
                 # Create delivery file
                 LogInfo("Create delivery file for questionnaire $($_.name)")
-                #CreateDeliveryFile -deliveryFile $editedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
+                CreateDeliveryFile -deliveryFile $editedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
                 CreateDeliveryFile -deliveryFile $uneditedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $true   
 
                 # Upload questionnaire package to NIFI
