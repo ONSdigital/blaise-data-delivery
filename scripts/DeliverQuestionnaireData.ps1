@@ -122,7 +122,7 @@ try {
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
 
             # Extact Questionnaire Package to processing folder
-            ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
+            ExtractZipFile -pathTo7zip $using:tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
 
             # Add additional file formats specified in the config i.e. JSON, ASCII
             LogInfo("Add AddAdditionalFilesToDeliveryPackage")
