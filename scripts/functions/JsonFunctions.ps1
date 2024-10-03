@@ -39,7 +39,7 @@ function AddJSONFileToDeliveryPackage {
         }
         else {
             Copy-Item -Path "$processingFolder/$($questionnaireName).json" -Destination $subFolder/$questionnaireName.json
-            Copy-Item -Path "$processingFolder/$($questionnaireName).json.bdix" -Destination $subFolder/$questionnaireName.json
+            Copy-Item -Path "$processingFolder/$($questionnaireName).json.bdix" -Destination $subFolder/$questionnaireName.json.bdix
             LogInfo("Copied .JSON Files to $subFolder")
 
             AddFolderToZip -pathTo7zip $tempPath -folder $subFolder -zipFilePath $deliveryZip

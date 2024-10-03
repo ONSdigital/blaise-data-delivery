@@ -107,6 +107,10 @@ try {
                 $processingSubFolder = $NULL
             }
 
+             # Add manipula and questionnaire package to processing folder
+            LogInfo("Add manipula")
+            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
+
             # Populate data
             # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
             C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
@@ -116,10 +120,6 @@ try {
                 CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
                 C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
             }
-
-            # Add manipula and questionnaire package to processing folder
-            LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
 
             # Extact Questionnaire Package to processing folder
             ExtractZipFile -pathTo7zip $using:tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
