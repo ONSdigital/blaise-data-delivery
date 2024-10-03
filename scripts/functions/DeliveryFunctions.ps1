@@ -2,8 +2,8 @@
 . "$PSScriptRoot\ConfigFunctions.ps1"
 . "$PSScriptRoot\CloudFunctions.ps1"
 . "$PSScriptRoot\PopulateDeliveryPackageFunctions.ps1"
-. "$PSScriptRoot\functions\ManipulaFunctions.ps1"
-. "$PSScriptRoot\functions\FileFunctions.ps1"
+. "$PSScriptRoot\ManipulaFunctions.ps1"
+. "$PSScriptRoot\FileFunctions.ps1"
 
 function CreateDeliveryFile {
     param (
