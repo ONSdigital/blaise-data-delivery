@@ -95,14 +95,14 @@ function PopulateDeliveryPackage {
 
     # Populate data
     # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $_.name -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1        
+    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $questionnaireName -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1        
     
     # Extact Questionnaire Package to processing folder
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
 
     # Add additional file formats specified in the config i.e. JSON, ASCII
     LogInfo("Add AddAdditionalFilesToDeliveryPackage")
-    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
+    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
 }
 
 function PopulateDeliveryPackageWithEditing {
