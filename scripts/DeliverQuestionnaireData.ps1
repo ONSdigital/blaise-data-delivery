@@ -112,7 +112,7 @@ try {
             AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
 
             # Populate data files and formats
-            PopulateDeliveryPackage -serverParkName $using:serverParkName -surveyType $using:surveyType -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+            PopulateDeliveryPackage -serverParkName $using:serverParkName -surveyType $using:surveyType deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
                      
             # Upload questionnaire package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
