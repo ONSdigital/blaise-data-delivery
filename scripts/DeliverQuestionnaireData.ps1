@@ -53,7 +53,7 @@ try {
         exit
     }
 
-    #get configuration for survey type
+    # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
 
     # Generating batch stamp for all questionnaires in the current run to be grouped together
@@ -72,80 +72,29 @@ try {
             . "$using:PSScriptRoot\functions\FileFunctions.ps1"
             . "$using:PSScriptRoot\functions\DataDeliveryStatusFunctions.ps1"
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
-            . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
-            . "$using:PSScriptRoot\functions\SpssFunctions.ps1"
-            . "$using:PSScriptRoot\functions\XmlFunctions.ps1"
-            . "$using:PSScriptRoot\functions\JsonFunctions.ps1"
-            . "$using:PSScriptRoot\functions\AsciiFunctions.ps1"
-            . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
+            . "$using:PSScriptRoot\functions\DeliveryFunctions.ps1"
 
             # Generate unique data delivery filename for the questionnaire
+            LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
+            # Generate full file path for questionnaire
+            $deliveryFile = "$tempPath\$deliveryFileName"
+
             # Set data delivery status to started
+            LogInfo("Set data delivery status to started for questionnaire $($_.name)")
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
-            # Generate full file path for questionnaire
-            $deliveryFile = "$using:tempPath\$deliveryFileName"
-
-            # Download questionnaire package
-            DownloadFileFromBucket -questionnaireFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
-
-            # Populate data
-            # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
-            
-            # Create a temporary folder for processing questionnaires
-            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-
-            # If we need to use subfolders then create one and set variable
-            if($using:config.createSubFolder -eq $true) {
-                LogInfo("Creating subfolder for delivery")
-
-                # Gets the folder name of the processing folder
-                $processingSubFolderName = GetFolderNameFromAPath -folderPath $processingFolder
-
-                # Create a sub folder within the temporary folder
-                $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
-            }
-            else {
-                # This variable will be ignored in the fucntion called if passed - ugh
-                LogInfo("Did not create subfolder for delivery")
-                $processingSubFolder = $NULL
-            }
-
-            #Add manipula and questionnaire package to processing folder
-            LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
-
-            # Generate and add SPSS files if configured
-            if($using:config.deliver.spss -eq $true) {
-                LogInfo("Adding SPSS files")
-                AddSpssFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
-            }
-
-            # Generate and add Ascii files if configured
-            if($using:config.deliver.ascii -eq $true) {
-                LogInfo("Adding ASCII files")
-                AddAsciiFilesToDeliveryPackage -deliveryZip $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
-            }
-
-            # Generate and add XML Files if configured
-            if($using:config.deliver.xml -eq $true) {
-                LogInfo("Adding XML files")
-                AddXMLFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
-            }
-
-            # Generate and add json Files if configured
-            if($using:config.deliver.json -eq $true) {
-                LogInfo("Adding JSON files")
-                AddJSONFileToDeliveryPackage -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name -subFolder $processingSubFolder -tempPath $using:tempPath
-            }
-
+            # Create delivery file
+            LogInfo("Create delivery file for questionnaire $($_.name)")
+            CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
+                     
             # Upload questionnaire package to NIFI
+            LogInfo("Upload questionnaire package to NIFI for questionnaire $($_.name)")
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated
+            LogInfo("Set data delivery status to generated for questionnaire $($_.name)")
             UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Completed"
         }
