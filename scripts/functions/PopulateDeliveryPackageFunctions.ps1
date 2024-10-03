@@ -1,6 +1,6 @@
 ﻿. "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\ConfigFunctions.ps1"
-. "$PSScriptRoot\functions\FileFunctions.ps1"
+. "$PSScriptRoot\FileFunctions.ps1"
 . "$PSScriptRoot\AddAdditionalFilesFunctions.ps1"
 
 function PopulateDeliveryPackage {
