@@ -73,10 +73,10 @@ function CreateDeliveryFile {
  
     # Populate data files and formats
     if($uneditedData -eq $false) {
-        PopulateDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
+        PopulateDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
     }
     else {
-        PopulateUneditedDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
+        PopulateUneditedDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
     }
 
 }

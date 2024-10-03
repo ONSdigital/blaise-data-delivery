@@ -46,18 +46,18 @@ function PopulateUneditedDeliveryPackage {
     # EDITED
 
     # Rename bmix and bdix beeded to extract data from the unedited table
-    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile deliveryFile -questionnaireNameFrom $questionnaireName -questionnaireNameTo "$($questionnaireName)_UNEDITED"
+    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom $questionnaireName -questionnaireNameTo "$($questionnaireName)_UNEDITED"
 
     # Populate data
     # The use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up       
     C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q "$($questionnaireName)_UNEDITED" -f $uneditedDataFile -a false -b $config.batchSize 2>&1    
        
     # Rename bmix and bdix beeded to extract data from the unedited table
-    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
+    RenameQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom "$($questionnaireName)_UNEDITED" -questionnaireNameTo $questionnaireName
     
     # Extact Questionnaire Package to processing folder
-    ExtractZipFile -pathTo7zip $tempPath -zipFilePath deliveryFile -destinationPath "$processingFolder"       
+    ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath "$processingFolder"       
 
     # Add additional file formats specified in the config i.e. JSON, ASCII    
-    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
+    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
 }
