@@ -87,7 +87,7 @@ try {
 
             # Create delivery file
             LogInfo("Create delivery file for questionnaire $($_.name)")
-            CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData          
+            CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
                      
             # Upload questionnaire package to NIFI
             LogInfo("Upload questionnaire package to NIFI for questionnaire $($_.name)")
