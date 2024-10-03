@@ -2,6 +2,7 @@
 function GenerateDeliveryFilename {
     param (
         [string] $prefix,
+        [string] $suffix,
         [string] $questionnaireName,
         [datetime] $dateTime = (Get-Date),
         [string] $fileExt
@@ -19,7 +20,7 @@ function GenerateDeliveryFilename {
         throw "No file extension argument provided"
     }
 
-    return "$($prefix)_$($questionnaireName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss")).$fileExt"
+    return "$($prefix)_$($questionnaireName)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))$($suffix).$fileExt"
 }
 
 function GenerateBatchFileName {

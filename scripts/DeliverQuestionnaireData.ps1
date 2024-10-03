@@ -74,29 +74,63 @@ try {
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\functions\DeliveryFunctions.ps1"
 
-            # Generate unique data delivery filename for the questionnaire
-            LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
-            $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
+            if($using:config.hasEditMode -eq $false) {
+                # Generate unique data delivery filename for the questionnaire
+                LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
+                $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
-            # Generate full file path for questionnaire
-            $deliveryFile = "$using:tempPath\$deliveryFileName"
+                # Generate full file path for questionnaire
+                $deliveryFile = "$using:tempPath\$deliveryFileName"
 
-            # Set data delivery status to started
-            LogInfo("Set data delivery status to started for questionnaire $($_.name)")
-            CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+                # Set data delivery status to started
+                LogInfo("Set data delivery status to started for questionnaire $($_.name)")
+                CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
-            # Create delivery file
-            LogInfo("Create delivery file for questionnaire $($_.name)")
-            CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
-                     
-            # Upload questionnaire package to NIFI
-            LogInfo("Upload questionnaire package to NIFI for questionnaire $($_.name)")
-            UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
+                # Create delivery file
+                LogInfo("Create delivery file for questionnaire $($_.name)")
+                CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
+                        
+                # Upload questionnaire package to NIFI
+                LogInfo("Upload questionnaire package to NIFI for questionnaire $($_.name)")
+                UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
-            # Set data delivery status to generated
-            LogInfo("Set data delivery status to generated for questionnaire $($_.name)")
-            UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
-            $process.Status = "Completed"
+                # Set data delivery status to generated
+                LogInfo("Set data delivery status to generated for questionnaire $($_.name)")
+                UpdateDataDeliveryStatus -fileName $deliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+                $process.Status = "Completed"
+            }
+            else {
+                # Generate unique data delivery filename for the questionnaire
+                LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
+                $editedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_EDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
+                $uneditedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_UNEDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
+
+                # Generate full file path for questionnaire
+                $editedDeliveryFile = "$using:tempPath\$editedDeliveryFileName"
+                $uneditedDeliveryFile = "$using:tempPath\$uneditedDeliveryFileName"
+
+                # Set data delivery status to started
+                LogInfo("Set data delivery status to started for questionnaire $($_.name)")
+                CreateDataDeliveryStatus -fileName $editedDeliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+                CreateDataDeliveryStatus -fileName $uneditedDeliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+
+                # Create delivery file
+                LogInfo("Create delivery file for questionnaire $($_.name)")
+                CreateDeliveryFile -deliveryFile $editedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
+                CreateDeliveryFile -deliveryFile $uneditedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $true   
+
+                # Upload questionnaire package to NIFI
+                LogInfo("Upload questionnaire package to NIFI for questionnaire $($_.name)")
+                UploadFileToBucket -filePath $editedDeliveryFile -bucketName $using:nifiBucket -deliveryFileName $editedDeliveryFileName
+                UploadFileToBucket -filePath $uneditedDeliveryFile -bucketName $using:nifiBucket -deliveryFileName $uneditedDeliveryFileName
+
+                # Set data delivery status to generated
+                LogInfo("Set data delivery status to generated for questionnaire $($_.name)")
+                UpdateDataDeliveryStatus -fileName $editedDeliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+                UpdateDataDeliveryStatus -fileName $uneditedDeliveryFileName -state "generated" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+                $process.Status = "Completed"                
+
+            }
         }
         catch {
             LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
