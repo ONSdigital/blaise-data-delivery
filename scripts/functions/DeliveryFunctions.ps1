@@ -1,5 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\ConfigFunctions.ps1"
+. "$PSScriptRoot\functions\CloudFunctions.ps1"
 . "$PSScriptRoot\DeliveryFunctions.ps1"
 . "$PSScriptRoot\functions\ManipulaFunctions.ps1"
 . "$PSScriptRoot\functions\FileFunctions.ps1"
@@ -48,6 +49,7 @@ function CreateDeliveryFile {
     $config = GetConfigFromFile -surveyType $surveyType
     
     # Download questionnaire package
+    LogInfo("Download questionnaire package")
     DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $dqsBucket -filePath $deliveryFile
     
     # Create a temporary folder for processing questionnaires

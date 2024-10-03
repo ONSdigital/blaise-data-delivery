@@ -72,7 +72,6 @@ try {
             . "$using:PSScriptRoot\functions\FileFunctions.ps1"
             . "$using:PSScriptRoot\functions\DataDeliveryStatusFunctions.ps1"
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
-            . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
             . "$using:PSScriptRoot\functions\DeliveryFunctions.ps1"
 
             # Generate unique data delivery filename for the questionnaire
