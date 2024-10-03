@@ -3,7 +3,6 @@ function AddManipulaToProcessingFolder {
     param (
         [string] $manipulaPackage,
         [string] $processingFolder,
-        [string] $deliveryFile,
         [string] $tempPath
     )
 
@@ -15,13 +14,6 @@ function AddManipulaToProcessingFolder {
         throw "$processingFolder not found"
     }
 
-    If (-not (Test-Path $deliveryFile)) {
-        throw "$deliveryFile not found"
-    }
-
     # Extract Manipula files to the processing folder
     ExtractZipFile -pathTo7zip $tempPath -zipFilePath $manipulaPackage -destinationPath $processingFolder
-
-    # Extact Questionnaire Package
-    ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
 }

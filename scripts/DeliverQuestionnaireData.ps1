@@ -90,17 +90,7 @@ try {
 
             # Create a temporary folder for processing questionnaires
             $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-                    
-            # Populate data
-            # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
-            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
-            
-            # if editing is enabled then generate the unedited data
-            if($using:config.hasEditMode -eq $true) {
-                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
-                C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
-            }
-
+             
             # If we need to use subfolders then create one and set variable
             if($using:config.createSubFolder -eq $true) {
                 LogInfo("Creating subfolder for delivery")
@@ -112,14 +102,27 @@ try {
                 $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
             }
             else {
-                # This variable will be ignored in the fucntion called if passed - ugh
+                # This variable will be ignored in the function called if passed - ugh
                 LogInfo("Did not create subfolder for delivery")
                 $processingSubFolder = $NULL
             }
 
+            # Populate data
+            # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
+            C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q $_.name -f $deliveryFile -a $using:config.auditTrailData -b $using:config.batchSize 2>&1        
+            
+            # if editing is enabled then generate the unedited data
+            if($using:config.hasEditMode -eq $true) {
+                CreateUneditedQuestionnaireFiles -tempPath $using:tempPath -processingFolder $processingFolder -deliveryZip $deliveryFile -questionnaireName $_.name
+                C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $using:serverParkName -q "$($_.name)_UNEDITED" -f $deliveryFile -a false -b $using:config.batchSize 2>&1        
+            }
+
             # Add manipula and questionnaire package to processing folder
             LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -deliveryFile $deliveryFile -tempPath $using:tempPath
+            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
+
+            # Extact Questionnaire Package to processing folder
+            ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
 
             # Add additional file formats specified in the config i.e. JSON, ASCII
             LogInfo("Add AddAdditionalFilesToDeliveryPackage")
