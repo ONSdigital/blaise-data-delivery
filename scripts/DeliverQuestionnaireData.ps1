@@ -73,8 +73,7 @@ try {
             . "$using:PSScriptRoot\functions\DataDeliveryStatusFunctions.ps1"
             . "$using:PSScriptRoot\functions\RestApiFunctions.ps1"
             . "$using:PSScriptRoot\functions\CloudFunctions.ps1"
-            . "$using:PSScriptRoot\functions\ManipulaFunctions.ps1"
-            . "$using:PSScriptRoot\functions\PopulateDeliveryPackage.ps1"
+            . "$using:PSScriptRoot\functions\DeliveryFunctions.ps1"
 
             # Generate unique data delivery filename for the questionnaire
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
@@ -82,37 +81,8 @@ try {
             # Set data delivery status to started
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
 
-            # Generate full file path for questionnaire
-            $deliveryFile = "$using:tempPath\$deliveryFileName"
-
-            # Download questionnaire package
-            DownloadFileFromBucket -questionnaireFileName "$($_.name).bpkg" -bucketName $using:dqsBucket -filePath $deliveryFile
-
-            # Create a temporary folder for processing questionnaires
-            $processingFolder = CreateANewFolder -folderPath $using:tempPath -folderName "$($_.name)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-             
-            # If we need to use subfolders then create one and set variable
-            if($using:config.createSubFolder -eq $true) {
-                LogInfo("Creating subfolder for delivery")
-
-                # Gets the folder name of the processing folder
-                $processingSubFolderName = GetFolderNameFromAPath -folderPath $processingFolder
-
-                # Create a sub folder within the temporary folder
-                $processingSubFolder = CreateANewFolder -folderPath $processingFolder -folderName $processingSubFolderName
-            }
-            else {
-                # This variable will be ignored in the function called if passed - ugh
-                LogInfo("Did not create subfolder for delivery")
-                $processingSubFolder = $NULL
-            }
-
-             # Add manipula and questionnaire package to processing folder
-            LogInfo("Add manipula")
-            AddManipulaToProcessingFolder -manipulaPackage "$using:tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $using:tempPath
-
-            # Populate data files and formats
-            PopulateDeliveryPackage -serverParkName $using:serverParkName -surveyType $using:surveyType deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath
+            # Create delivery file
+            CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData          
                      
             # Upload questionnaire package to NIFI
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
