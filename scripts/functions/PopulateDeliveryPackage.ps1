@@ -54,7 +54,7 @@ function PopulateDeliveryPackage {
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
 
-    if($config.hasEditMode -eq $true) {
+    if($config.hasEditMode -eq $false) {
         PopulateDeliveryPackage 
             -serverParkName $serverParkName 
             -surveyType $surveyType
