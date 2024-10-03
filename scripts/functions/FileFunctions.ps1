@@ -105,6 +105,22 @@ function DeleteFilesInZip {
     LogInfo("Deleted the file(s) in the zip file '$zipFilePath'")
 }
 
+function renameFileInZip {
+    param (
+        [string] $pathTo7zip,
+        [string] $zipFilePath,
+        [string] $fromFileName,
+        [string] $toFileName
+    )
+
+    If (-not (Test-Path $zipFilePath)) {
+        throw "$zipFilePath not found"
+    }
+
+    & $pathTo7zip\7za rn $zipFilePath $fromFileName $toFileName
+    LogInfo("renamed the file(s) in the zip file '$zipFilePath'")
+}
+
 function CreateANewFolder {
     param (
         [string] $folderPath,
@@ -169,25 +185,9 @@ function RenameQuestionnaireFiles {
     }    
 
     try {
-        $extractPath = "$($processingFolder)\{$(New-Guid)}\jambo"
-        LogInfo("RenameQuestionnaireFiles extractPath $extractPath")
-        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
-        	
-        LogInfo("RenameQuestionnaireFiles extracted files to $extractPath")
-
-        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bmix to $extractPath\$questionnaireNameTo.bmix")
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bmix" -NewName "$extractPath\$questionnaireNameTo.bmix"
-
-        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bdix to $extractPath\$questionnaireNameTo.bdix")
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdix" -NewName "$extractPath\$questionnaireNameTo.bdix"
-
-        LogInfo("RenameQuestionnaireFiles Rename-Item from $extractPath\$questionnaireNameFrom.bdbx to $extractPath\$questionnaireNameTo.bdbx")
-        Rename-Item -Path "$extractPath\$questionnaireNameFrom.bdbx" -NewName "$extractPath\$questionnaireNameTo.bdbx"
-
-        LogInfo("RenameQuestionnaireFiles AddFilesToZip $extractPath\$($questionnaireNameTo).bmix to zip $deliveryZip")
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireNameTo.bmix","$extractPath\$questionnaireNameTo.bdix","$extractPath\$questionnaireNameTo.bdbx" -zipFilePath $deliveryFile
-        LogInfo("Added bmix, bdix, bdbx files to the delivery zip")
-
+        renameFileInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fromFileName "$questionnaireNameFrom.bmix" -toFileName "$questionnaireNameTo.bmix"        	
+        renameFileInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fromFileName "$questionnaireNameFrom.bdix" -toFileName "$questionnaireNameTo.bdix"   
+        renameFileInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fromFileName "$questionnaireNameFrom.bdbx" -toFileName "$questionnaireNameTo.bdbx"   
     }
     catch {
         LogError("Renaming unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
