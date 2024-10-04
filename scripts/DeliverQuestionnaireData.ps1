@@ -102,11 +102,11 @@ try {
             else {
                 # Generate unique data delivery filename for the questionnaire
                 LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
-                $editedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_EDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
+                #$editedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_EDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
                 $uneditedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_UNEDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
                 # Generate full file path for questionnaire
-                $editedDeliveryFile = "$using:tempPath\$editedDeliveryFileName"
+                #$editedDeliveryFile = "$using:tempPath\$editedDeliveryFileName"
                 $uneditedDeliveryFile = "$using:tempPath\$uneditedDeliveryFileName"
 
                 # Set data delivery status to started
@@ -116,7 +116,7 @@ try {
 
                 # Create delivery file
                 LogInfo("Create delivery file for questionnaire $($_.name)")
-                CreateDeliveryFile -deliveryFile $editedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
+                #CreateDeliveryFile -deliveryFile $editedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
                 CreateDeliveryFile -deliveryFile $uneditedDeliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $true   
 
                 # Upload questionnaire package to NIFI
