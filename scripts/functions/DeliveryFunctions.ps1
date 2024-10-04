@@ -83,5 +83,4 @@ function CreateDeliveryFile {
 
     # Add additional file formats specified in the config i.e. JSON, ASCII
     AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
-
 }
