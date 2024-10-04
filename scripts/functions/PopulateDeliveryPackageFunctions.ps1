@@ -45,7 +45,7 @@ function PopulateUneditedDeliveryPackage {
     $config = GetConfigFromFile -surveyType $surveyType
 
     # Rename bmix and bdix beeded to extract data from the unedited table
-    CreateUneditedQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile -questionnaireNameFrom $questionnaireName -questionnaireNameTo "$($questionnaireName)_UNEDITED"
+    CreateUneditedQuestionnaireFiles -tempPath $tempPath -processingFolder $processingFolder -deliveryFile $deliveryFile questionnaireName $questionnaireName 
     LogInfo("Renamed questionnaire files")
 
     # Populate data
