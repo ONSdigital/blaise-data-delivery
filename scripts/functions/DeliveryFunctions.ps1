@@ -45,11 +45,9 @@ function CreateDeliveryFile {
     $config = GetConfigFromFile -surveyType $surveyType
     
     # Download questionnaire package
-    LogInfo("Download questionnaire package $($questionnaireName).bpkg as $deliveryFile")
     DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $dqsBucket -filePath $deliveryFile
     
     # Create a temporary folder for processing questionnaires
-    LogInfo("Create processing folder $processingFolder for $deliveryFile")
     $processingFolder = CreateANewFolder -folderPath $tempPath -folderName "$($questionnaireName)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
      
     # If we need to use subfolders then create one and set variable
@@ -73,13 +71,17 @@ function CreateDeliveryFile {
     AddManipulaToProcessingFolder -manipulaPackage "$tempPath/manipula.zip" -processingFolder $processingFolder -tempPath $tempPath
  
     # Populate data files and formats
-    if($uneditedData -eq $false) {
-        LogInfo("PopulateDeliveryPackage $deliveryFile")
-        PopulateDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
-    }
-    else {
-        LogInfo("PopulateUneditedDeliveryPackage $deliveryFile")
-        PopulateUneditedDeliveryPackage -serverParkName $serverParkName -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath    
-    }
+    # Get configuration for survey type
+    $config = GetConfigFromFile -surveyType $surveyType
+
+    # Populate data
+    # the use of the parameter '2>&1' redirects output of the cli to the command line and will allow any errors to bubble up
+    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $questionnaireName -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1        
+    
+    # Extact Questionnaire Package to processing folder
+    ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $processingFolder
+
+    # Add additional file formats specified in the config i.e. JSON, ASCII
+    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -deliveryFile $deliveryFile -processingFolder $processingFolder -questionnaireName $questionnaireName -dqsBucket $dqsBucket -subFolder $processingSubFolder -tempPath $tempPath   
 
 }

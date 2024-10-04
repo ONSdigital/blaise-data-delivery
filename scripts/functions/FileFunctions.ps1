@@ -91,20 +91,6 @@ function AddFolderToZip {
     LogInfo("Added the folder '$folder' to the zip file '$zipFilePath'")
 }
 
-function DeleteFilesInZip {
-    param (
-        [string] $pathTo7zip,
-        [string] $zipFilePath,
-        [string] $fileName
-    )
-
-    If (-not (Test-Path $zipFilePath)) {
-        throw "$zipFilePath not found"
-    }
-    #7 zip CLI - a = add / append - Zip file to Create / append too - Files to add to the zip
-    & $pathTo7zip\7za d $zipFilePath $fileName -r
-}
-
 function CreateANewFolder {
     param (
         [string] $folderPath,
@@ -142,76 +128,3 @@ function ConvertJsonFileToObject {
 
     return Get-Content -Path $jsonFile | ConvertFrom-Json
 }
-
-function CreateUneditedQuestionnaireFiles {
-    param (
-        [string] $tempPath,
-        [string] $processingFolder,
-        [string] $deliveryFile,
-        [string] $questionnaireName
-    )
-
-    If (-not (Test-Path $tempPath)) {
-        throw "$tempPath not found" 
-    }
-
-    If (-not (Test-Path $deliveryFile)) {
-        throw "$deliveryFile not found" 
-    }
-
-    If ([string]::IsNullOrEmpty($questionnaireName)) {
-        throw "No questionnaireName provided" 
-    } 
-
-    try {
-        $extractPath = "$($processingFolder)\{$(New-Guid)}"
-        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
-        
-        $uneditedQuestionnaireName = "$($questionnaireName)_UNEDITED"
-        Rename-Item -Path "$extractPath\$questionnaireName.bmix" -NewName "$extractPath\$uneditedQuestionnaireName.bmix"
-        Rename-Item -Path "$extractPath\$questionnaireName.bdix" -NewName "$extractPath\$uneditedQuestionnaireName.bdix"
-
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$uneditedQuestionnaireName.bmix","$extractPath\$uneditedQuestionnaireName.bdix" -zipFilePath $deliveryFile
-        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$questionnaireName.*"
-    }
-    catch {
-        LogError("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
-    }   
-}
-
-
-function AddUneditedDataSet {
-    param (
-        [string] $tempPath,
-        [string] $processingFolder,
-        [string] $deliveryFile,
-        [string] $questionnaireName
-    )
-
-    If (-not (Test-Path $tempPath)) {
-        throw "$tempPath not found" 
-    }
-
-    If (-not (Test-Path $deliveryFile)) {
-        throw "$deliveryFile not found" 
-    }
-
-    If ([string]::IsNullOrEmpty($questionnaireName)) {
-        throw "No questionnaireName provided" 
-    }
-
-    try {
-        $extractPath = "$($processingFolder)\{$(New-Guid)}"
-        ExtractZipFile -pathTo7zip $tempPath -zipFilePath $deliveryFile -destinationPath $extractPath
-        
-        $uneditedQuestionnaireName = "$($questionnaireName)_UNEDITED"
-        Rename-Item -Path "$extractPath\$uneditedQuestionnaireName.bdbx" -NewName "$extractPath\$questionnaireName.bdbx"
-
-        AddFilesToZip -pathTo7zip $tempPath -files "$extractPath\$questionnaireName.bdbx" -zipFilePath $deliveryFile
-        DeleteFilesInZip -pathTo7zip $tempPath -zipFilePath $deliveryFile -fileName "$uneditedQuestionnaireName*"
-    }
-    catch {
-        LogError("Creating unedited questionnaire files Failed for $questionnaireName : $($_.Exception.Message)")
-    }   
-}
-
