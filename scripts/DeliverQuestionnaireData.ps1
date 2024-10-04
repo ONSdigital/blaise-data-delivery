@@ -102,11 +102,11 @@ try {
             else {
                 # Generate unique data delivery filename for the questionnaire
                 LogInfo("Generate unique data delivery filename for questionnaire $($_.name)")
-                #$editedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_EDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
+                $editedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_EDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
                 $uneditedDeliveryFileName = GenerateDeliveryFilename -prefix "dd" -suffix "_UNEDITED" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
                 # Generate full file path for questionnaire
-                #$editedDeliveryFile = "$using:tempPath\$editedDeliveryFileName"
+                $editedDeliveryFile = "$using:tempPath\$editedDeliveryFileName"
                 $uneditedDeliveryFile = "$using:tempPath\$uneditedDeliveryFileName"
 
                 # Set data delivery status to started
