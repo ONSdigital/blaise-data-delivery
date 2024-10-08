@@ -1,7 +1,6 @@
 . "$PSScriptRoot\LoggingFunctions.ps1"
 . "$PSScriptRoot\ConfigFunctions.ps1"
 . "$PSScriptRoot\CloudFunctions.ps1"
-. "$PSScriptRoot\PopulateDeliveryPackageFunctions.ps1"
 . "$PSScriptRoot\ManipulaFunctions.ps1"
 . "$PSScriptRoot\FileFunctions.ps1"
 
