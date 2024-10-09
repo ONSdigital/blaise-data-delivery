@@ -1,15 +1,11 @@
-﻿###############################
-# Data delivery pipeline script
-###############################
-
-. "$PSScriptRoot\functions\LoggingFunctions.ps1"
+﻿. "$PSScriptRoot\functions\LoggingFunctions.ps1"
 . "$PSScriptRoot\functions\FileFunctions.ps1"
 . "$PSScriptRoot\functions\RestApiFunctions.ps1"
 . "$PSScriptRoot\functions\ThreadingFunctions.ps1"
 . "$PSScriptRoot\functions\ConfigFunctions.ps1"
 
-    #Make all errors terminating
-    $ErrorActionPreference = "Stop"
+# Make all errors terminating
+$ErrorActionPreference = "Stop"
 
 try {
     $ddsUrl = $env:ENV_DDS_URL
@@ -28,24 +24,20 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:Questionnaires.Trim() # Trim as we add a shitespace to make this field optional in Azure
+    $questionnaireList = $env:Questionnaires.Trim() # Trim as we add a whitespace to make this field optional in Azure DevOps
     LogInfo("Questionnaire list: $questionnaireList")
 
-
-    if ([string]::IsNullOrWhitespace($questionnaireList)) {
-        # No questionnaires provided so retrieve a list of questionnaires for a particular survey type I.E OPN
-        $questionnaires = GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
-        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
-        LogInfo("Retrieved list of questionnaires for survey type '$surveyType': $($questionnaires | Select-Object -ExpandProperty name)") 
-    }
-    else {
-        # List of questionnaires provided so retrieve a list of questionnaires specified
+    # Get list of questionnaires to deliver
+    $questionnaires = if ([string]::IsNullOrWhitespace($questionnaireList)) {
+        GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
+    } else {
         $questionnaire_names = $questionnaireList.Split(",")
         LogInfo("Received a list of required questionnaires from pipeline '$questionnaire_names'")
-        $questionnaires = GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
-        $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
-        LogInfo("Retrieved list of questionnaires specified $($questionnaires | Select-Object -ExpandProperty name)")
+        GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
     }
+
+    $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
+    LogInfo("Retrieved list of questionnaires: $($questionnaires | Select-Object -ExpandProperty name)")
 
     # No questionnaires found/supplied
     If ($questionnaires.Count -eq 0) {
@@ -78,7 +70,7 @@ try {
             $deliveryFileName = GenerateDeliveryFilename -prefix "dd" -questionnaireName $_.name -fileExt $using:config.packageExtension
 
             # Generate full file path for questionnaire
-            $deliveryFile = "$using:tempPath\$deliveryFileName"
+            $deliveryFile = Join-Path $using:tempPath $deliveryFileName
 
             # Set data delivery status to started
             CreateDataDeliveryStatus -fileName $deliveryFileName -batchStamp $using:batchStamp -state "started" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
@@ -95,16 +87,16 @@ try {
             $process.Status = "Completed"
         }
         catch {
-            LogError("Error occured inside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
-            Get-Error
-            ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occured in delivering $deliveryFileName" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
+            LogError("Error occurred: $($_.Exception.Message)")
+            LogError("Stack trace: $($_.ScriptStackTrace)")
+            ErrorDataDeliveryStatus -fileName $deliveryFileName -state "errored" -error_info "An error has occurred in delivering $deliveryFileName" -ddsUrl $using:ddsUrl -ddsClientID $using:ddsClientID
             $process.Status = "Errored"
         }
     }
 }
 catch {
-    LogError("Error occured outside: $($_.Exception.Message) at: $($_.ScriptStackTrace)")
-    Get-Error
+    LogError("Error occurred: $($_.Exception.Message)")
+    LogError("Stack trace: $($_.ScriptStackTrace)")
     exit 1
 }
 

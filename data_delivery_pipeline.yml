@@ -1,94 +1,83 @@
+---
 parameters:
-  - name : VarGroup
-    displayName: Variable Group
+  - name: VarGroup
+    displayName: Variable group
   - name: Environment
     displayName: Environment to use
   - name: SurveyType
     displayName: Survey type
   - name: Questionnaires
-    displayName: Questionnaires seperated by commas
+    displayName: Questionnaires separated by commas
     default: ' '
-
-trigger:
-- none
-
-pr:
-- none
-
+trigger: none
+pr: none
 variables:
-  - group: ${{ parameters.VarGroup }}
+  - group: ${{parameters.VarGroup}}
   - name: SurveyType
-    value: ${{ parameters.SurveyType }}
+    value: ${{parameters.SurveyType}}
   - name: Questionnaires
-    value: ${{ parameters.Questionnaires }}
+    value: ${{parameters.Questionnaires}}
   - name: TempPath
-    value: c:\blaise\temp\datadelivery\${{ parameters.SurveyType }}
-
+    value: c:\blaise\temp\datadelivery\${{parameters.SurveyType}}
 stages:
- - stage: DataDelivery
-   displayName: Data Delivery
-   jobs:
-    - deployment: DeliveryData
-      timeoutInMinutes: 0
-      environment:
+  - stage: DataDelivery
+    displayName: Data delivery
+    jobs:
+      - deployment: DataDelivery
+        timeoutInMinutes: 0
+        environment:
           name: ${{parameters.Environment}}
           resourceType: virtualMachine
           tags: data-delivery
-      strategy:
-        runOnce:
-          deploy: 
-           steps:
-               - checkout: self
-
-               - task: DownloadSecureFile@1
-                 displayName: 'Download GCP Key'
-                 name: gcpkey
-                 inputs:
-                      secureFile: 'ons-blaise-v2-shared-221e50eb36c7.json'
-          
-               - task: PowerShell@2
-                 displayName: Register Blaise via registry
-                 inputs:
-                  filePath: '$(Agent.BuildDirectory)/s/scripts/BlaiseLicenseKeyRegistryHack.ps1'
-                  arguments: '-BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE $(ENV_BLAISE_ACTIVATION_CODE)'
-
-               - task: PowerShell@2
-                 displayName: Download Manipula Package
-                 inputs:
-                   targetType: 'inline'
-                   script: |
-                        Write-Host "Login to GCP"
-                        gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file=$(gcpkey.secureFilePath)
-                        
-                        Write-Host "Downloading questionnaire"
-                        gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_9_3.zip $env:TempPath\Manipula.zip
-                        Write-Host "Downloading 7zip cli"
-                        gsutil cp gs://ons-blaise-v2-europe-west2-shared-data/7za.exe $env:TempPath\7za.exe
-                        Write-Host "GCP Login with compute service account"
-                        gcloud auth login $env:ENV_VM_SERVICEACCOUNT
-
-               - task: PowerShell@2
-                 displayName: Create temp folders
-                 inputs:
-                  targetType: 'inline'
-                  script: |
-                    New-Item -ItemType Directory -Force -Path $env:TempPath
-                    Add-MpPreference -ExclusionProcess c:\dev\agent
-                    Add-MpPreference -ExclusionProcess Manipula.exe
-                    Add-MpPreference -ExclusionProcess InstrumentBuilder.exe
-
-               - task: PowerShell@2
-                 displayName: Deliver Questionnaires
-                 inputs:
-                  filePath: '$(Agent.BuildDirectory)/s/scripts/DeliverQuestionnaireData.ps1'
-                  pwsh: true
-
-               - task: PowerShell@2
-                 displayName: Clean up temp folders
-                 inputs:
-                   targetType: 'inline'
-                   script: |
-                    #Remove-Item -Recurse -Force $env:TempPath
-                    Remove-MpPreference -ExclusionProcess c:\dev\agent
-                    Remove-MpPreference -ExclusionProcess Manipula.exe
-                    Remove-MpPreference -ExclusionProcess InstrumentBuilder.exe
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: DownloadSecureFile@1
+                  displayName: Download GCP key
+                  name: gcpkey
+                  inputs:
+                    secureFile: ons-blaise-v2-shared-221e50eb36c7.json
+                - task: PowerShell@2
+                  displayName: Register Blaise
+                  inputs:
+                    filePath: $(Agent.BuildDirectory)/s/scripts/BlaiseLicenseKeyRegistryHack.ps1
+                    arguments: -BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE
+                      $(ENV_BLAISE_ACTIVATION_CODE)
+                - task: PowerShell@2
+                  displayName: Download Manipula and 7-Zip
+                  inputs:
+                    targetType: inline
+                    script: |
+                      Write-Host "Logging into GCP with shared service account..."
+                      gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file=$(gcpkey.secureFilePath)
+                      Write-Host "Downloading Manipula..."
+                      gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_9_3.zip $env:TempPath\Manipula.zip
+                      Write-Host "Downloading 7-Zip..."
+                      gsutil cp gs://ons-blaise-v2-europe-west2-shared-data/7za.exe $env:TempPath\7za.exe
+                      Write-Host "Reverting GCP login to VM service account..."
+                      gcloud auth login $env:ENV_VM_SERVICEACCOUNT
+                - task: PowerShell@2
+                  displayName: Create temp folders
+                  inputs:
+                    targetType: inline
+                    script: |
+                      New-Item -ItemType Directory -Force -Path $env:TempPath
+                      Add-MpPreference -ExclusionProcess c:\dev\agent
+                      Add-MpPreference -ExclusionProcess Manipula.exe
+                      Add-MpPreference -ExclusionProcess InstrumentBuilder.exe
+                - task: PowerShell@2
+                  displayName: Run data delivery
+                  inputs:
+                    filePath: $(Agent.BuildDirectory)/s/scripts/DeliverQuestionnaireData.ps1
+                    pwsh: true
+                - task: PowerShell@2
+                  displayName: Clean up temp folders
+                  inputs:
+                    targetType: inline
+                    script: |-
+                      Remove-Item -Recurse -Force $env:TempPath
+                      Remove-MpPreference -ExclusionProcess c:\dev\agent
+                      Remove-MpPreference -ExclusionProcess Manipula.exe
+                      Remove-MpPreference -ExclusionProcess InstrumentBuilder.exe
