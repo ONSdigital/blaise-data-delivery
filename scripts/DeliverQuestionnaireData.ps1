@@ -36,7 +36,7 @@ try {
         GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
     }
 
-    $questionnaires = $questionnaires | Where-Object { $_.Name -ne "IPS_ContactInfo" } # Filter out IPS_ContactInfo
+    $questionnaires = $questionnaires | Where-Object { $_.Name -notmatch "contactinfo|attempts" } # Filter out questionnaires with "contactinfo" or "attempts" in their name
     LogInfo("Retrieved list of questionnaires: $($questionnaires | Select-Object -ExpandProperty name)")
 
     # No questionnaires found/supplied
