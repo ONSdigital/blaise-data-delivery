@@ -1,16 +1,10 @@
-# Blaise-Data-Delivery
+# Blaise Data Delivery
 
-## usage 
-This repository consists of an Azure DevOps pipeline represented by the "data_delivery_pipeline.yml" yaml file, and a series of powershell scripts. The responsibility of the scripts is to take a survey type as a parameter and is then responsable for delivering all data for that survey based upon the configuartion set for the survey type.
+This repository contains an Azure DevOps pipeline and associated scripts for delivering survey data. The process is triggered by Concourse jobs and utilises various components to securely transfer data from Blaise to on-premises locations.
 
-## Concourse triggers
+## Configuration
 
-## NIFI
-
-## Manipula
-
-## Configuration settings
-The configuration of the delivery files and formats for an questionnaire is defined in a JSON file contained in the configurations folder. There are currently seven options in the following format:
+Survey configurations are defined in JSON files within the `configurations` folder. Here's the standard default configuration:
 
 ```
 {
@@ -23,29 +17,44 @@ The configuration of the delivery files and formats for an questionnaire is defi
 
     "createSubFolder" : false,
     "packageExtension" : "zip",
-    "auditTrailData" : false,
+    "auditTrailData" : true,
     "batchSize" : 0,
-    "throttleLimit" : 3,
-    "hasEditMode": false 
+    "throttleLimit" : 3
 }
 ```
 
-The first option "deliver" contains four suboptions in this section of the JSON file. This section is responsable for determining what data formats are included in the delivered package. The file format options are:
+## Configuration settings
 
-1. spss => 
-2. ascii => 
-3. json => 
-4. xml =>
+| Setting | Description |
+| --- | --- |
+| deliver | Specifies which file formats to include in the delivered package. |
+| spss | Metadata in SPSS format. |
+| ascii | Data in ascii format, used for SPSS. |
+| json | Data in JSON format. |
+| xml | Metadata in XML format. |
+| createSubFolder | If true, creates a timestamped subfolder for the non-Blaise delivery formats. |
+| packageExtension | Determines the package file extension (e.g., zip). |
+| auditTrailData | If true, includes a CSV file containing audit trail information. |
+| batchSize | Sets the maximum number of cases per batch (0 for all records). |
+| throttleLimit | Limits the number of concurrently processed questionnaires. |
 
-The other six options in the configuration file are:
+## Setting up new survey
 
-5. createSubFolder => If this is set to true, then all the files configured within the "deliver" section will be contained in a subfolder of the package.
-6. packageExtension => This determines the file extension of the package that is delivered
-7. auditTrailData => If set to True this will add a CSV containing all audit trail information for that questionnaire
-8. batchSize => If you wish  to get the data in batches then you can set the batch size to the max number of cases per batch. 
-   If it is set to 0 it will default to get all records
-9. throttleLimit => The number of questionnaires that can be processed concurrently
-10. hasEditMode => if the questionnaire has edit fucntionality this needs to be set to true to deliver both edited and unedited versions of the data
+The default configuration delivers the Blaise data along with SPSS and ASCII formats. To customise the configuration for a survey, create a JSON file named `<survey>.json` in the `configurations` folder, where `<survey>` is the survey type acronym (e.g., OPN, LM, IPS).
 
-## Setting up a new questionnaire for delivery
-The default configuration for an questionnaire will deliver spss and ascii files only and will not use a subfolder. If you wish to use a custom cofiguration for your questionnaire that deviates from the default, then you simply need to create a new JSON configuration file in the configuration folder and name it <survey>.json where survey type is the acronym for the survey i.e. OPN, LM, NWO.
+## High level data delivery process
+
+1. Concourse job is triggered on schedule or manually.
+1. Job passes survey name and Azure DevOps pipeline ID to another pipeline, which calls shell scripts.
+1. Shell script calls Python script.
+1. Python script initiates Azure DevOps pipeline via secure HTTP request.
+1. Azure DevOps pipeline runs data delivery YAML on a dedicated VM via agent.
+1. YAML executes scripts, referencing survey-specific config JSON.
+1. PowerShell scripts set up the environment (Blaise license, Manipula).
+1. Blaise-CLI fetches survey data using NuGet package.
+1. Manipula generates various data formats (CSV, JSON, SPSS, ASCII).
+1. PowerShell zips data and places it in NiFi staging bucket.
+1. Cloud function encrypts the zip and moves it to the NiFi bucket.
+1, Another cloud function publishes zip metadata to Pub/Sub.
+1. NiFi monitors the Pub/Sub topic.
+1. NiFi consumes the message, unzips the data, and delivers it on-premises.

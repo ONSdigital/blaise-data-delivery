@@ -1,5 +1,5 @@
 param ([string]$BLAISE_LICENSE_KEY, [string]$BLAISE_ACTIVATION_CODE)
-. "$PSScriptRoot\functions\SetBlaiseLicenseKey.ps1"
+. "$PSScriptRoot\functions\BlaiseLicenseFunctions.ps1"
 
 
 if (Test-Path 'HKLM:\SOFTWARE\StatNeth\Blaise\5.0') {

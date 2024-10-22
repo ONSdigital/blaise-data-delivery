@@ -42,7 +42,7 @@ stages:
                 - task: PowerShell@2
                   displayName: Register Blaise
                   inputs:
-                    filePath: $(Agent.BuildDirectory)/s/scripts/BlaiseLicenseKeyRegistryHack.ps1
+                    filePath: $(Agent.BuildDirectory)/s/scripts/RegisterBlaise.ps1
                     arguments: -BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE
                       $(ENV_BLAISE_ACTIVATION_CODE)
                 - task: PowerShell@2
@@ -70,7 +70,7 @@ stages:
                 - task: PowerShell@2
                   displayName: Run data delivery
                   inputs:
-                    filePath: $(Agent.BuildDirectory)/s/scripts/DeliverQuestionnaireData.ps1
+                    filePath: $(Agent.BuildDirectory)/s/scripts/DeliverData.ps1
                     pwsh: true
                 - task: PowerShell@2
                   displayName: Clean up temp folders

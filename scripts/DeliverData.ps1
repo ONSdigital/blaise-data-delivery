@@ -24,7 +24,7 @@ try {
     LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
     LogInfo("Survey type: $surveyType")
-    $questionnaireList = $env:Questionnaires.Trim() # Trim as we add a whitespace to make this field optional in Azure DevOps
+    $questionnaireList = $env:Questionnaires -replace '\s+', '' # Remove all spaces from the questionnaire list
     LogInfo("Questionnaire list: $questionnaireList")
 
     # Get list of questionnaires to deliver
