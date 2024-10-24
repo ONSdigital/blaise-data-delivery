@@ -25,7 +25,7 @@ try {
     LogInfo("DQS Bucket: $dqsBucket")
     LogInfo("REST API URL: $restAPIUrl")
     LogInfo("Server park name: $serverParkName")
-    LogInfo("Survey type: $surveyType"
+    LogInfo("Survey type: $surveyType")
     LogInfo("Questionnaire list: $questionnaireList")
 
     # Get list of questionnaires for data delivery
