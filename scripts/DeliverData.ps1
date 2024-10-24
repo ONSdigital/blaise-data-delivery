@@ -9,56 +9,58 @@ $ErrorActionPreference = "Stop"
 
 try {
     $ddsUrl = $env:ENV_DDS_URL
-    LogInfo("DDS URL: $ddsUrl")
     $ddsClientID = $env:ENV_DDS_CLIENT
-    LogInfo("DDS Client ID: $ddsClientID")
     $tempPath = $env:TempPath
-    LogInfo("Temp path: $tempPath")
     $nifiBucket = $env:ENV_BLAISE_NIFI_BUCKET
-    LogInfo("NiFi Bucket: $nifiBucket")
     $dqsBucket = $env:ENV_BLAISE_DQS_BUCKET
-    LogInfo("DQS Bucket: $dqsBucket")
     $restAPIUrl = $env:ENV_RESTAPI_URL
-    LogInfo("REST API URL: $restAPIUrl")
     $serverParkName = $env:ENV_BLAISE_SERVER_PARK_NAME
-    LogInfo("Server park name: $ServerParkName")
     $surveyType = $env:SurveyType
-    LogInfo("Survey type: $surveyType")
     $questionnaireList = $env:Questionnaires -replace '\s+', '' # Remove all spaces from the questionnaire list
+
+    LogInfo("DDS URL: $ddsUrl")
+    LogInfo("DDS Client ID: $ddsClientID")
+    LogInfo("Temp path: $tempPath")
+    LogInfo("NiFi Bucket: $nifiBucket")
+    LogInfo("DQS Bucket: $dqsBucket")
+    LogInfo("REST API URL: $restAPIUrl")
+    LogInfo("Server park name: $serverParkName")
+    LogInfo("Survey type: $surveyType"
     LogInfo("Questionnaire list: $questionnaireList")
 
-    # Get list of questionnaires to deliver
+    # Get list of questionnaires for data delivery
     $questionnaires = if ([string]::IsNullOrWhitespace($questionnaireList)) {
+        LogInfo("Getting installed questionnaires for survey type: '$surveyType'")
         GetListOfQuestionnairesBySurveyType -restApiBaseUrl $restAPIUrl -surveyType $surveyType -serverParkName $serverParkName
     } else {
         $questionnaire_names = $questionnaireList.Split(",")
-        LogInfo("Received a list of required questionnaires from pipeline '$questionnaire_names'")
+        LogInfo("Received questionnaires for data delivery from pipeline: '$questionnaire_names'")
         GetListOfQuestionnairesByNames -restApiBaseUrl $restAPIUrl -serverParkName $serverParkName -questionnaire_names $questionnaire_names
     }
 
+    # Filter out questionnaires with "contactinfo" or "attempts" in their name
     $questionnaires = $questionnaires | Where-Object { $_.Name -notmatch "contactinfo|attempts" } # Filter out questionnaires with "contactinfo" or "attempts" in their name
-    LogInfo("Retrieved list of questionnaires: $($questionnaires | Select-Object -ExpandProperty name)")
+    LogInfo("Questionnaires for data delivery: $($questionnaires | Select-Object -ExpandProperty name)")
 
     # No questionnaires found/supplied
     If ($questionnaires.Count -eq 0) {
-        LogWarning("No questionnaires found for '$surveyType' on server park '$serverParkName' or supplied via the pipeline")
+        LogWarning("No questionnaires found for survey type '$surveyType' on server park '$serverParkName' or supplied via the pipeline")
         exit
     }
 
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
 
-    # Generating batch stamp for all questionnaires in the current run to be grouped together
+    # Generate unique batch stamp for grouping all questionnaires processed in the current run
     $batchStamp = GenerateBatchFileName -surveyType $surveyType
 
+    # Create synchronised hashtable to manage the processing status of each questionnaire
     $sync = CreateQuestionnaireSync -questionnaires $questionnaires
 
-    # Deliver the questionnaire package with data for each active questionnaire
+    # Deliver the questionnaire package with data for each questionnaire
     $questionnaires | ForEach-Object -ThrottleLimit $config.throttleLimit -Parallel {
         . "$using:PSScriptRoot\functions\ThreadingFunctions.ps1"
-
         $process = GetProcess -questionnaire $_ -sync $using:sync
-
         try {
             . "$using:PSScriptRoot\functions\LoggingFunctions.ps1"
             . "$using:PSScriptRoot\functions\FileFunctions.ps1"
@@ -78,7 +80,7 @@ try {
             # Create delivery file
             CreateDeliveryFile -deliveryFile $deliveryFile -serverParkName $using:serverParkName -surveyType $using:surveyType -questionnaireName $_.name -dqsBucket $using:dqsBucket -subFolder $processingSubFolder -tempPath $using:tempPath -uneditedData $false          
                         
-            # Upload questionnaire package to NIFI
+            # Upload questionnaire package to NiFi
             UploadFileToBucket -filePath $deliveryFile -bucketName $using:nifiBucket -deliveryFileName $deliveryFileName
 
             # Set data delivery status to generated
