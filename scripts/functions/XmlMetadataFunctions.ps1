@@ -43,21 +43,6 @@ function AddXmlMetadataToDelivery {
         return
     }
 
-    # Temporarily remove "_meta" suffix from XML metadata files to fix LMS DAP delivery
-    # Could clash with XML data files
-    # Needs to be removed once LMS DAP delivery can handle "_meta" suffix
-    try {
-        Get-ChildItem -Path $processingFolder -Filter "*_meta*" -File | ForEach-Object {
-            $newName = $_.Name -replace "_meta", ""
-            LogInfo("Renaming $($_.Name) to $newName")
-            Rename-Item -Path $_.FullName -NewName $newName -Force
-        }
-    }
-    catch {
-        LogWarning("Failed removing _meta suffix")
-        LogWarning("$($_.Exception.Message)")
-    }
-
     # Move output to subfolder if specified
     if (-not [string]::IsNullOrEmpty($subFolder)) {
         LogInfo("Moving XML metadata output to subfolder")
