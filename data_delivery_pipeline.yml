@@ -74,7 +74,7 @@ stages:
                         Write-Host "🔐 Authenticating with service account $env:ENV_SHARED_SERVICE_ACCOUNT"
                         gcloud auth activate-service-account $env:ENV_SHARED_SERVICE_ACCOUNT --key-file="$(gcpkey.secureFilePath)" --quiet
                         Write-Host "📦 Downloading Manipula package..."
-                        gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_16_2.zip `
+                        gsutil cp gs://$env:ENV_SHARED_BUCKET/Manipula_Package_5_16_3.zip `
                           "$env:ProcessingPath\Manipula.zip"
                         Write-Host "🤐 Downloading 7-Zip executable..."
                         gsutil cp gs://$env:ENV_SHARED_BUCKET/7za.exe `

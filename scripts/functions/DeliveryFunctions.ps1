@@ -91,6 +91,11 @@ function CreateDeliveryFile {
     # Add additional file formats specified in the survey config, will also be placed in the processing subfolder if config.createSubFolder is true, i.e. processingSubFolderPath is not $NULL
     LogInfo("Adding additional file formats to $processingFolderPath")
     AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -processingFolder $processingFolderPath -questionnaireName $questionnaireName -subFolder $processingSubFolderPath
+    if ($config.deliver.asciiData -or $config.deliver.jsonData -or $config.deliver.spssMetadata -or $config.deliver.xmlData -or $config.deliver.xmlMetadata) {
+        LogInfo("Adding Manipula binaries to $processingFolderPath")
+        AddManipulaToProcessingFolder -manipulaPackage "$processingPath/manipula.zip" -processingFolder $processingFolderPath -processingPath $processingPath
+        AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -processingFolder $processingFolderPath -questionnaireName $questionnaireName -subFolder $processingSubFolderPath
+    }
 
     # Remove files we don't want delivered
     Get-ChildItem -Path $processingFolderPath -Recurse -File | Where-Object {
