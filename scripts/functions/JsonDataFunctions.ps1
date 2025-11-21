@@ -34,7 +34,7 @@ function AddJsonDataToDelivery {
             "-K:Meta=`"$bmixPath`"",
             "-I:`"$bdbxPath`"",
             "-O:`"$outputPath`"",
-            "-Q:True"            
+            "-Q:True"
         )
         $process = Start-Process -FilePath $manipulaPath -ArgumentList $arguments -Wait -PassThru -NoNewWindow
         if ($process.ExitCode -eq 0) {
