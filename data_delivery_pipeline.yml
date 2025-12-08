@@ -47,8 +47,8 @@ stages:
                 - task: PowerShell@2
                   displayName: Register Blaise
                   inputs:
-                    filePath: $(Agent.BuildDirectory)/s/scripts/RegisterBlaise.ps1
-                    arguments: -BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE $(ENV_BLAISE_ACTIVATION_CODE)
+                    filePath: $(Agent.BuildDirectory)/s/blaise-data-delivery/scripts/RegisterBlaise.ps1
+                    arguments: '-BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE $(ENV_BLAISE_ACTIVATION_CODE)'
                     pwsh: true
                 - template: /templates/download_files.yml
                   parameters:
@@ -65,7 +65,7 @@ stages:
                 - task: PowerShell@2
                   displayName: Run data delivery
                   inputs:
-                    filePath: $(Agent.BuildDirectory)/s/scripts/DeliverData.ps1
+                    filePath: $(Agent.BuildDirectory)/s/blaise-data-delivery/scripts/DeliverData.ps1
                     pwsh: true
                 - task: PowerShell@2
                   displayName: Clean-up processing folder
