@@ -11,4 +11,3 @@ steps:
       targetType: filePath
       filePath: $(Agent.BuildDirectory)/s/scripts/reset_gcloud_account.ps1
       arguments: -DefaultServiceAccount "${{ parameters.DefaultServiceAccount }}"
-      pwsh: true
