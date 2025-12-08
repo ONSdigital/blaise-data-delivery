@@ -10,4 +10,4 @@ steps:
     inputs:
       targetType: filePath
       filePath: $(Build.SourcesDirectory)/scripts/reset_gcloud_account.ps1
-      arguments: -DefaultServiceAccount ""
+      arguments: -DefaultServiceAccount "${{ parameters.DefaultServiceAccount }}"
