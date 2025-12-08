@@ -40,6 +40,7 @@ stages:
           runOnce:
             deploy:
               steps:
+                - checkout: self
                 - template: /templates/set_vm_default_sa.yml
                   parameters:
                     DefaultServiceAccount: $(ENV_VM_SERVICEACCOUNT)
