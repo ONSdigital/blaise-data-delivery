@@ -1,0 +1,22 @@
+---
+parameters:
+  - name: SYSTEM_ACCESSTOKEN
+    displayName: Access token for WIF authentication
+    type: string
+
+steps:
+  - checkout: self
+    persistCredentials: true
+  - task: PowerShell@2
+    displayName: Download Files
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: filePath
+      filePath: $(Agent.BuildDirectory)/s/scripts/download_files_from_shared_bucket.ps1
+      arguments: >
+        -SystemAccessToken "$(System.AccessToken)"
+        -SharedServiceAccount "$(ENV_SHARED_SERVICE_ACCOUNT)"
+        -SharedBucket "$(ENV_SHARED_BUCKET)"
+        -FileName "Manipula_Package_5_14_6.zip","7za.exe"
+        -DestinationPath "$env:ProcessingPath\Manipula.zip","$env:ProcessingPath\7za.exe"

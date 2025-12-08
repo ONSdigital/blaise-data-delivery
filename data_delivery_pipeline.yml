@@ -51,19 +51,9 @@ stages:
                     arguments: -BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE
                       $(ENV_BLAISE_ACTIVATION_CODE)
                     pwsh: true
-                - task: PowerShell@2
-                  displayName: Download Manipula and 7-Zip
-                  env:
+                - template: /templates/download_files.yml
+                  parameters:
                     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-                  inputs:
-                    targetType: filePath
-                    filePath: $(Agent.BuildDirectory)/s/scripts/download_files_from_shared_bucket.ps1
-                    arguments: >
-                      -SystemAccessToken "$(System.AccessToken)"
-                      -SharedServiceAccount "$(ENV_SHARED_SERVICE_ACCOUNT)"
-                      -SharedBucket "$(ENV_SHARED_BUCKET)"
-                      -FileName "Manipula_Package_5_14_6.zip","7za.exe"
-                      -DestinationPath "$env:ProcessingPath\Manipula.zip","$env:ProcessingPath\7za.exe"
                 - task: PowerShell@2
                   displayName: Set-up processing folder
                   inputs:
