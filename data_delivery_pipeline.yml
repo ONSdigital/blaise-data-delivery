@@ -42,6 +42,8 @@ stages:
               steps:
                 - checkout: self
                 - template: /templates/set_vm_default_sa.yml
+                  parameters:
+                    DefaultServiceAccount: ''
                 - task: PowerShell@2
                   displayName: Register Blaise
                   inputs:
