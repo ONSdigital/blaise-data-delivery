@@ -47,7 +47,7 @@ stages:
                 - task: PowerShell@2
                   displayName: Register Blaise
                   inputs:
-                    filePath: $(Agent.BuildDirectory)/s/scripts/RegisterBlaise.ps1
+                    filePath: $(Agent.BuildDirectory)\s\scripts\RegisterBlaise.ps1
                     arguments: -BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE
                       $(ENV_BLAISE_ACTIVATION_CODE)
                     pwsh: true
