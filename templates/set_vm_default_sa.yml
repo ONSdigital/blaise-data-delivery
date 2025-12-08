@@ -9,6 +9,6 @@ steps:
     displayName: Reset gcloud to VM service account
     inputs:
       targetType: filePath
-      filePath: $(Agent.BuildDirectory)/s/scripts/reset_gcloud_account.ps1
+      filePath: $(Agent.BuildDirectory)/s/blaise-data-delivery/scripts/reset_gcloud_account.ps1
       arguments: '-DefaultServiceAccount "${{ parameters.DefaultServiceAccount }}"'
       pwsh: true
