@@ -16,7 +16,7 @@ steps:
         Write-Host "Pipeline.Workspace: $(Pipeline.Workspace)"
         Write-Host ""
         Write-Host "=== Looking for reset_gcloud_account.ps1 ==="
-        $targetPath = "$(Agent.BuildDirectory)/s/scripts/reset_gcloud_account.ps1"
+        $targetPath = "$(Agent.BuildDirectory)\s\scripts\reset_gcloud_account.ps1"
         Write-Host "Target path: $targetPath"
         Write-Host "File exists: $(Test-Path $targetPath)"
         Write-Host ""
@@ -30,6 +30,6 @@ steps:
     displayName: Reset gcloud to VM service account
     inputs:
       targetType: filePath
-      filePath: $(Agent.BuildDirectory)/reset_gcloud_account.ps1
+      filePath: $(Agent.BuildDirectory)\s\scripts\reset_gcloud_account.ps1
       arguments: '-DefaultServiceAccount "${{ parameters.DefaultServiceAccount }}"'
       pwsh: true
