@@ -6,30 +6,9 @@ parameters:
 
 steps:
   - task: PowerShell@2
-    displayName: Debug - Check script path
-    inputs:
-      targetType: inline
-      script: |
-        Write-Host "=== Path Variables ==="
-        Write-Host "Agent.BuildDirectory: $(Agent.BuildDirectory)"
-        Write-Host "System.DefaultWorkingDirectory: $(System.DefaultWorkingDirectory)"
-        Write-Host "Pipeline.Workspace: $(Pipeline.Workspace)"
-        Write-Host ""
-        Write-Host "=== Looking for reset_gcloud_account.ps1 ==="
-        $targetPath = "$(Agent.BuildDirectory)\s\scripts\reset_gcloud_account.ps1"
-        Write-Host "Target path: $targetPath"
-        Write-Host "File exists: $(Test-Path $targetPath)"
-        Write-Host ""
-        Write-Host "=== Contents of scripts folder ==="
-        Get-ChildItem -Path "$(Agent.BuildDirectory)/s/scripts" -ErrorAction SilentlyContinue
-        Write-Host ""
-        Write-Host "=== Search for file recursively ==="
-        Get-ChildItem -Path "$(Agent.BuildDirectory)" -Recurse -Filter "reset_gcloud_account.ps1" -ErrorAction SilentlyContinue | Select-Object FullName
-      pwsh: true
-  - task: PowerShell@2
     displayName: Reset gcloud to VM service account
     inputs:
       targetType: filePath
-      filePath: $(Agent.BuildDirectory)\s\scripts\reset_gcloud_account.ps1
+      filePath: $(Agent.BuildDirectory)/s/blaise-data-delivery/scripts/reset_gcloud_account.ps1
       arguments: '-DefaultServiceAccount "${{ parameters.DefaultServiceAccount }}"'
       pwsh: true
