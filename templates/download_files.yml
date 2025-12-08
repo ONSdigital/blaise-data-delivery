@@ -20,3 +20,4 @@ steps:
         -SharedBucket "$(ENV_SHARED_BUCKET)"
         -FileName "Manipula_Package_5_14_6.zip","7za.exe"
         -DestinationPath "$env:ProcessingPath\Manipula.zip","$env:ProcessingPath\7za.exe"
+      pwsh: true
