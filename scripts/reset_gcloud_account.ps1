@@ -15,7 +15,7 @@ param(
     [string] $DefaultServiceAccount = ""
 )
 
-. "$PSScriptRoot\logging_functions.ps1"
+. "$PSScriptRoot\functions\LoggingFunctions.ps1"
 
 $ErrorActionPreference = "SilentlyContinue"
 
