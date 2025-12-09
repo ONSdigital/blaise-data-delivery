@@ -6,7 +6,6 @@ parameters:
 
 steps:
   - task: PowerShell@2
-    persistCredentials: true
     displayName: Download Files
     env:
       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
