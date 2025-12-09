@@ -5,6 +5,7 @@ parameters:
     displayName: Default service account to reset to
 
 steps:
+  - checkout: self
   - task: PowerShell@2
     displayName: Reset gcloud to VM service account
     inputs:

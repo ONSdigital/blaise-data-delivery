@@ -40,10 +40,10 @@ stages:
           runOnce:
             deploy:
               steps:
+                - template: /templates/set_vm_default_sa.yml
+                  parameters:
+                    DefaultServiceAccount: $(ENV_VM_SERVICEACCOUNT)
                 - checkout: self
-                # - template: /templates/set_vm_default_sa.yml
-                #   parameters:
-                #     DefaultServiceAccount: $(ENV_VM_SERVICEACCOUNT)
                 - task: PowerShell@2
                   displayName: Register Blaise
                   inputs:
