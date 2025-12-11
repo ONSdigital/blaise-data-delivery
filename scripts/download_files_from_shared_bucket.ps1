@@ -12,7 +12,10 @@ param(
     [string[]] $FileName,
 
     [Parameter(Mandatory = $true)]
-    [string[]] $DestinationPath   
+    [string[]] $DestinationPath,
+
+    [Parameter(Mandatory = $true)]
+    [string[]] $DefaultServiceAccount,
 )
 
 . "$PSScriptRoot\functions\LoggingFunctions.ps1"
@@ -96,5 +99,5 @@ catch {
     exit 1
 }
 finally {
-    & "$PSScriptRoot\reset_gcloud_account.ps1"
+    & "$PSScriptRoot\reset_gcloud_account.ps1" -DefaultServiceAccount $DefaultServiceAccount
 }

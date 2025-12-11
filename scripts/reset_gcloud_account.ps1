@@ -43,9 +43,6 @@ foreach ($file in $filesToRemove) {
     }
 }
 
-# Ensure default configuration is active
-$null = & gcloud config configurations activate default --quiet
-
 # Set or unset the account
 if ($DefaultServiceAccount) {
     # Revoke non-default service accounts
@@ -73,6 +70,9 @@ if ($DefaultServiceAccount) {
     & gcloud config unset account --quiet
     LogInfo("Unset account config - will use VM metadata service")
 }
+
+# Ensure default configuration is active
+$null = & gcloud config configurations activate default --quiet
 
 # Verify current state
 $activeAccount = & gcloud auth list --filter="status:ACTIVE" --format="value(account)" 2>&1 | 
