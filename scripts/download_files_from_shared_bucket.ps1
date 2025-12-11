@@ -15,7 +15,7 @@ param(
     [string[]] $DestinationPath,
 
     [Parameter(Mandatory = $true)]
-    [string[]] $DefaultServiceAccount,
+    [string[]] $DefaultServiceAccount
 )
 
 . "$PSScriptRoot\functions\LoggingFunctions.ps1"
