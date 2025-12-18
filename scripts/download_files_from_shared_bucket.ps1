@@ -84,7 +84,7 @@ try {
         LogInfo("Source: gs://$SharedBucket/$file")
         LogInfo("Destination: $dest")
 
-        & gcloud storage cp "gs://$SharedBucket/$file" $dest
+        gsutil cp "gs://$SharedBucket/$file" $dest
         
         if ($LASTEXITCODE -ne 0) {
             throw "Download failed with exit code $LASTEXITCODE"
