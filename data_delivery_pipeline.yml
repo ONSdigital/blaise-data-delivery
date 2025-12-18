@@ -51,6 +51,7 @@ stages:
                     filePath: $(Agent.BuildDirectory)/s/scripts/RegisterBlaise.ps1
                     arguments: '-BLAISE_LICENSE_KEY $(ENV_BLAISE_LICENSE_KEY) -BLAISE_ACTIVATION_CODE $(ENV_BLAISE_ACTIVATION_CODE)'
                     pwsh: true
+                - template: /templates/download_gcloud_sdk.yml
                 - template: /templates/download_files.yml
                 - task: PowerShell@2
                   displayName: Set-up processing folder
