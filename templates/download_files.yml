@@ -11,7 +11,7 @@ steps:
         -SystemAccessToken "$(System.AccessToken)"
         -SharedServiceAccount "$(ENV_SHARED_SERVICE_ACCOUNT)"
         -SharedBucket "$(ENV_SHARED_BUCKET)"
-        -FileName "Manipula_Package_5_14_6.zip","7za.exe"
+        -FileName "Manipula_Package_5_16_3.zip","7za.exe"
         -DestinationPath "$env:ProcessingPath\Manipula.zip","$env:ProcessingPath\7za.exe"
         -DefaultServiceAccount: "$(ENV_VM_SERVICEACCOUNT)"
       pwsh: true

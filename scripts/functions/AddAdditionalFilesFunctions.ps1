@@ -13,7 +13,7 @@ function AddAdditionalFilesToDeliveryPackage {
         [string] $questionnaireName,
         [string] $subFolder
     )
-          
+
     If ([string]::IsNullOrEmpty($surveyType)) {
         throw "surveyType not provided"
     }
@@ -29,7 +29,7 @@ function AddAdditionalFilesToDeliveryPackage {
     If ([string]::IsNullOrEmpty($questionnaireName)) {
         throw "questionnaireName not provided"
     }
-          
+
     # Get configuration for survey type
     $config = GetConfigFromFile -surveyType $surveyType
     LogInfo("Add additional files config: $($config.deliver) $($config)")
