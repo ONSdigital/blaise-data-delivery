@@ -1,0 +1,10 @@
+--- 
+steps:
+  - task: PowerShell@2
+    displayName: 'Install Google Cloud SDK'
+    inputs:
+      targetType: 'filePath'
+      filePath: $(Agent.BuildDirectory)/s/scripts/install_gcloud_sdk.ps1
+      arguments: >
+        -GCPPath "C:\Program Files (x86)\Google\Cloud SDK\google-cloud-sdk\bin"
+        -SDKMinVersion "400.0.0"
