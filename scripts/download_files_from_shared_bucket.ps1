@@ -58,7 +58,6 @@ try {
     Set-Content -Path $tokenFile -Value $oidcToken
 
     # Build WIF Config JSON
-    # BENTODO: Changed value, need to verify it works
     $audience = "//iam.googleapis.com/projects/894295524217/locations/global/workloadIdentityPools/azdo-identity-pool/providers/azdo-identity-provider"
     $impersonationUrl = "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${SharedServiceAccount}:generateAccessToken"
 
