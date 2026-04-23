@@ -58,8 +58,8 @@ try {
     Set-Content -Path $tokenFile -Value $oidcToken
 
     # Build WIF Config JSON
-    # BENTODO: need to use one-blaise-shared and correct names once switched over from sandbox project
-    $audience = "//iam.googleapis.com/projects/577313868994/locations/global/workloadIdentityPools/azdo-identity-pool/providers/azdo-identity-provider"
+    # BENTODO: Changed value, need to verify it works
+    $audience = "//iam.googleapis.com/projects/894295524217/locations/global/workloadIdentityPools/azdo-identity-pool/providers/azdo-identity-provider"
     $impersonationUrl = "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${SharedServiceAccount}:generateAccessToken"
 
     $wifConfig = @{
