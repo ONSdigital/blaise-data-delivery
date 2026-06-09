@@ -1,11 +1,13 @@
 import logging
 import os
+from typing import TYPE_CHECKING
 
-from google.cloud import storage
+import google.cloud.storage as storage
 from google.cloud.logging_v2.handlers import StructuredLogHandler, setup_logging
 
-handler = StructuredLogHandler()
-setup_logging(handler)
+if not TYPE_CHECKING:
+    handler = StructuredLogHandler()
+    setup_logging(handler)
 
 
 def copy_sandbox_dd_files_to_dev(data, _context):
@@ -45,9 +47,10 @@ def copy_sandbox_dd_files_to_dev(data, _context):
             logging.info(
                 f"File {file_name} copied to {destination_bucket_name} renamed as {new_file_name}"
             )
+            return None
         else:
             logging.info("Non-dd file received, no data delivery needed")
-            return
+            return None
     except Exception as e:
         error = f"An error occured while trying to run the sandbox data delivery function. Exception: {e}"
         logging.error(error)
