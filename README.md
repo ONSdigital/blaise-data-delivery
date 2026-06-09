@@ -1,4 +1,4 @@
-# Blaise Data Delivery
+# Blaise Data Delivery 🚚
 
 This repository contains the Azure DevOps pipeline definitions and supporting scripts for delivering survey questionnaire data from Blaise. The process is initiated by a Concourse job, which triggers the Azure DevOps pipeline described here. Multiple output formats and configuration options are supported, allowing flexible delivery of survey data in formats such as SPSS, ASCII, JSON, and XML. All scripts and configuration files required for this process are included in this repository.
 

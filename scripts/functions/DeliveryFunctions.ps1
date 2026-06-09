@@ -11,7 +11,6 @@ function CreateDeliveryFile {
         [string] $serverParkName,
         [string] $surveyType,
         [string] $questionnaireName,
-        [string] $subFolder,
         [string] $dqsBucket,
         [string] $processingPath,
         [string[]] $keepQuestionnairePackageFileExtensions = @('bdix', 'bmix', 'bdbx', 'blix', 'csv'),
@@ -84,13 +83,16 @@ function CreateDeliveryFile {
         LogInfo("Did not create subfolder for $questionnaireName data delivery")
     }
 
-    # Add Manipula files to the processing folder
-    LogInfo("Adding Manipula binaries to $processingFolderPath")
-    AddManipulaToProcessingFolder -manipulaPackage "$processingPath/manipula.zip" -processingFolder $processingFolderPath -processingPath $processingPath
-
-    # Add additional file formats specified in the survey config, will also be placed in the processing subfolder if config.createSubFolder is true, i.e. processingSubFolderPath is not $NULL
-    LogInfo("Adding additional file formats to $processingFolderPath")
-    AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -processingFolder $processingFolderPath -questionnaireName $questionnaireName -subFolder $processingSubFolderPath
+    # Add additional file formats specified in the survey config (and Manipula binaries required to generate them).
+    # Files will also be placed in the processing subfolder if config.createSubFolder is true.
+    if ($config.deliver.asciiData -or $config.deliver.jsonData -or $config.deliver.spssMetadata -or $config.deliver.xmlData -or $config.deliver.xmlMetadata) {
+        LogInfo("Adding Manipula binaries to $processingFolderPath")
+        AddManipulaToProcessingFolder -manipulaPackage "$processingPath/manipula.zip" -processingFolder $processingFolderPath -processingPath $processingPath
+        AddAdditionalFilesToDeliveryPackage -surveyType $surveyType -processingFolder $processingFolderPath -questionnaireName $questionnaireName -subFolder $processingSubFolderPath
+    }
+    else {
+        LogInfo("No additional file formats enabled for $questionnaireName")
+    }
 
     # Remove files we don't want delivered
     Get-ChildItem -Path $processingFolderPath -Recurse -File | Where-Object {
