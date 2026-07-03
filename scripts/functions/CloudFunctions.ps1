@@ -33,7 +33,7 @@ function UploadFileToBucket {
     if ($output -Like "*exception*") {
         throw "Failed to upload '$filePath' to '$bucketName': '$output'"
     }
-    
+
     LogInfo("Uploaded '$filePath' to '$bucketName'")
 }
 

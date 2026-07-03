@@ -3,19 +3,19 @@ FUNCTION ExtractFilePath: STRING
 PARAMETERS pFilename: STRING
 INSTRUCTIONS
   RESULT:= REGEXSTRING('.*(\\\\|/)',pFileName)
-ENDFUNCTION 
+ENDFUNCTION
 
 FUNCTION ExtractFileName: STRING
 PARAMETERS pFilename: STRING
 INSTRUCTIONS
   RESULT:= REGEXSTRING('([\^\$\w\.-]*)*?$',pFileName)
-ENDFUNCTION 
+ENDFUNCTION
 
 FUNCTION ExtractFileExtension: STRING
 PARAMETERS pFilename: STRING
 INSTRUCTIONS
   RESULT:= REGEXSTRING('\\.\\w+$',pFileName)
-ENDFUNCTION  
+ENDFUNCTION
 
 FUNCTION ReplaceExtension: STRING
 PARAMETERS
@@ -28,12 +28,12 @@ ENDFUNCTION
 FUNCTION ExpandFileName: STRING
 PARAMETERS
   pFileName: STRING
-INSTRUCTIONS  
-  Result:= pFilename  
+INSTRUCTIONS
+  Result:= pFilename
   IF pFileName<>'' THEN
-    IF POSITION(':\\',pFileName)=0 AND SUBSTRING(pFileName,1,2)<>CHAR(92)+CHAR(92) THEN 
-      Result:= WORKINGFOLDER+CHAR(92)+pFileName 
+    IF POSITION(':\\',pFileName)=0 AND SUBSTRING(pFileName,1,2)<>CHAR(92)+CHAR(92) THEN
+      Result:= WORKINGFOLDER+CHAR(92)+pFileName
     ENDIF
-  ENDIF  
-ENDFUNCTION  
-//END - File name routines  
+  ENDIF
+ENDFUNCTION
+//END - File name routines

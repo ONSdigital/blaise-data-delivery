@@ -31,7 +31,7 @@ function GenerateBatchFileName {
     If ([string]::IsNullOrEmpty($surveyType)) {
         throw "surveyType not provided"
     }
-    
+
     return "$($surveyType)_$($dateTime.ToString("ddMMyyyy"))_$($dateTime.ToString("HHmmss"))"
 }
 

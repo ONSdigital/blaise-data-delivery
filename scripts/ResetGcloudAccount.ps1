@@ -47,7 +47,7 @@ foreach ($file in $filesToRemove) {
 if ($DefaultServiceAccount) {
     # Revoke non-default service accounts
     LogInfo("Revoking non-default service account credentials...")
-    $accounts = & gcloud auth list --format="value(account)" 2>&1 | 
+    $accounts = & gcloud auth list --format="value(account)" 2>&1 |
         Where-Object { $_ -notmatch "^(WARNING|ERROR):" } |
         ForEach-Object { $_.Trim().Trim("'") } |
         Select-Object -Unique
@@ -75,7 +75,7 @@ if ($DefaultServiceAccount) {
 $null = & gcloud config configurations activate default --quiet
 
 # Verify current state
-$activeAccount = & gcloud auth list --filter="status:ACTIVE" --format="value(account)" 2>&1 | 
+$activeAccount = & gcloud auth list --filter="status:ACTIVE" --format="value(account)" 2>&1 |
     Where-Object { $_ -notmatch "^(WARNING|ERROR|Unset):" -and $_ -match "@" }
 
 if ($activeAccount) {

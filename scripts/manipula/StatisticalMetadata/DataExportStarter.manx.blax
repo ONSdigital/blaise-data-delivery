@@ -1,7 +1,5 @@
 datamodel DataExportStarter "Data export dialog"
- fieldproperties onclick:string visibility:(hidden (0),visible (1)) tag:string 
-
-
+ fieldproperties onclick:string visibility:(hidden (0),visible (1)) tag:string
 
 PARALLEL
 SpecifyParams
@@ -12,11 +10,11 @@ Process
 
 BLOCK BSpecifyParams
 FIELDS
-Package  "Package:"  : 
+Package  "Package:"  :
 		(SAS Category  "<B>SAS" ,
 		SPSS Category  "<B>SPSS" ,
 		Stata Category  "<B>Stata" )
-SettingsButton  : 
+SettingsButton  :
 		(EditType Category  "Settings..." )
 strMetaName  "Meta file:"  : string, Empty
 LangStr_1_  : string[40]
@@ -44,7 +42,7 @@ LangStr_22_  : string[40]
 LangStr_23_  : string[40]
 LangStr_24_  : string[40]
 LangStr_25_  : string[40]
-SelLangStr  "Language:"  : 
+SelLangStr  "Language:"  :
 		(LangStr1 Category  "^<LangStr_1_>" ,
 		LangStr2 Category  "^<LangStr_2_>" ,
 		LangStr3 Category  "^<LangStr_3_>" ,
@@ -95,7 +93,7 @@ RoleStr_22_  : string[40]
 RoleStr_23_  : string[40]
 RoleStr_24_  : string[40]
 RoleStr_25_  : string[40]
-SelRoleStr  "Role:"  : 
+SelRoleStr  "Role:"  :
 		(RoleStr1 Category  "^<RoleStr_1_>" ,
 		RoleStr2 Category  "^<RoleStr_2_>" ,
 		RoleStr3 Category  "^<RoleStr_3_>" ,
@@ -146,7 +144,7 @@ ModeStr_22_  : string[40]
 ModeStr_23_  : string[40]
 ModeStr_24_  : string[40]
 ModeStr_25_  : string[40]
-SelModeStr  "Mode:"  : 
+SelModeStr  "Mode:"  :
 		(ModeStr1 Category  "^<ModeStr_1_>" ,
 		ModeStr2 Category  "^<ModeStr_2_>" ,
 		ModeStr3 Category  "^<ModeStr_3_>" ,
@@ -177,19 +175,19 @@ strOutputPath  "Output path:"  : string, Empty
 strInputPath  "Input path:"  : string, Empty
 strInputName  "Input name:"  : string, Empty
 FieldSelectionFileName  "Selection file:"  : string, Empty
-EditSelectionButton  : 
+EditSelectionButton  :
 		(DoEdit Category  "Edit..." )
 BlaiseDataFileName  "Data file:"  : string, Empty
-DoAsciiRelational  : 
+DoAsciiRelational  :
 		(yes Category  "Export the data block-based ('ASCII relational')" ), Empty
-DoGenerateExtraAttributes  : 
+DoGenerateExtraAttributes  :
 		(Yes Category  "Add Offroute and Unprocessed special attribute" ), Empty
 SepChar  "Separator to use for data export (specify TAB or a single char):"  : string[3], Empty
-DoProduceANSI  : 
+DoProduceANSI  :
 		(Yes Category  "Encoding in ANSI instead of UTF-8" ), Empty
-DoRunExport  : 
+DoRunExport  :
 		(yes Category  "<bold>Create the ASCII file(s) for import by ^<Package>" ), Empty
-Buttons  : 
+Buttons  :
 		(Run,
 		Save,
 		Cancel)
@@ -200,7 +198,7 @@ ModesCount  : integer
 DialogTitle : string[200]
 RULES
 DialogTitle.KEEP
-IF DialogTitle = EMPTY THEN 
+IF DialogTitle = EMPTY THEN
     DialogTitle := 'Export Data'
 ENDIF
 Package.Ask
@@ -302,47 +300,44 @@ LanguagesCount.Keep
 RolesCount.Keep
 ModesCount.Keep
 
-
-
 endblock
-
 
 BLOCK BSpecifyPackageSettings
 FIELDS
 varlength  "Max unique name length: "  : 8 .. 64, Empty
-UniqueNameBasedOn  "Unique name based on:"  : 
+UniqueNameBasedOn  "Unique name based on:"  :
 		(fullname Category  "Full name" ,
 		localname Category  "Local name" ,
 		localname_indexed Category  "Local name and array index" )
-DoSetConversion  : 
+DoSetConversion  :
 		(yes Category  "Create 0/1 variables for set fields" ), Empty
-DoMaintainSetOrder  : 
+DoMaintainSetOrder  :
 		(yes Category  "Maintain set order" ), Empty
-DoLowercase  : 
+DoLowercase  :
 		(yes Category  "Convert field names to lowercase" ), Empty
-DoTreatDKRFasValues  : 
+DoTreatDKRFasValues  :
 		(yes Category  "Do not treat DK & RF as missing values for enumerated/set fields" ), Empty
-DoAddZeroToIndex  : 
+DoAddZeroToIndex  :
 		(Yes Category  "Use zero in array index" ), Empty
-DoConvertDateTime  : 
+DoConvertDateTime  :
 		(Yes Category  "Convert Date/Time fields" ), Empty
-DoDKRFConversionForNonNumeric  : 
+DoDKRFConversionForNonNumeric  :
 		(Yes Category  "Convert special answers for non-numeric fields" ), Empty
-DoRecodeEmpty  : 
+DoRecodeEmpty  :
 		(Yes Category  "Recode empty to missing" ), Empty
-DoGenerateFormats  : 
+DoGenerateFormats  :
 		(Yes Category  "Generate formats" ), Empty
-Package  "Package:"  : 
+Package  "Package:"  :
 		(SAS Category  "<B>SAS" ,
 		SPSS Category  "<B>SPSS" ,
 		Stata Category  "<B>Stata" )
-Res (Result)   : 
+Res (Result)   :
 		(OK,
 		Cancel), Empty
 DialogTitle : string[200]
 RULES
 DialogTitle.KEEP
-IF DialogTitle = EMPTY THEN 
+IF DialogTitle = EMPTY THEN
     DialogTitle := 'Specify Package Settings'
 ENDIF
 varlength.Ask
@@ -357,7 +352,6 @@ DoDKRFConversionForNonNumeric.Ask
 DoRecodeEmpty.Ask
 DoGenerateFormats.Ask
 Package.Keep
-
 
 Res.ASK
 endblock
@@ -394,4 +388,3 @@ Display : BDisplay
 Confirm : BConfirm
 Process : BProcess
 endmodel
-
