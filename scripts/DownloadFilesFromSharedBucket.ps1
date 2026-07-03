@@ -27,9 +27,9 @@ if ($FileName.Count -ne $DestinationPath.Count) {
 
 function Get-AzureOidcToken {
     $oidcUrl = "$($env:SYSTEM_COLLECTIONURI)$($env:SYSTEM_TEAMPROJECTID)/_apis/distributedtask/hubs/$($env:SYSTEM_HOSTTYPE)/plans/$($env:SYSTEM_PLANID)/jobs/$($env:SYSTEM_JOBID)/oidctoken?api-version=7.2-preview.1"
-    
+
     LogInfo("Requesting OIDC token from Azure DevOps...")
-    
+
     $response = Invoke-RestMethod -Method Post -Uri $oidcUrl -Headers @{
         "Authorization" = "Bearer $SystemAccessToken"
         "Content-Type"  = "application/json"
@@ -39,7 +39,7 @@ function Get-AzureOidcToken {
         LogError("Could not fetch OIDC token from Azure DevOps")
         throw "Could not fetch OIDC token from Azure DevOps"
     }
-    
+
     LogInfo("Azure OIDC Token retrieved successfully!")
     return $response.oidcToken
 }
@@ -76,7 +76,7 @@ try {
     & gcloud auth login --cred-file=$wifJson --quiet
 
     for ($i = 0; $i -lt $FileName.Count; $i++) {
-        
+
         $file = $FileName[$i]
         $dest = $DestinationPath[$i]
 
@@ -85,11 +85,10 @@ try {
         LogInfo("Destination: $dest")
 
         & gcloud storage cp "gs://$SharedBucket/$file" $dest
-        
+
         if ($LASTEXITCODE -ne 0) {
             throw "Download failed with exit code $LASTEXITCODE"
         }
-        
     }
 
     LogInfo("File downloaded successfully!")

@@ -1,27 +1,42 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
-version = "0.1.0"
-authors = ["Blaise Team"]
 package-mode = false
 
-[tool.poetry.dependencies]
-python = "^3.13"
-google-cloud-storage = "^3.11.0"
-google-cloud-logging = "^3.16.0"
+[project]
+name = "blaise-data-delivery"
+requires-python = ">=3.13"
+dependencies = [
+    "google-cloud-storage>=3.12.0",
+    "google-cloud-logging>=3.16.0",
+]
 
-[tool.poetry.group.dev.dependencies]
-parameterized = "^0.9.0"
-setuptools = "^82.0.1"
-black = "^26.5.1"
-isort = "^8.0.1"
-mock-alchemy = "^0.2.6"
-mypy = "^2.1.0"
+[dependency-groups]
+dev = [
+    "parameterized>=0.9.0",
+    "ruff>=0.15.20",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "pyright>=1.1.411",
+    "deptry>=0.16.0",
+    "vulture>=2.13",
+]
 
-[tool.mypy]
-python_version = "3.13"
-disallow_untyped_calls = true
-disallow_incomplete_defs = true
-disallow_untyped_decorators = true
-ignore_missing_imports = true
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "PL", "C90", "SIM", "RUF", "Q"]
 
-[tool.isort]
-profile = "black"
+[tool.pytest.ini_options]
+addopts = "--cov=cloud_functions --cov-report=term-missing --cov-fail-under=100"
+
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.13"
+reportUnusedImport = true
+reportUnusedVariable = true
+reportMissingTypeStubs = false
+reportUnknownParameterType = false
+reportMissingParameterType = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false

@@ -13,11 +13,11 @@ function AddSpssMetadataToDelivery {
     }
 
     If (-not (Test-Path $processingFolder)) {
-        throw "$processingFolder not found" 
+        throw "$processingFolder not found"
     }
-    
+
     If ([string]::IsNullOrEmpty($questionnaireName)) {
-        throw "questionnaireName not provided" 
+        throw "questionnaireName not provided"
     }
 
     # Copy Manipula statistical metadata scripts to processing folder

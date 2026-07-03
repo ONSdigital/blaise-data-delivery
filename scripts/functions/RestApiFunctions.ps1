@@ -11,11 +11,9 @@ function GetListOfQuestionnairesBySurveyType {
     $questionnairesUri = "$restApiBaseUrl/api/v2/serverparks/$($serverParkName)/questionnaires"
     $allQuestionnaires = Invoke-RestMethod -Method Get -Uri $questionnairesUri
 
-
     # Return a list of questionnaires for a particular survey type I.E OPN
     return $allQuestionnaires | Where-Object { $_.name.StartsWith($surveyType) -and $_.status -eq "Active"}
 }
-
 
 function GetListOfQuestionnairesByNames {
     param (

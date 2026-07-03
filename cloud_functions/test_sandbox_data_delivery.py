@@ -12,7 +12,6 @@ from cloud_functions.sandbox_data_delivery import (
 
 
 class TestDeliverDataFunction(unittest.TestCase):
-
     @patch("cloud_functions.sandbox_data_delivery.storage.Client")
     @patch("cloud_functions.sandbox_data_delivery.get_environment_suffix")
     @patch("cloud_functions.sandbox_data_delivery.split_filename")
@@ -187,7 +186,8 @@ class TestDeliverDataFunction(unittest.TestCase):
 
         copy_sandbox_dd_files_to_dev(data, context)
 
-        assert 3 == mock_info.call_count
+        expected_call_count = 3
+        assert mock_info.call_count == expected_call_count
         last_logged_message = mock_info.call_args_list[-1][0][0]
 
         self.assertEqual(
@@ -206,9 +206,11 @@ class TestDeliverDataFunction(unittest.TestCase):
         copy_sandbox_dd_files_to_dev(data, context)
 
         # Assertions
-        mock_error.assert_called_once_with(
-            f"An error occured while trying to run the sandbox data delivery function. Exception: Not a valid request object"
+        expected_error = (
+            "An error occured while trying to run the sandbox data delivery "
+            "function. Exception: Not a valid request object"
         )
+        mock_error.assert_called_once_with(expected_error)
 
     @parameterized.expand(
         [
@@ -218,12 +220,23 @@ class TestDeliverDataFunction(unittest.TestCase):
             ("dd_IPS2413A_AA1_26112024_060148", "dd_IPS2413A_AA1", "26112024_060148"),
         ]
     )
-    def test_split_filename(self, filename, expected_prefix, expected_suffix):
+    def test_split_filename(
+        self, filename: str, expected_prefix: str, expected_suffix: str
+    ) -> None:
 
         received_prefix, received_suffix = split_filename(filename)
 
         assert received_prefix == expected_prefix
         assert received_suffix == expected_suffix
+
+    def test_split_filename_with_invalid_format(self):
+        """Test split_filename with a filename that doesn't have enough parts."""
+        filename = "invalid_format"
+
+        received_prefix, received_suffix = split_filename(filename)
+
+        assert received_prefix is None
+        assert received_suffix is None
 
     @parameterized.expand(
         [
@@ -232,7 +245,9 @@ class TestDeliverDataFunction(unittest.TestCase):
             ("ons-blaise-v2-dev-loadtest2-nifi", "loadtest2"),
         ]
     )
-    def test_get_environment_suffix(self, bucket_name, expected_env_suffix):
+    def test_get_environment_suffix(
+        self, bucket_name: str, expected_env_suffix: str
+    ) -> None:
 
         received_env_suffix = get_environment_suffix(bucket_name)
         assert received_env_suffix == expected_env_suffix

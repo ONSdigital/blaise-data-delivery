@@ -1,5 +1,5 @@
 param (
-    [string]$BLAISE_LICENSE_KEY, 
+    [string]$BLAISE_LICENSE_KEY,
     [string]$BLAISE_ACTIVATION_CODE
 )
 
