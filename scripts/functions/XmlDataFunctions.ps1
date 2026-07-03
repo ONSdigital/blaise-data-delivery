@@ -13,10 +13,10 @@ function AddXmlDataToDelivery {
     }
 
     If (-not (Test-Path $processingFolder)) {
-        throw "$processingFolder not found" 
+        throw "$processingFolder not found"
     }
     If ([string]::IsNullOrEmpty($questionnaireName)) {
-        throw "questionnaireName not provided" 
+        throw "questionnaireName not provided"
     }
 
     # Copy Manipula XML data scripts to processing folder
@@ -34,7 +34,7 @@ function AddXmlDataToDelivery {
             "-K:Meta=`"$bmixPath`"",
             "-I:`"$bdbxPath`"",
             "-O:`"$outputPath`"",
-            "-Q:True"            
+            "-Q:True"
         )
         $process = Start-Process -FilePath $manipulaPath -ArgumentList $arguments -Wait -PassThru -NoNewWindow
         if ($process.ExitCode -eq 0) {

@@ -46,14 +46,14 @@ function CreateDeliveryFile {
 
     # Create a temporary folder for processing questionnaire data delivery
     $processingFolderPath = CreateFolder -folderPath $processingPath -folderName "$($questionnaireName)_$(Get-Date -format "ddMMyyyy")_$(Get-Date -format "HHmmss")"
-    
+
     # Download questionnaire package
     LogInfo("Downloading questionnaire package $questionnaireName from $dqsBucket bucket")
     DownloadFileFromBucket -questionnaireFileName "$($questionnaireName).bpkg" -bucketName $dqsBucket -filePath $deliveryFile
- 
+
     # Extract data to Blaise file format (BDBX, BMIX, BDIX) via Blaise CLI, '2>&1' redirects output to command line allowing errors to bubble up
     LogInfo("Extracting data in Blaise format for questionnaire $questionnaireName via Blaise CLI")
-    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $questionnaireName -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1        
+    C:\BlaiseServices\BlaiseCli\blaise.cli datadelivery -s $serverParkName -q $questionnaireName -f $deliveryFile -a $config.auditTrailData -b $config.batchSize 2>&1
 
     # Extact questionnaire package to processing folder, now contains data in Blaise file format from the previous step
     LogInfo("Extracting questionnaire package $deliveryFile to processing folder $processingFolderPath")
@@ -67,15 +67,15 @@ function CreateDeliveryFile {
     Get-ChildItem -Path $processingFolderPath -Recurse -Directory | Sort-Object -Property FullName -Descending | Where-Object {
         @(Get-ChildItem -Path $_.FullName -Recurse | Where-Object { -not $_.PSIsContainer }).Count -eq 0
         } | Remove-Item -Force
-        
+
     # Determine subfolder creation preference for non-Blaise file formats
     $processingSubFolderPath = $null
     if($config.createSubFolder -eq $true) {
         LogInfo("Creating subfolder for $questionnaireName data delivery")
-    
+
         # Get the unique name of the processing folder to use for the subfolder
         $subFolderName = Split-Path $processingFolderPath -Leaf
-    
+
         # Create subfolder within the processing folder
         $processingSubFolderPath = CreateFolder -folderPath $processingFolderPath -folderName $subFolderName
     }

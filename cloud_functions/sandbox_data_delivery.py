@@ -1,8 +1,8 @@
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-import google.cloud.storage as storage
+from google.cloud import storage
 from google.cloud.logging_v2.handlers import StructuredLogHandler, setup_logging
 
 if not TYPE_CHECKING:
@@ -10,9 +10,9 @@ if not TYPE_CHECKING:
     setup_logging(handler)
 
 
-def copy_sandbox_dd_files_to_dev(data, _context):
+def copy_sandbox_dd_files_to_dev(data: Any, _context: Any) -> tuple[str, int] | None:
 
-    logging.info(f"Sandbox data delivery process triggered")
+    logging.info("Sandbox data delivery process triggered")
     try:
         if not data:
             raise ValueError("Not a valid request object")
@@ -23,7 +23,6 @@ def copy_sandbox_dd_files_to_dev(data, _context):
         logging.info(f"File received: {file_name}")
 
         if file_name.startswith("dd_"):
-
             storage_client = storage.Client()
 
             destination_bucket_name = "ons-blaise-v2-dev-nifi"
@@ -45,29 +44,36 @@ def copy_sandbox_dd_files_to_dev(data, _context):
             source_bucket.copy_blob(source_blob, destination_bucket, new_file_name)
 
             logging.info(
-                f"File {file_name} copied to {destination_bucket_name} renamed as {new_file_name}"
+                f"File {file_name} copied to {destination_bucket_name} "
+                f"renamed as {new_file_name}"
             )
             return None
         else:
             logging.info("Non-dd file received, no data delivery needed")
             return None
     except Exception as e:
-        error = f"An error occured while trying to run the sandbox data delivery function. Exception: {e}"
+        error = (
+            "An error occured while trying to run the sandbox data delivery "
+            f"function. Exception: {e}"
+        )
         logging.error(error)
         return error, 500
 
 
-def get_environment_suffix(bucket_name):
+def get_environment_suffix(bucket_name: str) -> str:
     parts = bucket_name.split("-")
     env_suffix = parts[len(parts) - 2]
     return env_suffix
 
 
-def split_filename(filename):
+EXPECTED_PARTS = 3
+
+
+def split_filename(filename: str) -> tuple[str | None, str | None]:
     filename = "".join(filename)
 
     parts = filename.rsplit("_", 2)
-    if len(parts) == 3:
+    if len(parts) == EXPECTED_PARTS:
         prefix = parts[0]
         suffix = "_".join(parts[1:])
         return prefix, suffix
