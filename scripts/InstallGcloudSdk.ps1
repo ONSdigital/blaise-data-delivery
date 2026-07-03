@@ -11,10 +11,9 @@ $currentSDKVersion = $null
 $minSDKVersion = [Version]$SDKMinVersion
 $gcloudExe = Join-Path $GCPPath "gcloud.cmd"
 
-
 if (Test-Path $gcloudExe) {
     Write-Host "Found gcloud at expected location: $gcloudExe"
-    
+
     # Set bundled Python path if it exists
     $sdkRoot = Split-Path $GCPPath
     $platformPath = Join-Path $sdkRoot "platform"
@@ -26,12 +25,12 @@ if (Test-Path $gcloudExe) {
     else {
         Write-Host "Warning: Bundled Python not found at: $pythonExe"
     }
-    
+
     try {
         $env:CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK = "1"
         $verOutput = & $gcloudExe version 2>&1 | Out-String
         Write-Host "Raw version output: $verOutput"
-        
+
         if ($verOutput -match "Google Cloud SDK (\d+\.\d+\.\d+)") {
             $currentSDKVersion = [Version]$matches[1]
             Write-Host "Detected installed gcloud version: $currentSDKVersion"
@@ -47,7 +46,6 @@ if (Test-Path $gcloudExe) {
 else {
     Write-Host "gcloud not found at: $gcloudExe"
 }
-
 
 if (($null -eq $currentSDKVersion) -or ($currentSDKVersion -lt $minSDKVersion)) {
     Write-Host "Installing Google Cloud SDK..."

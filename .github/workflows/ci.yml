@@ -12,21 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 🛎️ Checkout Repository
-        uses: actions/checkout@v6
-      - name: 🔧 Install Poetry
-        run: pipx install poetry
-      - name: 🔧 Setup Python and Cache
+        uses: actions/checkout@v7
+      - name: 🐍 Setup Python and Cache
         uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
-          cache: poetry
-          cache-dependency-path: poetry.lock
+          python-version: 3.13
+      - name: 🖋 Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
       - name: 📦 Install Dependencies
-        run: poetry install --no-interaction --sync
-      - name: 🧹 Run Linter
-        run: |
-          poetry run black --check --diff .
-          poetry run isort --check-only --diff .
-          poetry run mypy .
-      - name: 🧪 Run Tests
-        run: poetry run python -m unittest
+        run: poetry install --no-interaction --no-root
+      - name: 🧹 Run Lint Check
+        run: make lint
+      - name: 🔍 Run Type Check
+        run: make typecheck
+      - name: 🧪 Run Tests and Generate Coverage
+        run: make test
