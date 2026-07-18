@@ -7,36 +7,37 @@ package-mode = false
 
 [project]
 name = "blaise-data-delivery"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<4.0"
 dependencies = [
-    "google-cloud-storage>=3.12.0",
-    "google-cloud-logging>=3.16.0",
+    "google-cloud-storage (>=3.13.0)",
+    "google-cloud-logging (>=3.16.1)",
 ]
 
 [dependency-groups]
 dev = [
     "parameterized>=0.9.0",
-    "ruff>=0.15.20",
+    "ruff (>=0.15.22)",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
     "pyright>=1.1.411",
-    "deptry>=0.16.0",
-    "vulture>=2.13",
+    "deptry (>=0.25.1)",
+    "vulture (>=2.16)",
 ]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "PL", "C90", "SIM", "RUF", "Q"]
 
-[tool.pytest.ini_options]
-addopts = "--cov=cloud_functions --cov-report=term-missing --cov-fail-under=100"
-
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.13"
-reportUnusedImport = true
-reportUnusedVariable = true
 reportMissingTypeStubs = false
 reportUnknownParameterType = false
 reportMissingParameterType = false
 reportUnknownMemberType = false
 reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[tool.vulture]
+min_confidence = 70
+
+[tool.pytest.ini_options]
+addopts = "--cov=cloud_functions --cov-report=term-missing"

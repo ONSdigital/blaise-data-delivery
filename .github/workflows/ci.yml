@@ -27,5 +27,9 @@ jobs:
         run: make lint
       - name: 🔍 Run Type Check
         run: make typecheck
+      - name: 📦 Run Dependency Check
+        run: make deptry
+      - name: 🦅 Run Dead Code Check
+        run: make vulture
       - name: 🧪 Run Tests and Generate Coverage
         run: make test
