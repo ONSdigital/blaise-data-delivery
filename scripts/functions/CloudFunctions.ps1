@@ -26,19 +26,12 @@ function UploadFileToBucket {
     $destination = "gs://$bucketName/$deliveryFileName"
     LogInfo("Uploading '$filePath' to '$destination'")
 
-    # Capture stderr with stdout because gcloud storage may write progress and errors there.
-    # Use the exit code as the primary failure check, with output text as a fallback.
-    
+    # Capture stderr for diagnostics; gcloud's exit code determines success.
     $output = & gcloud storage cp $filePath $destination 2>&1
     $exitCode = $LASTEXITCODE
-    Write-Host "gcloud storage cp upload exit code: $exitCode; output: $($output -join [Environment]::NewLine)"
-    
+
     if ($exitCode -ne 0) {
         throw "Failed to upload '$filePath' to '$destination' (gcloud exit code $exitCode): '$($output -join [Environment]::NewLine)'"
-    }
-    
-    if ($output -Like "*exception*") {
-        throw "Failed to upload '$filePath' to '$bucketName': '$output'"
     }
 
     LogInfo("Uploaded '$filePath' to '$bucketName'")
