@@ -28,7 +28,7 @@ function UploadFileToBucket {
     # Capture stderr with stdout because gcloud storage may write progress and errors there.
     # Use the exit code as the primary failure check, with output text as a fallback.
     
-    $output = gcloud storage cp $filePath gs://$bucketName/$deliveryFileName 2>&1
+    $output = & gcloud storage cp $filePath gs://$bucketName/$deliveryFileName 2>&1
 
     if ($LASTEXITCODE -ne 0 -or $output -Like "*exception*") {
         throw "Failed to upload '$filePath' to '$bucketName': '$output'"
