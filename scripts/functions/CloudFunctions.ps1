@@ -56,13 +56,19 @@ function DownloadFileFromBucket {
         throw "filePath not provided"
     }
 
-    LogInfo("Downloading '$questionnaireFileName' from '$bucketName' to '$filePath'") 
+    $source = "gs://$bucketName/$questionnaireFileName"
+    LogInfo("Downloading '$source' to '$filePath'")
 
-    $output = & gcloud storage cp gs://$bucketName/$questionnaireFileName $filePath 2>&1
-    
-    if ($LASTEXITCODE -ne 0 -or $output -Like "*exception*") {
-        throw "Failed to download '$questionnaireFileName' from '$bucketName': '$output'"
+    $output = & gcloud storage cp $source $filePath 2>&1
+    $exitCode = $LASTEXITCODE
+
+    if ($exitCode -ne 0) {
+        throw "Failed to download '$source' to '$filePath' (gcloud exit code $exitCode): '$($output -join [Environment]::NewLine)'"
     }
 
-    LogInfo("Downloaded '$questionnaireFileName' from '$bucketName' to '$filePath'")
+    if (-not (Test-Path -LiteralPath $filePath -PathType Leaf)) {
+        throw "gcloud storage cp reported success for '$source' but did not create destination file '$filePath'. Output: '$($output -join [Environment]::NewLine)'"
+    }
+
+    LogInfo("Downloaded '$source' to '$filePath'")
 }
