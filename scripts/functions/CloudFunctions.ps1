@@ -31,6 +31,7 @@ function UploadFileToBucket {
     
     $output = & gcloud storage cp $filePath $destination 2>&1
     $exitCode = $LASTEXITCODE
+    Write-Host "gcloud storage cp upload exit code: $exitCode; output: $($output -join [Environment]::NewLine)"
     
     if ($exitCode -ne 0) {
         throw "Failed to upload '$filePath' to '$destination' (gcloud exit code $exitCode): '$($output -join [Environment]::NewLine)'"
