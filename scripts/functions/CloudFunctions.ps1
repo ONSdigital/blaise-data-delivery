@@ -25,12 +25,12 @@ function UploadFileToBucket {
 
     LogInfo("Uploading '$filePath' to '$bucketName'")
 
-    # GSUtils logs its progress bar to stderr, standard powershell core throws an error
-    # when run from azure because of this, using cmd seemed to be the only option but
-    # it swallows errors so we then have to check the output for exceptions
-    $output = & cmd /c "gsutil 2>&1" cp $filePath gs://$bucketName/$deliveryFileName
+    # Capture stderr with stdout because gcloud storage may write progress and errors there.
+    # Use the exit code as the primary failure check, with output text as a fallback.
+    
+    $output = gcloud storage cp $filePath gs://$bucketName/$deliveryFileName 2>&1
 
-    if ($output -Like "*exception*") {
+    if ($LASTEXITCODE -ne 0 -or $output -Like "*exception*") {
         throw "Failed to upload '$filePath' to '$bucketName': '$output'"
     }
 
@@ -56,11 +56,11 @@ function DownloadFileFromBucket {
         throw "filePath not provided"
     }
 
-    LogInfo("Downloading '$questionnaireFileName' from '$bucketName' to '$filePath'")
+    LogInfo("Downloading '$questionnaireFileName' from '$bucketName' to '$filePath'") 
 
-    $output = & cmd /c "gsutil 2>&1" cp gs://$bucketName/$questionnaireFileName $filePath
-
-    if ($output -Like "*exception*") {
+    $output = & gcloud storage cp gs://$bucketName/$questionnaireFileName $filePath 2>&1
+    
+    if ($LASTEXITCODE -ne 0 -or $output -Like "*exception*") {
         throw "Failed to download '$questionnaireFileName' from '$bucketName': '$output'"
     }
 
