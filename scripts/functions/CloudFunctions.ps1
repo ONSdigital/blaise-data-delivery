@@ -23,15 +23,15 @@ function UploadFileToBucket {
         throw "deliveryFileName not provided"
     }
 
-    LogInfo("Uploading '$filePath' to '$bucketName'")
+    $destination = "gs://$bucketName/$deliveryFileName"
+    LogInfo("Uploading '$filePath' to '$destination'")
 
-    # GSUtils logs its progress bar to stderr, standard powershell core throws an error
-    # when run from azure because of this, using cmd seemed to be the only option but
-    # it swallows errors so we then have to check the output for exceptions
-    $output = & cmd /c "gsutil 2>&1" cp $filePath gs://$bucketName/$deliveryFileName
+    # Capture stderr for diagnostics; gcloud's exit code determines success.
+    $output = & gcloud storage cp $filePath $destination 2>&1
+    $exitCode = $LASTEXITCODE
 
-    if ($output -Like "*exception*") {
-        throw "Failed to upload '$filePath' to '$bucketName': '$output'"
+    if ($exitCode -ne 0) {
+        throw "Failed to upload '$filePath' to '$destination' (gcloud exit code $exitCode): '$($output -join [Environment]::NewLine)'"
     }
 
     LogInfo("Uploaded '$filePath' to '$bucketName'")
@@ -56,13 +56,19 @@ function DownloadFileFromBucket {
         throw "filePath not provided"
     }
 
-    LogInfo("Downloading '$questionnaireFileName' from '$bucketName' to '$filePath'")
+    $source = "gs://$bucketName/$questionnaireFileName"
+    LogInfo("Downloading '$source' to '$filePath'")
 
-    $output = & cmd /c "gsutil 2>&1" cp gs://$bucketName/$questionnaireFileName $filePath
+    $output = & gcloud storage cp $source $filePath 2>&1
+    $exitCode = $LASTEXITCODE
 
-    if ($output -Like "*exception*") {
-        throw "Failed to download '$questionnaireFileName' from '$bucketName': '$output'"
+    if ($exitCode -ne 0) {
+        throw "Failed to download '$source' to '$filePath' (gcloud exit code $exitCode): '$($output -join [Environment]::NewLine)'"
     }
 
-    LogInfo("Downloaded '$questionnaireFileName' from '$bucketName' to '$filePath'")
+    if (-not (Test-Path -LiteralPath $filePath -PathType Leaf)) {
+        throw "gcloud storage cp reported success for '$source' but did not create destination file '$filePath'. Output: '$($output -join [Environment]::NewLine)'"
+    }
+
+    LogInfo("Downloaded '$source' to '$filePath'")
 }
