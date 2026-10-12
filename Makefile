@@ -2,6 +2,7 @@
 
 lint:
 	poetry run ruff check .
+	poetry run ruff format --check .
 
 lint-fix:
 	poetry run ruff check --fix .
