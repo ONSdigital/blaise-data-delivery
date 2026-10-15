@@ -7,19 +7,20 @@ package-mode = false
 
 [project]
 name = "blaise-data-delivery"
+version = "0.0.0"
 requires-python = ">=3.13,<4.0"
 dependencies = [
-    "google-cloud-storage (>=3.13.0)",
-    "google-cloud-logging (>=3.16.1)",
+    "google-cloud-storage (>=3.17.0)",
+    "google-cloud-logging (>=3.17.0)",
 ]
 
 [dependency-groups]
 dev = [
     "parameterized>=0.9.0",
-    "ruff (>=0.15.22)",
+    "ruff (>=0.17.0)",
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
-    "pyright>=1.1.411",
+    "pyright (>=1.1.414)",
     "deptry (>=0.25.1)",
     "vulture (>=2.16)",
 ]
@@ -41,3 +42,6 @@ min_confidence = 70
 
 [tool.pytest.ini_options]
 addopts = "--cov=cloud_functions --cov-report=term-missing"
+
+[tool.coverage.report]
+omit = ["test_*"]
