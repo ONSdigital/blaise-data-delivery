@@ -52,3 +52,31 @@ To enable sandbox data delivery, a sandbox specific data delivery configuration 
 1. Zip file renamed to include the sandbox environment suffix, e.g. `dd_<survey>_sandbox_<env_suffix>_<timestamp>.zip`
 1. Renamed file copied into the dev NiFi bucket.
 1. Usual data delivery process kicks in to deliver the data on-premises.
+
+## Installing dependencies
+
+- Use `poetry install` to install Python dependencies.
+
+## Python Linting
+
+- Run `make lint` to run lint checks.
+- Run `make lint-fix` to apply auto-fixes and formatting.
+
+## Python Type Checking
+
+- Run `make typecheck` to run static type checks.
+- Type checking is powered by Pyright and configured for strict checking in `pyproject.toml`.
+
+## Check for unused or missing Python dependencies
+
+- Run `make deptry` to check for unused or missing dependencies
+- Skips test files `cloud_functions/test_*`
+
+## Check for dead (unused) Python code
+
+- Run `make vulture` to check for unused Python code
+
+## Testing
+
+- Run `make test` to run tests and report coverage.
+- The coverage report omits test files.
